@@ -1,0 +1,15 @@
+{
+  "name": "mcts-entrepot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Des robots d'entrepôt et un cariste humain : affectation par MCTS, chemins par A* avec réservations.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "author": "Sami",
+  "license": "UNLICENSED"
+}
