@@ -52,7 +52,7 @@ function planLeg(state, robot, target) {
   // A robot already in the blocked stretch when the pallet went down may back out along it.
   const shut = closed(state) && state.warehouse.plan.at(robot.x, robot.y) !== "~";
   const passable = (char) => state.warehouse.floor(char) && !(shut && char === "~");
-  const path = astar(state.warehouse.plan, robot, target, { passable, reservations: state.reservations, unit: robot.id, start: state.t, horizon: LEG_HORIZON });
+  const path = astar(state.warehouse.plan, robot, target, { passable, reservations: state.reservations, unit: robot.id, start: state.t, horizon: LEG_HORIZON, park: true });
   if (!path) return false;
   state.reservations.release(robot.id);
   state.reservations.reserve(robot.id, path, { stay: true });
