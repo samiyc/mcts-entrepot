@@ -1,10 +1,11 @@
 import { parsePlan } from "mcts-commun/grid.js";
 
 /**
- * A warehouse read from its plan (plans.js): the floor, the dock, each block's pickup cells (the floor cells
- * beside it), and the cells that may get blocked. Static: what moves is in simulate.js.
+ * A warehouse read from its plan (plans.js): the floor, the docks with their bays, the charging points, each
+ * block's pickup cells (the floor cells beside it), and the cells that may get blocked. Static: what moves is
+ * in simulate.js.
  */
-const FLOOR = new Set([".", "T", "~"]);
+const FLOOR = new Set([".", "T", "~", "c", "w"]);
 const SIDES = [
   [1, 0],
   [-1, 0],
@@ -13,10 +14,36 @@ const SIDES = [
 ];
 export const isBlock = (char) => /^[A-Z]$/.test(char) && char !== "T";
 
-/** The warehouse of `text`: `{ plan, dock, blocks: Map(letter → pickup cells), blockable, floor(char) }`. */
+/**
+ * A dock's bay: the `w` cells joined to it through other `w` cells, nearest the truck first (so the far end
+ * fills first and the aisle into the bay stays open).
+ */
+function bayOf(plan, dock) {
+  const distances = new Map([[`${dock.x},${dock.y}`, 0]]);
+  const queue = [dock];
+  const bay = [];
+  for (let i = 0; i < queue.length; i += 1) {
+    const cell = queue[i];
+    for (const [dx, dy] of SIDES) {
+      const next = { x: cell.x + dx, y: cell.y + dy };
+      const key = `${next.x},${next.y}`;
+      if (plan.at(next.x, next.y) !== "w" || distances.has(key)) continue;
+      distances.set(key, distances.get(`${cell.x},${cell.y}`) + 1);
+      queue.push(next);
+      bay.push(next);
+    }
+  }
+  return bay;
+}
+
+/**
+ * The warehouse of `text`: `{ plan, dock, docks, charges, blocks: Map(letter → pickup cells), blockable,
+ * floor(char) }`. Each dock is `{ x, y, bay }`, in reading order; `dock` is the first.
+ */
 export function readWarehouse(text) {
   const plan = parsePlan(text);
-  const [dock] = plan.find("T");
+  const docks = plan.find("T").map((cell) => ({ ...cell, bay: bayOf(plan, cell) }));
+  const [dock] = docks;
   if (!dock) throw new Error("le plan n'a pas de camion (T)");
   const blocks = new Map();
   for (let y = 0; y < plan.height; y += 1) {
@@ -31,7 +58,7 @@ export function readWarehouse(text) {
       blocks.set(char, cells);
     }
   }
-  return { plan, dock, blocks, blockable: plan.find("~"), floor: (char) => FLOOR.has(char) };
+  return { plan, dock, docks, charges: plan.find("c"), blocks, blockable: plan.find("~"), floor: (char) => FLOOR.has(char) };
 }
 
 /** Floor distances from `from` (a breadth-first search), `~` cells left out while `closed`: a Map "x,y" → steps. */

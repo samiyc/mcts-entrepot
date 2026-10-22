@@ -8,7 +8,9 @@ Statut (22/10/2026) : le simulateur d'une journée sur trois plans, deux règles
 paires (`npm run compare`), et la page (`npm run page`, http://127.0.0.1:4802/web/) où l'on regarde les
 robots tour par tour et où l'on dessine son propre entrepôt. Depuis le soir du 22/10, l'affectation par la
 recherche (`src/search.js`, `npm run compare -- --search`) : elle finit la journée avant les trois règles
-(voir `docs/modele.md`). C'est l'étape 3 de la
+(voir `docs/modele.md`). Le 23/10, le plan de Sami à trois quais : des bornes de charge (`c`) d'où partent les
+robots, des baies (`w`) où les commandes se préparent avant l'arrivée de leur camion, et l'attente des
+camions comme mesure. C'est l'étape 3 de la
 [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md),
 avant la cuisine, qui reprendra le même moteur de grille.
 

@@ -3,8 +3,16 @@ import { createRng } from "mcts-commun/random.js";
 import { SIDES, distancesFrom, nearestPickup, readWarehouse } from "./warehouse.js";
 
 /**
- * A day in the warehouse, turn by turn. Robots start at the truck; an idle robot gets an order from the rule,
- * goes to a floor cell beside its block, takes a turn to pick, goes back to the truck, takes a turn to drop.
+ * A day in the warehouse, turn by turn. Robots start at a charging point (`c`), or at the truck when the plan
+ * has none; an idle robot gets an order from the rule, goes to a floor cell beside its block, takes a turn to
+ * pick, goes back to its truck, takes a turn to drop. A robot with nothing to do goes back where it started.
+ *
+ * Trucks (Sami, 23/10/2026): the orders are split by `/` between the plan's docks, in reading order, and each
+ * truck comes at its turn (`setup.trucks`, 0 by default). A dock with a bay (`w` cells) takes its orders on
+ * the bay, one pallet a cell, before its truck is there: an order is only taken while its bay has a cell left
+ * (claimed when it is taken), and a pallet waiting there is loaded, so delivered, when the truck comes. Once
+ * the truck is there, a pallet dropped on the bay is loaded at once. A dock without a bay takes them on the
+ * truck's cell, delivered when both the pallet and the truck are there.
  * Every leg is a path in space and time (A* of mcts-commun) reserved around the paths already reserved, so
  * robots never meet in a cell nor swap cells; the truck's cell is shared (moves in and out of it are still
  * reserved). A robot that ends a leg off the truck keeps its cell reserved until it leaves.
@@ -22,20 +30,32 @@ export function drawDay(seed, setup) {
   return { blockage: blocked ? { from, to: from + setup.duration } : null };
 }
 
-/** The start of a day: robots at the truck, orders open, nothing known of the blockage. */
+/** The day's trucks: the orders split by `/`, one group a dock, each truck with its arrival turn. */
+function trucksOf(setup, warehouse) {
+  const groups = setup.orders.split("/");
+  if (groups.length > warehouse.docks.length) throw new Error(`${groups.length} camions pour ${warehouse.docks.length} quai${warehouse.docks.length > 1 ? "s" : ""} (T) sur le plan`);
+  return groups.map((blocks, i) => ({ id: i + 1, dock: warehouse.docks[i], at: setup.trucks?.[i] ?? 0, blocks }));
+}
+
+/** The start of a day: robots at their charging point (or the truck), orders open, nothing known of the blockage. */
 export function createDay(setup, day) {
   const warehouse = readWarehouse(setup.text);
-  const { dock } = warehouse;
-  for (const block of new Set(setup.orders)) if (!warehouse.blocks.get(block)?.length) throw new Error(`commande ${block} : pas de bloc ${block} accessible sur le plan`);
+  const { dock, charges } = warehouse;
+  const trucks = trucksOf(setup, warehouse);
+  for (const block of new Set(setup.orders.replaceAll("/", ""))) if (!warehouse.blocks.get(block)?.length) throw new Error(`commande ${block} : pas de bloc ${block} accessible sur le plan`);
+  const homes = Array.from({ length: setup.robots }, (_, i) => (charges.length ? charges[i % charges.length] : dock));
   return {
     warehouse,
     setup,
     day,
     t: 0,
-    robots: Array.from({ length: setup.robots }, (_, i) => ({ id: i + 1, x: dock.x, y: dock.y, phase: "idle", order: null, target: null, path: null, until: null, moves: 0, waits: 0 })),
-    orders: [...setup.orders].map((block, i) => ({ id: i + 1, block, status: "open", robot: null, deliveredAt: null })),
+    trucks,
+    robots: homes.map((home, i) => ({ id: i + 1, x: home.x, y: home.y, home: { x: home.x, y: home.y }, phase: "idle", order: null, target: null, path: null, until: null, moves: 0, waits: 0 })),
+    orders: trucks.flatMap((truck) => [...truck.blocks].map((block) => ({ block, truck: truck.id - 1 }))).map(({ block, truck }, i) => ({ id: i + 1, block, truck, status: "open", robot: null, deliveredAt: null, stagedAt: null, cell: null })),
+    claims: new Map(),
     known: { blockedUntil: -1, seenAt: null },
-    reservations: createReservations({ shared: [dock] }),
+    // Robots may share the truck's cell, and their charging points when there are fewer points than robots.
+    reservations: createReservations({ shared: [dock, ...(setup.robots > charges.length ? charges : [])] }),
     log: [],
     replans: 0,
     stuck: 0,
@@ -43,7 +63,34 @@ export function createDay(setup, day) {
   };
 }
 
-const isDock = (state, cell) => cell.x === state.warehouse.dock.x && cell.y === state.warehouse.dock.y;
+const isHome = (robot) => robot.x === robot.home.x && robot.y === robot.home.y;
+const truckOf = (state, order) => state.trucks[order.truck];
+const isThere = (state, truck) => state.t >= truck.at;
+const keyOf = (cell) => `${cell.x},${cell.y}`;
+/** The free cell of a truck's bay nearest the truck, or null (none left, or no bay). */
+const freeBayCell = (state, truck) => truck.dock.bay.find((cell) => !state.claims.has(keyOf(cell))) ?? null;
+/** Can an order be taken now: its truck is there, or has no bay, or its bay has a cell left. */
+const canTake = (state, order) => {
+  const truck = truckOf(state, order);
+  return truck.dock.bay.length === 0 || isThere(state, truck) || freeBayCell(state, truck) !== null;
+};
+function claim(state, order, cell) {
+  order.cell = cell;
+  state.claims.set(keyOf(cell), order.id);
+}
+/** Where an order is dropped: its claimed bay cell, a free one, the bay's first, or the truck's cell. */
+function dropCellOf(state, order) {
+  const truck = truckOf(state, order);
+  if (order.cell) return order.cell;
+  if (truck.dock.bay.length === 0) return { x: truck.dock.x, y: truck.dock.y };
+  const cell = freeBayCell(state, truck) ?? truck.dock.bay[0];
+  claim(state, order, cell);
+  return cell;
+}
+function deliver(state, order, t) {
+  if (order.cell && state.claims.get(keyOf(order.cell)) === order.id) state.claims.delete(keyOf(order.cell));
+  Object.assign(order, { status: "delivered", deliveredAt: t, cell: null });
+}
 const closed = (state) => state.t <= state.known.blockedUntil;
 const blockedNow = (state, t) => Boolean(state.day.blockage) && t >= state.day.blockage.from && t < state.day.blockage.to;
 const orderOf = (state, robot) => state.orders.find((order) => order.id === robot.order);
@@ -98,28 +145,45 @@ function finishActions(state) {
     if (robot.phase === "picking") {
       order.status = "carried";
       robot.phase = "toDrop";
-      planLeg(state, robot, state.warehouse.dock);
+      // Kept as the target even when no leg is found now (a robot parked on the way): retried every turn.
+      const cell = dropCellOf(state, order);
+      if (!planLeg(state, robot, cell)) robot.target = cell;
     } else if (robot.phase === "dropping") {
-      Object.assign(order, { status: "delivered", deliveredAt: state.t });
-      state.log.push({ t: state.t, type: "delivered", robot: robot.id, order: order.id });
+      if (isThere(state, truckOf(state, order))) {
+        deliver(state, order, state.t);
+        state.log.push({ t: state.t, type: "delivered", robot: robot.id, order: order.id });
+      } else {
+        Object.assign(order, { status: "staged", stagedAt: state.t });
+        state.log.push({ t: state.t, type: "staged", robot: robot.id, order: order.id });
+      }
       Object.assign(robot, { phase: "idle", order: null, target: null });
     }
   }
 }
 
+/** A truck that has come loads the pallets waiting for it. */
+function load(state) {
+  for (const order of state.orders) {
+    if (order.status !== "staged" || !isThere(state, truckOf(state, order))) continue;
+    deliver(state, order, state.t);
+    state.log.push({ t: state.t, type: "loaded", order: order.id });
+  }
+}
+
 /**
  * The next idle robot of this turn that has an order to choose: `{ robot, open, reach }`, or null once every
- * robot has had its turn. An idle robot with no order left goes back to the truck on the way.
+ * robot has had its turn. An idle robot with no order it can take goes back where it started on the way.
  */
 export function nextChoice(state) {
   for (; state.cursor < state.robots.length; state.cursor += 1) {
     const robot = state.robots[state.cursor];
-    if (robot.phase !== "idle") continue;
+    // A robot on its way back home may still be given an order.
+    if (robot.phase !== "idle" && robot.phase !== "home") continue;
     const distances = distancesFrom(state.warehouse, robot, closed(state));
     const reach = (order) => nearestPickup(state.warehouse, order.block, distances)?.steps ?? Infinity;
-    const open = state.orders.filter((order) => order.status === "open" && reach(order) < Infinity);
+    const open = state.orders.filter((order) => order.status === "open" && reach(order) < Infinity && canTake(state, order));
     if (open.length > 0) return { robot, open, reach, distances };
-    if (!isDock(state, robot) && planLeg(state, robot, state.warehouse.dock)) robot.phase = "home";
+    if (robot.phase === "idle" && !isHome(robot) && planLeg(state, robot, robot.home)) robot.phase = "home";
   }
   return null;
 }
@@ -129,9 +193,14 @@ export function choose(state, choice, id) {
   state.cursor += 1;
   const { robot, distances } = choice;
   const chosen = state.orders.find((order) => order.id === id && order.status === "open");
-  const pickup = chosen && nearestPickup(state.warehouse, chosen.block, distances);
-  if (!pickup || !planLeg(state, robot, pickup.cell)) return;
+  if (!chosen) return;
+  // The nearest pickup cell a leg reaches: the nearest may hold a robot parked there for good.
+  const cells = state.warehouse.blocks.get(chosen.block).filter((cell) => distances.has(`${cell.x},${cell.y}`));
+  cells.sort((a, b) => distances.get(`${a.x},${a.y}`) - distances.get(`${b.x},${b.y}`));
+  if (!cells.some((cell) => planLeg(state, robot, cell))) return;
   Object.assign(chosen, { status: "assigned", robot: robot.id });
+  const truck = truckOf(state, chosen);
+  if (truck.dock.bay.length > 0 && !isThere(state, truck)) claim(state, chosen, freeBayCell(state, truck));
   Object.assign(robot, { phase: "toPick", order: chosen.id });
   state.log.push({ t: state.t, type: "assigned", robot: robot.id, order: chosen.id });
 }
@@ -179,6 +248,7 @@ function retry(state) {
 export function beginTurn(state) {
   discover(state);
   retry(state);
+  load(state);
   finishActions(state);
   state.cursor = 0;
 }
@@ -223,6 +293,7 @@ export function cloneDay(state) {
     ...state,
     robots: state.robots.map((robot) => ({ ...robot })),
     orders: state.orders.map((order) => ({ ...order })),
+    claims: new Map(state.claims),
     known: { ...state.known },
     reservations: state.reservations.clone(),
     log: [],
@@ -232,7 +303,8 @@ export function cloneDay(state) {
 /**
  * The day's measures: orders delivered by the horizon, the turn the last one was (the horizon when some are
  * left: the score a rule should keep low), the mean delivery turn, the robots' moves and waits, the legs
- * planned again after a blockage was seen, and the turns a robot ran into one.
+ * planned again after a blockage was seen, and the turns a robot ran into one; the turns trucks waited at
+ * their dock for their last pallet (`truckWait`, summed), and the orders ready on a bay before their truck.
  */
 export function measuresOf(state) {
   const delivered = state.orders.filter((order) => order.status === "delivered");
@@ -246,6 +318,12 @@ export function measuresOf(state) {
     waits: state.robots.reduce((sum, robot) => sum + robot.waits, 0),
     replans: state.replans,
     stuck: state.stuck,
+    truckWait: state.trucks.reduce((sum, truck) => {
+      const mine = state.orders.filter((order) => order.truck === truck.id - 1);
+      const left = mine.length === 0 ? truck.at : mine.some((order) => order.status !== "delivered") ? state.setup.horizon : Math.max(...mine.map((order) => order.deliveredAt));
+      return sum + Math.max(0, left - truck.at);
+    }, 0),
+    early: state.orders.filter((order) => order.stagedAt !== null && order.stagedAt < truckOf(state, order).at).length,
     blocked: Boolean(state.day.blockage),
     seenAt: state.known.seenAt,
   };

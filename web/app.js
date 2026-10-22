@@ -4,6 +4,8 @@ import { searchRule } from "../src/search.js";
 import { createDay, drawDay, isOver, measuresOf, runDay, stepDay } from "../src/simulate.js";
 import { blockageOf, cellsOf, ordersOf, robotsOf, statusLine } from "./view.js";
 
+const SYMBOLS = Object.freeze({ charge: "⚡", truck: "🚚" });
+
 /**
  * The page: a day in the chosen warehouse under the chosen rule, played turn by turn (or all at once), then
  * the rules on the same 100 days. The plan can be edited (text, robots, orders, blockage): a new warehouse is
@@ -123,7 +125,16 @@ function board() {
     const done = cell.kind === "block" && cell.pending === 0 ? " done" : "";
     map.append(svg("rect", { x: cell.x * CELL + 1, y: cell.y * CELL + 1, width: CELL - 2, height: CELL - 2, rx: 4, class: `cell ${kind}${done}` }));
     if (cell.kind === "block") map.append(svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 5, class: "letter" }, cell.pending > 1 ? `${cell.letter}×${cell.pending}` : cell.letter));
-    if (cell.kind === "dock") map.append(svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 5, class: "letter dock-letter" }, "T"));
+    if (cell.kind === "dock") {
+      const { truck } = cell;
+      const there = !truck || (truck.there && truck.left > 0);
+      const gone = truck && truck.left === 0 && truck.there;
+      const text = gone ? "parti" : there ? SYMBOLS.truck : String(truck.at);
+      map.append(svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + (there ? 7 : 4), class: `letter dock-letter${there ? " truck" : " due"}` }, text));
+      if (truck) map.append(svg("title", {}, `Camion ${truck.id} : ${gone ? "chargé, parti" : truck.there ? `à quai, ${truck.left} commande${truck.left > 1 ? "s" : ""} à charger` : `attendu au tour ${truck.at}`}`));
+    }
+    if (cell.kind === "charge") map.append(svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 6, class: "symbol" }, SYMBOLS.charge));
+    if (cell.pallet) map.append(svg("rect", { x: cell.x * CELL + 7, y: cell.y * CELL + 7, width: CELL - 14, height: CELL - 14, rx: 3, class: "parcel" }), svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 4, class: "letter pallet" }, cell.pallet));
   }
   for (const robot of robotsOf(state.day)) {
     if (robot.ahead.length > 1) map.append(svg("polyline", { points: robot.ahead.map((step) => `${step.x * CELL + CELL / 2},${step.y * CELL + CELL / 2}`).join(" "), class: `trail r${robot.id}` }));
@@ -138,7 +149,7 @@ function board() {
 }
 
 function orders() {
-  return el("ol", { class: "orders" }, ...ordersOf(state.day).map((order) => el("li", { class: order.status }, el("strong", {}, order.block), ` ${order.label}`)));
+  return el("ol", { class: "orders" }, ...ordersOf(state.day).map((order) => el("li", { class: order.status }, el("strong", {}, order.block), order.truck ? el("span", { class: "truck-tag" }, `camion ${order.truck}`) : null, ` ${order.label}`)));
 }
 
 function editor() {
@@ -148,8 +159,8 @@ function editor() {
     "details",
     { class: "editor" },
     el("summary", {}, "Changer d'entrepôt"),
-    el("p", { class: "hint" }, "Le plan en texte : « . » le sol, une majuscule un bloc de rayons, « T » le camion, « ~ » une case qui peut se bloquer, « # » un mur. Les commandes sont des lettres de blocs, dans l'ordre où elles arrivent."),
-    el("form", { "data-form": "plan" }, el("textarea", { name: "text", rows: String(Math.max(5, setup.text.split("\n").length + 1)), spellcheck: "false" }, setup.text), el("div", { class: "fields" }, field("Robots", "robots", setup.robots, { type: "number", min: "1", max: "12" }), field("Commandes", "orders", setup.orders), field("Blocage (%)", "blocking", Math.round(100 * setup.blocking), { type: "number", min: "0", max: "100" }), field("Durée du blocage (tours)", "duration", setup.duration, { type: "number", min: "1" }), field("Fin de la journée (tours)", "horizon", setup.horizon, { type: "number", min: "10" })), el("button", { type: "submit" }, "Appliquer")),
+    el("p", { class: "hint" }, "Le plan en texte : « . » le sol, une majuscule un bloc de rayons, « T » un quai où vient un camion, « w » une case devant un quai où une palette attend son camion (une par case), « c » une borne de charge d'où part un robot et où il revient, « ~ » une case qui peut se bloquer, « # » un mur ou l'extérieur. Les commandes sont des lettres de blocs, dans l'ordre où elles arrivent, un groupe par camion séparé par « / » (les quais dans l'ordre de lecture, de haut en bas) ; les camions arrivent aux tours donnés, séparés par des espaces."),
+    el("form", { "data-form": "plan" }, el("textarea", { name: "text", rows: String(Math.max(5, setup.text.split("\n").length + 1)), spellcheck: "false" }, setup.text), el("div", { class: "fields" }, field("Robots", "robots", setup.robots, { type: "number", min: "1", max: "12" }), field("Commandes", "orders", setup.orders), field("Arrivée des camions (tours)", "trucks", (setup.trucks ?? []).join(" ")), field("Blocage (%)", "blocking", Math.round(100 * setup.blocking), { type: "number", min: "0", max: "100" }), field("Durée du blocage (tours)", "duration", setup.duration, { type: "number", min: "1" }), field("Fin de la journée (tours)", "horizon", setup.horizon, { type: "number", min: "10" })), el("button", { type: "submit" }, "Appliquer")),
     state.error ? el("p", { class: "error", role: "alert" }, state.error) : null,
   );
 }
@@ -165,9 +176,9 @@ function comparison() {
   const { days, rows: compared } = state.compared;
   const fixed = (value, digits = 1) => value.toFixed(digits).replace(".", ",");
   const rows = Object.entries(compared).map(([name, row]) =>
-    el("tr", { class: name === state.rule ? "current" : null }, el("td", {}, RULE_LABELS[name]), el("td", { class: "num" }, fixed(row.delivered, 2)), el("td", { class: "num" }, fixed(row.finish)), el("td", { class: "num" }, name === "list" ? "—" : `${fixed(row.gain.mean)} (${fixed(row.gain.low)} à ${fixed(row.gain.high)})`), el("td", { class: "num" }, fixed(row.waits)), el("td", { class: "num" }, fixed(row.replans, 2))),
+    el("tr", { class: name === state.rule ? "current" : null }, el("td", {}, RULE_LABELS[name]), el("td", { class: "num" }, fixed(row.delivered, 2)), el("td", { class: "num" }, fixed(row.finish)), el("td", { class: "num" }, fixed(row.truckWait)), el("td", { class: "num" }, name === "list" ? "—" : `${fixed(row.gain.mean)} (${fixed(row.gain.low)} à ${fixed(row.gain.high)})`), el("td", { class: "num" }, fixed(row.early)), el("td", { class: "num" }, fixed(row.waits)), el("td", { class: "num" }, fixed(row.replans, 2))),
   );
-  const head = ["Règle", "livrées", "fini au tour", "tours gagnés sur la liste (IC 95 %)", "attentes", "replanifiés"].map((label, i) => el("th", { class: i > 0 ? "num" : null }, label));
+  const head = ["Règle", "livrées", "fini au tour", "attente des camions (tours)", "attente gagnée sur la liste (IC 95 %)", "prêtes avant leur camion", "attentes des robots", "replanifiés"].map((label, i) => el("th", { class: i > 0 ? "num" : null }, label));
   return [el("h2", {}, `Les règles sur les mêmes ${days} journées (blocage ${Math.round(100 * compared.list.blockedDays)} % des jours)`), el("div", { class: "scroll" }, el("table", {}, el("thead", {}, el("tr", {}, ...head)), el("tbody", {}, ...rows))), buttons];
 }
 
@@ -183,7 +194,8 @@ function applyPlan(form) {
     label: "Entrepôt modifié",
     text: String(data.get("text")).replace(/\s+$/, ""),
     robots: Math.max(1, Number(data.get("robots")) || 1),
-    orders: String(data.get("orders")).replace(/[^A-Z]/g, ""),
+    orders: String(data.get("orders")).replace(/[^A-Z/]/g, ""),
+    trucks: String(data.get("trucks")).split(/[\s,;]+/).filter(Boolean).map((value) => Math.max(0, Number(value) || 0)),
     blocking: Math.min(1, Math.max(0, Number(data.get("blocking")) / 100 || 0)),
     duration: Math.max(1, Number(data.get("duration")) || 1),
     horizon: Math.max(10, Number(data.get("horizon")) || 10),

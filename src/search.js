@@ -11,7 +11,7 @@ import { advance, choose, cloneDay, measuresOf, nextChoice } from "./simulate.js
  * (this robot's, then the next idle robot's), the list order beyond, to the end of the day.
  *
  * A world is scored against the list order's day from the same point: ½ for the same finish, a turn earlier
- * or later worth `1 / spread`, so that a few turns weigh in the tree as they do in the warehouse.
+ * or later worth `1 / spread` per truck, so that a few turns weigh in the tree as they do in the warehouse.
  */
 export const SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1 });
 
@@ -29,10 +29,10 @@ export function drawWorld(state, rng) {
   return world;
 }
 
-/** The day's cost from here: the last delivery's turn, and a quarter of the mean delivery turn. */
+/** The day's cost from here: the turns trucks wait for their last pallet (the last delivery's turn with one truck there from the start), and a quarter of the mean delivery turn. */
 const costOf = (world) => {
   const measures = measuresOf(world);
-  return measures.finish + measures.meanDelivery / 4;
+  return measures.truckWait + measures.meanDelivery / 4;
 };
 
 /** The list order to the end of the day. */
@@ -87,7 +87,8 @@ export function searchRule(options = {}) {
   return (robot, open, { state }) => {
     if (open.length === 1) return open[0];
     const rng = createRng((Math.imul(seed, 0x9e3779b1) + state.t * 131 + robot.id * 7 + open.length) >>> 0);
-    const found = search(state, problemFor(baseOf(state, rng), { width, spread }), { budget, rng, depth, explore, common: true });
+    // The trucks' waits add up: the scale grows with them, or every world of a three-truck day scores 0 or 1.
+    const found = search(state, problemFor(baseOf(state, rng), { width, spread: spread * state.trucks.length }), { budget, rng, depth, explore, common: true });
     return open.find((order) => order.id === found.move?.id) ?? RULES.list(robot, open);
   };
 }

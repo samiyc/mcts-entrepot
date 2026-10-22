@@ -58,6 +58,13 @@ button.quiet { background: var(--panel); color: var(--ink); border-color: var(--
 .cell.block.done { fill: var(--block-done); }
 .cell.wall { fill: var(--wall); }
 .cell.dock { fill: var(--dock); }
+.cell.bay { fill: color-mix(in srgb, var(--dock) 22%, var(--floor)); stroke: var(--dock); stroke-width: 1; stroke-dasharray: 2 2; }
+.cell.charge { fill: color-mix(in srgb, var(--r5) 25%, var(--floor)); }
+.symbol { font: 16px system-ui, sans-serif; text-anchor: middle; pointer-events: none; }
+.dock-letter.truck { font-size: 20px; }
+.dock-letter.due { font-size: 11px; }
+.letter.pallet { fill: #4a3608; font-size: 11px; }
+.truck-tag { display: inline-block; margin-left: 4px; padding: 0 4px; border-radius: 3px; font-size: 0.75rem; color: var(--ink-2); border: 1px solid var(--line); }
 .cell.blockable { fill: var(--floor); stroke: var(--blocked); stroke-width: 1.5; stroke-dasharray: 3 3; }
 .cell.blockable.blocked { fill: color-mix(in srgb, var(--blocked) 25%, var(--floor)); stroke-dasharray: none; }
 .cell.blockable.blocked.seen { fill: var(--blocked); }
@@ -73,6 +80,7 @@ aside h2 { margin-top: 8px; }
 .orders li { margin: 2px 0; }
 .orders li.delivered { color: var(--ink-2); }
 .orders li.carried, .orders li.assigned { font-weight: 600; }
+.orders li.staged { color: var(--dock); }
 .hint { color: var(--ink-2); font-size: 0.85rem; }
 .editor { margin-top: 16px; }
 .editor summary { cursor: pointer; font-weight: 600; }

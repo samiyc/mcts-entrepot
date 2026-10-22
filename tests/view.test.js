@@ -15,6 +15,21 @@ describe("what the page shows (web/view.js)", () => {
     assert.equal(cells.filter((cell) => cell.kind === "blockable").length, 1);
   });
 
+  it("draws the bays, the charging points and the trucks, and tells where the trucks are", () => {
+    const setup = { ...PLANS.quais, blocking: 0 };
+    const day = createDay(setup, drawDay(1, setup));
+    const cells = cellsOf(day);
+    assert.equal(cells.filter((cell) => cell.kind === "bay").length, 9);
+    assert.equal(cells.filter((cell) => cell.kind === "charge").length, 4);
+    assert.deepEqual(cells.filter((cell) => cell.kind === "dock").map((cell) => cell.truck.at), [20, 40, 60]);
+    assert.match(statusLine(day), /camion 1 au tour 20, camion 2 au tour 40, camion 3 au tour 60/);
+    while (!day.orders.some((order) => order.status === "staged")) stepDay(day, RULES.list);
+    assert.ok(cellsOf(day).some((cell) => cell.kind === "bay" && cell.pallet));
+    assert.ok(ordersOf(day).some((order) => order.status === "staged" && /^prête devant le quai/.test(order.label) && order.truck));
+    while (!isOver(day)) stepDay(day, RULES.list);
+    assert.match(statusLine(day, measuresOf(day)), /camion 1 parti, camion 2 parti, camion 3 parti.*\d+ tours d'attente des camions/);
+  });
+
   it("tells the robots, their legs, and the day as it goes", () => {
     const setup = { ...PLANS.sami, blocking: 1 };
     const day = createDay(setup, drawDay(2, setup));
