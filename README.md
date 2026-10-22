@@ -4,7 +4,9 @@ Des robots d'entrepôt qui portent des colis du stock au camion, avec un cariste
 propres commandes. Les robots ne le commandent pas : ils devinent ce qu'il va faire et replanifient à
 chaque événement.
 
-Statut (22/10/2026) : pas commencé. C'est l'étape 3 de la
+Statut (22/10/2026) : le simulateur d'une journée sur trois plans, deux règles d'affectation comparées par
+paires (`npm run compare`), et la page (`npm run page`, http://127.0.0.1:4802/web/) où l'on regarde les
+robots tour par tour et où l'on dessine son propre entrepôt. Pas encore de recherche. C'est l'étape 3 de la
 [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md),
 avant la cuisine, qui reprendra le même moteur de grille.
 
