@@ -1,17 +1,23 @@
 import { PLANS } from "../src/plans.js";
-import { RULE_LABELS, RULES, compareRules } from "../src/rules.js";
-import { createDay, drawDay, isOver, measuresOf, stepDay } from "../src/simulate.js";
+import { RULE_LABELS, RULES, compareRules, summaryOf } from "../src/rules.js";
+import { searchRule } from "../src/search.js";
+import { createDay, drawDay, isOver, measuresOf, runDay, stepDay } from "../src/simulate.js";
 import { blockageOf, cellsOf, ordersOf, robotsOf, statusLine } from "./view.js";
 
 /**
  * The page: a day in the chosen warehouse under the chosen rule, played turn by turn (or all at once), then
  * the rules on the same 100 days. The plan can be edited (text, robots, orders, blockage): a new warehouse is
- * a new text. What it shows is computed in view.js; this module only draws and listens.
+ * a new text. The search (src/search.js) thinks for a while at each choice: its days are played turn by turn,
+ * the page breathing between two, and compared on fewer days. What it shows is computed in view.js; this
+ * module only draws and listens.
  */
 const CELL = 34;
 const COMPARED = 100;
+const COMPARED_WITH_SEARCH = 12;
 const app = document.getElementById("app");
-const state = { planId: "sami", setup: { ...PLANS.sami }, rule: "list", seed: 1, speed: 4, day: null, timer: null, compared: null, error: "" };
+const state = { planId: "sami", setup: { ...PLANS.sami }, rule: "list", seed: 1, speed: 4, day: null, timer: null, compared: null, error: "", busy: "", run: 0 };
+const ruleOf = (name) => (name === "search" ? searchRule() : RULES[name]);
+const breathe = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -28,7 +34,47 @@ function svg(tag, attrs = {}, text = null) {
 
 function restart() {
   stop();
+  Object.assign(state, { run: state.run + 1, busy: "" });
   state.day = createDay(state.setup, drawDay(state.seed, state.setup));
+}
+
+/** Plays `day` to its end under `rule`, breathing every turn; false if a newer run started meanwhile. */
+async function playOut(day, rule, run, label) {
+  while (!isOver(day)) {
+    stepDay(day, rule);
+    state.busy = `${label} : tour ${day.t} / ${day.setup.horizon}`;
+    render();
+    await breathe();
+    if (run !== state.run) return false;
+  }
+  return true;
+}
+
+async function finish() {
+  stop();
+  const run = ++state.run;
+  if (state.rule !== "search") {
+    while (!isOver(state.day)) stepDay(state.day, RULES[state.rule]);
+  } else if (!(await playOut(state.day, ruleOf("search"), run, "La recherche réfléchit"))) {
+    return;
+  }
+  state.busy = "";
+  render();
+}
+
+/** The rules and the search on the same few days, breathing between two turns of the search. */
+async function compareWithSearch() {
+  stop();
+  const run = ++state.run;
+  const runs = { ...Object.fromEntries(Object.keys(RULES).map((name) => [name, []])), search: [] };
+  for (let i = 0; i < COMPARED_WITH_SEARCH; i += 1) {
+    for (const [name, rule] of Object.entries(RULES)) runs[name].push(runDay(state.setup, state.seed + i, rule).measures);
+    const day = createDay(state.setup, drawDay(state.seed + i, state.setup));
+    if (!(await playOut(day, ruleOf("search"), run, `Comparaison, journée ${i + 1} sur ${COMPARED_WITH_SEARCH}`))) return;
+    runs.search.push(measuresOf(day));
+  }
+  Object.assign(state, { compared: { days: COMPARED_WITH_SEARCH, rows: summaryOf(runs) }, busy: "" });
+  render();
 }
 function stop() {
   clearInterval(state.timer);
@@ -42,7 +88,7 @@ function play() {
       render();
       return;
     }
-    stepDay(state.day, RULES[state.rule]);
+    stepDay(state.day, ruleOf(state.rule));
     render();
   }, 1000 / state.speed);
 }
@@ -109,18 +155,25 @@ function editor() {
 }
 
 function comparison() {
-  if (!state.compared) return [el("button", { type: "button", class: "quiet compare", "data-action": "compare" }, `Comparer les règles sur ${COMPARED} journées`)];
+  const buttons = el(
+    "div",
+    { class: "controls" },
+    el("button", { type: "button", class: "quiet compare", "data-action": "compare" }, `Comparer les règles sur ${COMPARED} journées`),
+    el("button", { type: "button", class: "quiet compare", "data-action": "compareSearch" }, `Comparer avec la recherche sur ${COMPARED_WITH_SEARCH} journées`),
+  );
+  if (!state.compared) return [buttons];
+  const { days, rows: compared } = state.compared;
   const fixed = (value, digits = 1) => value.toFixed(digits).replace(".", ",");
-  const rows = Object.entries(state.compared).map(([name, row]) =>
+  const rows = Object.entries(compared).map(([name, row]) =>
     el("tr", { class: name === state.rule ? "current" : null }, el("td", {}, RULE_LABELS[name]), el("td", { class: "num" }, fixed(row.delivered, 2)), el("td", { class: "num" }, fixed(row.finish)), el("td", { class: "num" }, name === "list" ? "—" : `${fixed(row.gain.mean)} (${fixed(row.gain.low)} à ${fixed(row.gain.high)})`), el("td", { class: "num" }, fixed(row.waits)), el("td", { class: "num" }, fixed(row.replans, 2))),
   );
   const head = ["Règle", "livrées", "fini au tour", "tours gagnés sur la liste (IC 95 %)", "attentes", "replanifiés"].map((label) => el("th", {}, label));
-  return [el("h2", {}, `Les règles sur les mêmes ${COMPARED} journées (blocage ${Math.round(100 * state.compared.list.blockedDays)} % des jours)`), el("div", { class: "scroll" }, el("table", {}, el("thead", {}, el("tr", {}, ...head)), el("tbody", {}, ...rows)))];
+  return [el("h2", {}, `Les règles sur les mêmes ${days} journées (blocage ${Math.round(100 * compared.list.blockedDays)} % des jours)`), el("div", { class: "scroll" }, el("table", {}, el("thead", {}, el("tr", {}, ...head)), el("tbody", {}, ...rows))), buttons];
 }
 
 function render() {
   const over = isOver(state.day);
-  app.replaceChildren(controls(), el("p", { class: "summary" }, statusLine(state.day, over ? measuresOf(state.day) : null)), el("div", { class: "layout" }, board(), el("aside", {}, el("h2", {}, "Les commandes"), orders())), ...comparison(), editor());
+  app.replaceChildren(controls(), el("p", { class: "summary", "aria-live": "polite" }, state.busy || statusLine(state.day, over ? measuresOf(state.day) : null)), el("div", { class: "layout" }, board(), el("aside", {}, el("h2", {}, "Les commandes"), orders())), ...comparison(), editor());
 }
 
 function applyPlan(form) {
@@ -149,20 +202,19 @@ const ACTIONS = {
   pause: stop,
   step: () => {
     stop();
-    if (!isOver(state.day)) stepDay(state.day, RULES[state.rule]);
+    if (!isOver(state.day)) stepDay(state.day, ruleOf(state.rule));
   },
-  finish: () => {
-    stop();
-    while (!isOver(state.day)) stepDay(state.day, RULES[state.rule]);
-  },
+  finish,
   restart,
   next: () => {
     state.seed += 1;
     restart();
   },
   compare: () => {
-    state.compared = compareRules(state.setup, { days: COMPARED });
+    state.run += 1;
+    Object.assign(state, { compared: { days: COMPARED, rows: compareRules(state.setup, { days: COMPARED }) }, busy: "" });
   },
+  compareSearch: compareWithSearch,
 };
 
 app.addEventListener("change", (event) => {

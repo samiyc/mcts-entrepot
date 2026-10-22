@@ -84,7 +84,8 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
 
   it("compares the rules by pairs on the same days", () => {
     const result = compareRules(PLANS.petit, { days: 30 });
-    assert.deepEqual(Object.keys(result), ["nearest", "list"]);
+    assert.deepEqual(Object.keys(result), ["nearest", "list", "farthest"]);
+    assert.ok(result.farthest.finish < result.list.finish, "la plus lointaine d'abord finit avant la liste");
     assert.equal(result.list.gain.mean, 0);
     assert.equal(result.nearest.gain.n, 30);
   });

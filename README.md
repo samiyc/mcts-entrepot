@@ -6,7 +6,9 @@ chaque événement.
 
 Statut (22/10/2026) : le simulateur d'une journée sur trois plans, deux règles d'affectation comparées par
 paires (`npm run compare`), et la page (`npm run page`, http://127.0.0.1:4802/web/) où l'on regarde les
-robots tour par tour et où l'on dessine son propre entrepôt. Pas encore de recherche. C'est l'étape 3 de la
+robots tour par tour et où l'on dessine son propre entrepôt. Depuis le soir du 22/10, l'affectation par la
+recherche (`src/search.js`, `npm run compare -- --search`) : elle finit la journée avant les trois règles
+(voir `docs/modele.md`). C'est l'étape 3 de la
 [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md),
 avant la cuisine, qui reprendra le même moteur de grille.
 
@@ -32,7 +34,7 @@ Le plan de Sami, 17 × 7 cases, le camion au bord droit :
 
 1. **Un simulateur de grille** pur et testé : le plan, les robots, les commandes, les blocages tirés au
    hasard.
-2. **Des règles de référence** : la commande la plus proche, la plus ancienne.
+2. **Des règles de référence** : la commande la plus proche, l'ordre de la liste, la plus lointaine d'abord.
 3. **L'affectation par la recherche**, jugée contre elles, par paires, sur les mêmes journées.
 4. **Le cariste** : un humain simulé (celui qui prend la commande la plus proche, la plus urgente, ou au
    hasard), puis un vrai joueur dans la page.

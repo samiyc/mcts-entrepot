@@ -39,6 +39,7 @@ export function createDay(setup, day) {
     log: [],
     replans: 0,
     stuck: 0,
+    cursor: null,
   };
 }
 
@@ -106,23 +107,33 @@ function finishActions(state) {
   }
 }
 
-/** Idle robots get an order from the rule, or go back to the truck when none is left. */
-function assign(state, rule) {
-  for (const robot of state.robots.filter((one) => one.phase === "idle")) {
+/**
+ * The next idle robot of this turn that has an order to choose: `{ robot, open, reach }`, or null once every
+ * robot has had its turn. An idle robot with no order left goes back to the truck on the way.
+ */
+export function nextChoice(state) {
+  for (; state.cursor < state.robots.length; state.cursor += 1) {
+    const robot = state.robots[state.cursor];
+    if (robot.phase !== "idle") continue;
     const distances = distancesFrom(state.warehouse, robot, closed(state));
     const reach = (order) => nearestPickup(state.warehouse, order.block, distances)?.steps ?? Infinity;
     const open = state.orders.filter((order) => order.status === "open" && reach(order) < Infinity);
-    if (open.length === 0) {
-      if (!isDock(state, robot) && planLeg(state, robot, state.warehouse.dock)) robot.phase = "home";
-      continue;
-    }
-    const chosen = rule({ id: robot.id, x: robot.x, y: robot.y }, open, { t: state.t, reach });
-    const pickup = chosen && nearestPickup(state.warehouse, chosen.block, distances);
-    if (!pickup || !planLeg(state, robot, pickup.cell)) continue;
-    Object.assign(chosen, { status: "assigned", robot: robot.id });
-    Object.assign(robot, { phase: "toPick", order: chosen.id });
-    state.log.push({ t: state.t, type: "assigned", robot: robot.id, order: chosen.id });
+    if (open.length > 0) return { robot, open, reach, distances };
+    if (!isDock(state, robot) && planLeg(state, robot, state.warehouse.dock)) robot.phase = "home";
   }
+  return null;
+}
+
+/** `choice.robot` takes order `id` (when a leg to it is found), and the turn moves to the next robot. */
+export function choose(state, choice, id) {
+  state.cursor += 1;
+  const { robot, distances } = choice;
+  const chosen = state.orders.find((order) => order.id === id && order.status === "open");
+  const pickup = chosen && nearestPickup(state.warehouse, chosen.block, distances);
+  if (!pickup || !planLeg(state, robot, pickup.cell)) return;
+  Object.assign(chosen, { status: "assigned", robot: robot.id });
+  Object.assign(robot, { phase: "toPick", order: chosen.id });
+  state.log.push({ t: state.t, type: "assigned", robot: robot.id, order: chosen.id });
 }
 
 const positionAt = (path, t) => path.find((step) => step.t === t) ?? path.at(-1);
@@ -164,19 +175,59 @@ function retry(state) {
   }
 }
 
-/** Plays one turn of `state` under `rule`; returns the state. */
-export function stepDay(state, rule) {
+/** The start of a turn, up to the robots' choices: blockages seen, legs retried, picks and drops ended. */
+export function beginTurn(state) {
   discover(state);
   retry(state);
   finishActions(state);
-  assign(state, rule);
+  state.cursor = 0;
+}
+
+/** The end of a turn, after the choices: every robot moves, and those arrived start their work. */
+export function endTurn(state) {
   move(state);
   arrive(state);
+  state.cursor = null;
+}
+
+/** What a rule is shown and given: the robot, the open orders, and `{ t, reach, state }` (only the search reads `state`). */
+const ask = (state, choice, rule) => rule({ id: choice.robot.id, x: choice.robot.x, y: choice.robot.y }, choice.open, { t: state.t, reach: choice.reach, state })?.id;
+
+/** Plays one turn of `state` under `rule`; returns the state. */
+export function stepDay(state, rule) {
+  if (state.cursor === null) beginTurn(state);
+  for (let choice = nextChoice(state); choice; choice = nextChoice(state)) choose(state, choice, ask(state, choice, rule));
+  endTurn(state);
   return state;
 }
 
 /** Is the day over: every order delivered, or the horizon reached? */
 export const isOver = (state) => state.t >= state.setup.horizon || state.orders.every((order) => order.status === "delivered");
+
+/** Runs the day to its next choice (turns go by while nobody has one): the choice, or null once the day is over. */
+export function advance(state) {
+  for (;;) {
+    if (state.cursor === null) {
+      if (isOver(state)) return null;
+      beginTurn(state);
+    }
+    const choice = nextChoice(state);
+    if (choice) return choice;
+    endTurn(state);
+  }
+}
+
+/** A copy of `state` the search may play forward: robots, orders, knowledge and reservations copied. */
+export function cloneDay(state) {
+  return {
+    ...state,
+    robots: state.robots.map((robot) => ({ ...robot })),
+    orders: state.orders.map((order) => ({ ...order })),
+    known: { ...state.known },
+    reservations: state.reservations.clone(),
+    log: [],
+  };
+}
 
 /**
  * The day's measures: orders delivered by the horizon, the turn the last one was (the horizon when some are
