@@ -179,12 +179,19 @@ const isLoader = (state, truck, robot) => loaderZone(state, truck, robot) !== nu
  * (with one in hand it could not get past them), and the others still need a cell on the bay (Sami's docks,
  * 23/10: four robots with a pallet each, the truck's only door behind a waiting pallet, nobody left to load it).
  */
+/** The pickup cell of `order` nearest `robot`, or null. */
+const nearestPickupCell = (state, robot, order) => nearestPickup(state.warehouse, order.block, distancesFrom(state.warehouse, robot, closed(state)))?.cell ?? null;
 const canTake = (state, order, robot) => {
   const truck = truckOf(state, order);
   if (truck.dock.bay.length === 0) return true;
   // A loader fetches itself only once no pallet waits in its zone.
   const zone = loaderZone(state, truck, robot);
-  if (isThere(state, truck) && zone !== null) return !state.orders.some((other) => other.truck === order.truck && other.cell && (other.status === "staged" || other.status === "toTruck") && zoneOf(truck, other.cell) === zone);
+  // And no pallet waiting or promised may stand between it and the truck: set down meanwhile, it would shut the
+  // loader out with its own (a bay in a one-cell aisle).
+  if (isThere(state, truck) && zone !== null) {
+    if (state.orders.some((other) => other.truck === order.truck && other.cell && (other.status === "staged" || other.status === "toTruck") && zoneOf(truck, other.cell) === zone)) return false;
+    return wayOut(state, order.cell ?? nearestPickupCell(state, robot, order) ?? robot, truck.dock, new Set(state.orders.filter((other) => other.cell).map((other) => keyOf(other.cell))));
+  }
   return bayCellFor(state, truck, robot) !== null;
 };
 function claim(state, order, cell) {
@@ -291,8 +298,8 @@ function wayOut(state, from, to, blocked) {
 function shutsIn(state, cell) {
   // The answer depends only on the pallets' cells and the loaded robots: remembered per warehouse, since the
   // search asks it again and again in worlds alike.
-  const carried = state.robots.filter((robot) => robot.phase === "toDrop" && robot.order);
-  const signature = `${keyOf(cell)}|${state.orders.filter((order) => order.cell).map((order) => `${order.truck}:${keyOf(order.cell)}`).join(" ")}|${carried.map((robot) => `${keyOf(robot)}>${orderOf(state, robot).cell ? keyOf(orderOf(state, robot).cell) : orderOf(state, robot).truck}`).join(" ")}`;
+  const carried = state.robots.filter((robot) => (robot.phase === "toDrop" || robot.phase === "toPick" || robot.phase === "picking") && robot.order);
+  const signature = `${keyOf(cell)}|${state.orders.filter((order) => order.cell).map((order) => `${order.truck}:${keyOf(order.cell)}`).join(" ")}|${carried.map((robot) => `${robot.phase}${keyOf(robot.phase === "toPick" && robot.target ? robot.target : robot)}>${orderOf(state, robot).cell ? keyOf(orderOf(state, robot).cell) : orderOf(state, robot).truck}`).join(" ")}`;
   if (!shutMemo.has(state.warehouse)) shutMemo.set(state.warehouse, new Map());
   const memo = shutMemo.get(state.warehouse);
   if (!memo.has(signature)) {
@@ -329,22 +336,46 @@ function shutsInNow(state, cell) {
     const region = regionOf(to);
     return region.has(keyOf(from)) || SIDES.some(([dx, dy]) => region.has(`${from.x + dx},${from.y + dy}`));
   };
+  // A robot on its way to fetch is judged from where it will pick, the way back from there.
+  const pickupOf = (robot) => (robot.phase === "toPick" && robot.target ? robot.target : robot);
   for (const order of state.orders) if (order.cell && !reaches(order.cell, truckOf(state, order).dock)) return true;
   for (const robot of state.robots) {
-    if (robot.phase !== "toDrop" || !robot.order) continue;
+    if (!robot.order) continue;
     const order = orderOf(state, robot);
-    if (!reaches(robot, order.cell ?? truckOf(state, order).dock)) return true;
+    // A robot with a pallet must reach where it goes; one on its way to fetch an order promised a cell, that cell
+    // (in a one-cell aisle a pallet set down in front of it would shut its cell off for good).
+    if (robot.phase === "toDrop" && !reaches(robot, order.cell ?? truckOf(state, order).dock)) return true;
+    if ((robot.phase === "toPick" || robot.phase === "picking") && order.status === "assigned" && order.cell && !reaches(pickupOf(robot), order.cell)) return true;
+    // A loader on its way to fetch an order it carries straight in: the truck.
+    if ((robot.phase === "toPick" || robot.phase === "picking") && order.status === "assigned" && !order.cell && truckOf(state, order).dock.bay.length > 0 && !reaches(pickupOf(robot), truckOf(state, order).dock)) return true;
   }
   return false;
+}
+
+/** The `~` cells joined to the one `robot` stands on: the stretch it may back out along. */
+function stretchOf(state, robot) {
+  const seen = new Set([keyOf(robot)]);
+  const queue = [robot];
+  for (let i = 0; i < queue.length; i += 1) {
+    for (const [dx, dy] of SIDES) {
+      const next = { x: queue[i].x + dx, y: queue[i].y + dy };
+      if (seen.has(keyOf(next)) || state.warehouse.plan.at(next.x, next.y) !== "~") continue;
+      seen.add(keyOf(next));
+      queue.push(next);
+    }
+  }
+  return seen;
 }
 
 /** Plans `robot`'s leg to `target` from now and reserves it; keeps the old leg when no path is found. */
 function planLeg(state, robot, target) {
   // A robot already in the blocked stretch when the pallet went down may back out along it.
-  const shut = closed(state) && state.warehouse.plan.at(robot.x, robot.y) !== "~";
+  // Only the stretch it stands in, not another blocked one beyond it (Sami's corridors: a robot backing out of
+  // one `~` planned through the other, then would not step in, and another walked into its cell).
+  const stretch = closed(state) && state.warehouse.plan.at(robot.x, robot.y) === "~" ? stretchOf(state, robot) : null;
   // A robot passes under a pallet waiting on a bay, but not with one on its back (Sami, 23/10): two pallets never share a cell.
   const pallets = robot.phase === "toDrop" ? palletCells(state) : null;
-  const passable = (char, x, y) => state.warehouse.floor(char) && !(shut && char === "~") && !(pallets?.has(`${x},${y}`) && (x !== target.x || y !== target.y));
+  const passable = (char, x, y) => state.warehouse.floor(char) && !(closed(state) && char === "~" && !stretch?.has(`${x},${y}`)) && !(pallets?.has(`${x},${y}`) && (x !== target.x || y !== target.y));
   // Someone parks on the target for good, or is due there past the horizon: no leg can end there, no need to search.
   if (!state.reservations.freeFrom(target.x, target.y, state.t + LEG_HORIZON, robot.id)) return false;
   // Every way into the target held for good by others (a truck with one door, someone parked on it): no search either.
@@ -443,9 +474,11 @@ export function nextChoice(state) {
     const distances = distancesFrom(state.warehouse, robot, closed(state));
     const reach = (order) => (order.status === "staged" ? (distances.get(keyOf(order.cell)) ?? Infinity) : (nearestPickup(state.warehouse, order.block, distances)?.steps ?? Infinity));
     const loads = state.orders.filter((order) => order.status === "staged" && order.cell && isThere(state, truckOf(state, order)) && reach(order) < Infinity && mayLoad(state, truckOf(state, order), robot, order) && clearToTruck(state, order) && !state.robots.some((other) => other !== robot && other.x === order.cell.x && other.y === order.cell.y));
-    // Whether a truck takes one more pallet is the same for all its orders: asked once per truck.
+    // Whether a truck takes one more pallet is the same for all its orders: asked once per truck, except for a
+    // loader, whose answer depends on where the order is picked (its way back to the truck).
     const takes = new Map();
     const canTakeFor = (order) => {
+      if (isLoader(state, truckOf(state, order), robot)) return canTake(state, order, robot);
       if (!takes.has(order.truck)) takes.set(order.truck, canTake(state, order, robot));
       return takes.get(order.truck);
     };

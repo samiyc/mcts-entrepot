@@ -238,6 +238,14 @@ Sami a redessiné le plan de Sami (13 × 7 : quatre bornes, deux zones `w` dans 
 
 Sur le plan de Sami (40 journées, tours jusqu'à la dernière livraison) : la plus proche 163 → 109, la liste 178 → 102, la plus lointaine 196 → 124 ; **la recherche 167 → 93** (3,3 s par journée). Les trois quais, qui n'ont qu'une zone par camion, ne bougent presque pas (liste 120, plus proche 188 tours à quai cumulés).
 
+
+**Une baie dans l'allée unique** (Sami, le même soir : les deux couloirs étroits avec `www` juste avant le camion, dans la seule allée). Trois règles sur quatre bloquaient toutes leurs journées : un robot réservait (10,2) et partait chercher ; un autre réservait (9,2), arrivait le premier et posait ; le premier, chargé, ne pouvait plus passer, et la palette de (9,2) ne pouvait pas partir, (10,2) lui étant promise. Ce qui est vérifié maintenant :
+- **la réservation d'une case** garde aussi le chemin des robots partis chercher une commande à case promise, depuis là où ils vont la prendre (et non depuis là où ils sont) ;
+- **un chargeur ne va chercher lui-même** que si aucune palette, posée ou promise, ne se trouve entre l'endroit où il prendra et le camion ; et personne ne réserve une case qui lui couperait ce chemin ;
+- au passage, deux erreurs : la réponse « ce camion prend encore une palette » gardée par camion valait pour toutes ses commandes, alors que pour un chargeur elle dépend de l'endroit où l'on prend ; et un robot pris dans une allée bloquée pouvait, en en sortant, prévoir de traverser une autre allée bloquée, refusait d'y entrer, et un autre robot arrivait sur sa case. Il ne ressort plus que par sa propre allée.
+
+Sur ce plan, toutes les journées finissent : 58 à 84 tours selon la règle (75 à 95 avec un camion au tour 20) ; testé avec un blocage fort. Les autres plans gardent exactement leurs chiffres.
+
 ## La suite
 
 1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres

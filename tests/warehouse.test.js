@@ -121,6 +121,18 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     }
   });
 
+  it("never shuts a robot out with a bay in a one-cell aisle (Sami's corridors, 23/10), the truck there or coming", () => {
+    const text = ["#############", "#AAAA.~.BBBB#", "#........wwwT", "#CCCC.~.DDDD#", "#############"].join("\n");
+    for (const trucks of [[], [20]]) {
+      for (let seed = 1; seed <= 12; seed += 1) {
+        for (const rule of Object.values(RULES)) {
+          const state = playChecked({ ...PLANS.couloirs, text, trucks, blocking: 0.8, horizon: 200 }, seed, rule);
+          assert.ok(state.orders.every((order) => order.status === "delivered"), `camion au tour ${trucks[0] ?? 0}, jour ${seed}`);
+        }
+      }
+    }
+  });
+
   it("sees a blockage only from beside it, then routes around it", () => {
     const setup = { ...PLANS.sami, blocking: 1 };
     const seen = [];
