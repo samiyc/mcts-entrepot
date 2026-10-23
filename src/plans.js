@@ -3,7 +3,7 @@
  * plans first). The legend:
  * - `.` the floor, where robots move;
  * - a capital letter, a block of shelves (not passable): an order is fetched from a floor cell beside it;
- * - `T` a truck's dock, where orders are dropped; robots start there when there is no `c`, and may share it;
+ * - `T` a truck's dock, where orders are dropped, one robot at a time (23/10/2026);
  * - `w` a bay cell in front of a dock (floor): one pallet waits there for its truck (23/10/2026);
  * - `c` a charging point (floor), where a robot starts and goes back when it has nothing to do (23/10/2026);
  * - `~` floor that may get blocked for a while (a pallet left in the aisle), seen only by a robot next to it;
@@ -30,7 +30,7 @@ export const PLANS = Object.freeze({
     orders: "ABCDEFGHIJKL",
     blocking: 0.2,
     duration: 10,
-    horizon: 120,
+    horizon: 140,
   }),
   quais: Object.freeze({
     label: "Trois quais et leurs camions (22 × 7, 4 robots, Sami)",
@@ -40,7 +40,7 @@ export const PLANS = Object.freeze({
     trucks: Object.freeze([20, 40, 60]),
     blocking: 0.2,
     duration: 10,
-    horizon: 160,
+    horizon: 240,
   }),
   couloirs: Object.freeze({
     label: "Deux couloirs étroits (13 × 5, 3 robots)",

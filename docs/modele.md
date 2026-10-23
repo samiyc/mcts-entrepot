@@ -15,7 +15,7 @@ l'affectation par la recherche (plus bas).
   (un tour), rapporte au camion, dépose (un tour).
 - **Les chemins** : chaque trajet est un chemin A* dans l'espace et le temps (`grid` de `mcts-commun`),
   réservé autour des chemins déjà réservés. Jamais deux robots dans la même case, jamais deux robots qui se
-  croisent ; le camion se partage, mais ses passages sont réservés aussi.
+  croisent, dans le camion non plus (Sami, 23/10 au soir, plus bas).
 - **Le caché** : l'allée `~` se bloque avec une probabilité donnée, pendant un nombre de tours donné, à un
   tour inconnu. Un robot ne le voit qu'à côté, juste avant d'avancer ; alors tous le savent et l'évitent pour
   la durée du blocage. Un robot pris dedans peut en ressortir.
@@ -97,8 +97,8 @@ c.III.JJJ.KKK.LLL.wwwT
 ```
 
 - **`c` une borne de charge** : chaque robot part de la sienne, à gauche dans le hangar, et y retourne
-  quand il n'a rien à faire. En chemin, il peut encore recevoir une commande. Plus de robots que de bornes :
-  elles se partagent. Un plan sans `c` fait partir les robots du camion, comme avant.
+  quand il n'a rien à faire. En chemin, il peut encore recevoir une commande. Les robots sans borne partent
+  d'une case à l'écart près du premier quai (plus bas).
 - **`T` un quai, `w` sa baie** : les cases devant la porte. Les commandes se répartissent entre les camions
   par `/` (`AFKD/EJCH/IBGL`, les quais de haut en bas), et chaque camion arrive à son tour (20, 40, 60).
   - Une commande se prépare **avant** son camion : la palette attend sur une case de la baie, une palette
@@ -144,6 +144,67 @@ palette posée d'avance.
 autres d'aller y chercher : leur trajet échouait, et ils restaient sur place toute la journée. Le robot
 essaie maintenant les autres cases du bloc, de la plus proche à la plus lointaine. Un trajet de dépôt qu'on
 ne trouve pas tout de suite est retenté à chaque tour. Cela ne changeait que les couloirs (tableau plus haut).
+
+## Une case, un robot ; un seul chargeur par camion (23/10, Sami, le soir)
+
+Sami : les robots se superposaient sur une même case, dans le camion par exemple. Il faut l'interdire. Du
+coup, un seul robot devrait faire les navettes entre la baie et le camion, pour éviter les bouchons devant
+le quai.
+
+**Ce qui change.**
+- **Plus aucune case partagée.** Ni le camion, ni les bornes : un robot par case, toujours. Les robots sans
+  borne à eux (le petit entrepôt, le plan de Sami et les couloirs n'en ont pas) partent d'une **case à
+  l'écart**, la plus proche du premier quai :
+  - pas un quai, pas une case de baie, pas une case juste à côté d'un quai, pas un `~` ;
+  - une case dont la perte ne coupe aucune allée : le reste du sol reste relié sans elle ;
+  - d'abord hors des cases de ramassage. Dans les couloirs, il n'y en a qu'une : on prend alors les recoins
+    à côté des rayons.
+- **Le camion prend les robots un par un, dans l'ordre d'arrivée.** Les autres attendent leur tour sur une
+  case à l'écart, la plus proche du camion. Si le premier de la file ne peut pas y aller (dans un couloir
+  étroit, bloqué par celui qui attend), le premier de la file qui le peut passe, et l'autre s'écarte. Un robot
+  libre qui ne peut pas rentrer chez lui va aussi à l'écart.
+- **Un chargeur par camion.** Dès qu'un camion est à quai, le premier robot qui prend une palette dans sa
+  baie devient son chargeur, et lui seul entre dans ce camion.
+  - Les autres robots déposent sur la baie. La baie pleine, ils entrent quand même : c'est noté
+    (`overflow`) et testé.
+  - Le chargeur prend d'abord les palettes de la baie, puis les commandes de son camion, qu'il porte tout
+    droit dedans. Sans rien à faire, il attend à l'écart.
+  - Il est libre de nouveau quand son camion part.
+  - Dans la page, on lit « Robot 2 (charge le camion 1) », ou « attend son tour au camion ».
+- **Le robot passe sous les palettes, pas avec une palette** (Sami, le même soir) : un robot vide passe sous
+  une palette posée sur la baie, mais deux palettes ne tiennent jamais sur une case. Un robot chargé ne
+  traverse donc pas une case de baie occupée.
+  - Le chargeur ne prend une palette que si son chemin jusqu'au camion est libre, en comptant les cases
+    promises à d'autres palettes. La baie se vide ainsi du côté du camion, comme une pile.
+  - Le camion là, les autres robots déposent au fond de la baie, jamais sur la case à la porte du camion :
+    le chargeur garde son passage. Avant, un chargeur parti du fond se retrouvait coincé derrière deux
+    palettes posées entre lui et le camion.
+  - Testé à chaque tour : jamais un robot chargé sur une case qui porte une palette.
+- **Des journées plus longues** : 140 tours au lieu de 120 pour le plan de Sami, 240 au lieu de 160 pour les
+  quais. Avec la file au camion, la plus lointaine d'abord ne finissait plus toutes ses journées.
+
+**Ce que ça coûte** (100 journées, 20 pour les quais ; tours jusqu'à la dernière livraison ; pour les quais, temps à quai) :
+
+| Plan | la plus proche | la liste | la plus lointaine | le camion attendu d'abord |
+|---|---|---|---|---|
+| petit entrepôt | 40,8 → 48,0 | 44,8 → 47,2 | 36,7 → 40,5 | 40,8 → 48,0 |
+| plan de Sami | 71,1 → 86,2 | 66,3 → 87,3 | 60,1 → 103,3 | 71,1 → 86,2 |
+| deux couloirs | 49,0 → 78,6 | 46,2 → 73,9 | 41,0 → 64,9 | 49,0 → 78,6 |
+| trois quais (temps à quai) | 94,0 → 126,0 | 76,0 → 104,0 | 177,4 → 314,7 | 96,0 → 115,0 |
+
+- **Partager le camion était un gros cadeau.** Quatre robots qui déposent dans la même case au même tour,
+  c'est ce qui rendait le plan de Sami rapide. Un par un, la file d'attente au camion coûte 15 à 40 tours.
+- **La plus lointaine d'abord perd sa place sur le plan de Sami** : ses robots reviennent tous ensemble de
+  loin et font la queue. La plus proche et la liste passent devant.
+- **Dans les couloirs**, attendre son tour sans boucher l'allée unique coûte 25 à 30 tours.
+- **Sur les quais, la plus lointaine d'abord s'effondre** (314,7) : elle va chercher pour tous les camions à
+  la fois, les baies se remplissent, et les robots attendent, une palette sur le dos, qu'une case se libère.
+- **La recherche** (20 journées sur les quais) : **92** tours à quai, contre 104 pour la liste, 20 journées sur
+  20 (+12 tours ; elle en gagnait 9,9 avant). Une journée de recherche prend 22 s.
+- **Une recherche de chemin coûteuse, corrigée en route** : une case où quelqu'un est garé pour de bon ne peut
+  pas finir un trajet. Le chercher quand même fouillait tout l'espace et le temps à chaque tour. On le voit
+  maintenant d'un coup d'œil, avant de chercher : une journée du plan de Sami est passée de 350 à 14 ms, sans
+  changer un seul coup.
 
 ## La suite
 
