@@ -279,7 +279,15 @@ La recherche y est plus lente (allée fermée presque tout le temps, beaucoup de
 
 ## La suite
 
-1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres
-   commandes, puis un vrai joueur dans la page. Sami (23/10) : le déplacer au clavier, Z Q S D et E pour
-   prendre et déposer, comme le chef de la cuisine.
-2. **Des commandes qui arrivent pendant la journée**, avec des échéances.
+Les étapes communes aux trois dépôts sont dans la [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md) § 6 (Sami, 23/10 au soir) : l'ordonnanceur en commun pour les mesures de nuit, les replays avec un humain pour analyser les écarts, la vitrine. Le journal des versions est dans la page (`web/changelog.html`).
+
+1. **Les mesures de nuit** : la recherche contre les règles sur des centaines de journées, et ses réglages
+   (budget, profondeur) à 80 % de blocage, où elle est la plus lente.
+2. **Le transfert de colis entre deux robots bloqués** (Sami) : dans une allée étroite, une case libre sert
+   un moment de zone d'attente ; le robot le plus proche du camion fait des allers-retours très courts, les
+   autres repartent au fond chercher les colis suivants.
+3. **Un personnage au clavier** (Z Q S D et E, Sami) qui prend et pose des colis, comme le chef de la
+   cuisine ; puis les replays de ses journées, comparées à la recherche.
+4. **Une zone d'assemblage** (Sami, à préciser) : une commande de plusieurs colis, réunis sur une zone avant
+   de partir au camion.
+5. **Des commandes qui arrivent pendant la journée**, avec des échéances.

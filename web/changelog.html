@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Journal des versions</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="changelog.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <p class="links"><a href="index.html">← l'entrepôt</a></p>
+      <h1>Robots d'entrepôt : journal des versions</h1>
+      <p>Des robots vont chercher les commandes dans les rayons et les portent aux camions ; une recherche (ISMCTS) leur répartit les commandes en imaginant les allées qui vont se bloquer.</p>
+    </header>
+    <main class="changelog">
+      <section>
+        <h2>Ce que gagne la recherche (ISMCTS)</h2>
+        <p class="hint">Tours jusqu'à la dernière livraison (pour les trois quais : temps passé à quai par les camions, cumulé), 8 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut du 23/10). Moins, c'est mieux. Peu de journées : un ordre de grandeur, pas une preuve.</p>
+        <div class="scroll"><table>
+          <thead><tr><th>Plan</th><th class="num">la plus proche</th><th class="num">la liste</th><th class="num">la plus lointaine</th><th class="num">le camion d'abord</th><th class="num">recherche</th><th class="num">écart sur la meilleure règle</th></tr></thead>
+          <tbody>
+          <tr><td>Petit entrepôt</td><td class="num">59,4</td><td class="num">83,4</td><td class="num">72,5</td><td class="num">59,4</td><td class="num"><strong>49,8</strong></td><td class="num">−9,6</td></tr>
+          <tr><td>Plan de Sami</td><td class="num">123,9</td><td class="num">153,8</td><td class="num">135,1</td><td class="num">123,9</td><td class="num"><strong>95,0</strong></td><td class="num">−28,9</td></tr>
+          <tr><td>Trois quais (temps à quai)</td><td class="num">185,6</td><td class="num">148,6</td><td class="num">305,3</td><td class="num">194,1</td><td class="num"><strong>121,5</strong></td><td class="num">−27,1</td></tr>
+          <tr><td>Deux couloirs étroits</td><td class="num">97,0</td><td class="num">74,0</td><td class="num">59,8</td><td class="num">97,0</td><td class="num"><strong>60,0</strong></td><td class="num">+0,3</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+      <section>
+        <h2>Les versions</h2>
+
+      <article class="version">
+        <h3><span class="tag">0.11</span> Les réglages de Sami, des blocages qui reviennent <span class="date">23/10, soir</span></h3>
+        <ul>
+          <li>L'allée se bloque encore et encore, une part du temps (« Allée bloquée (% du temps) ») ; par défaut 80 %, 8 tours à chaque fois, et la recherche dans la page.</li>
+          <li>Un robot à côté de l'allée la voit se rouvrir ; personne n'est enfermé, même allée bloquée.</li>
+          <li>Corrigés : un robot se croyait arrivé avant la fin de son trajet ; un robot sans cible gardait un trajet par l'allée bloquée.</li>
+        </ul>
+        <p class="commits"><code>68c29d6</code> <code>209ad09</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.10</span> Des zones d'attente faites au départ <span class="date">23/10</span></h3>
+        <ul>
+          <li>Un camion sans zone en reçoit une : le sol jusqu'à trois pas de lui (à décocher dans l'éditeur). Dans les couloirs, les attentes des robots passent de 66 à 1.</li>
+          <li>Un robot ne traverse plus la case d'un camion pour aller ailleurs.</li>
+        </ul>
+        <p class="commits"><code>66e8f66</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.9</span> Les zones de Sami, un chargeur par zone <span class="date">23/10</span></h3>
+        <ul>
+          <li>Les nouveaux plans de Sami (bornes, obstacles, zones d'attente dans les coins) ; une croix ❌ sur l'allée bloquée.</li>
+          <li>Une palette se pose au plus près du camion ; un chargeur par zone ; plan de Sami : la recherche de 167 à 93 tours.</li>
+          <li>Une baie dans l'allée unique n'enferme plus personne.</li>
+        </ul>
+        <p class="commits"><code>c57bb0a</code> <code>14aaad1</code> <code>d07d643</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.8</span> Le camion à une porte, la recherche douze fois plus vite <span class="date">23/10</span></h3>
+        <ul>
+          <li>Un robot qui ne peut pas entrer dans le camion attend à l'écart ; deux robots nez à nez dans une allée : l'un s'écarte.</li>
+          <li>Corrigé dans mcts-commun : un robot qui replanifiait ne voyait pas un robot garé sur son ancien chemin.</li>
+          <li>Les chemins impossibles ne sont plus cherchés : une journée de recherche de 43 à 3,5 s.</li>
+        </ul>
+        <p class="commits"><code>ad420b1</code> <code>6e21b29</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.7</span> La recherche dans un worker <span class="date">23/10</span></h3>
+        <ul>
+          <li>La page ne gèle plus pendant la recherche ; la comparaison joue ses journées en même temps ; les points de départ des robots sont dessinés.</li>
+        </ul>
+        <p class="commits"><code>35d32a9</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.6</span> Une case, un robot <span class="date">23/10</span></h3>
+        <ul>
+          <li>Plus aucune case partagée : le camion prend les robots un par un ; un seul chargeur ; un robot chargé ne traverse pas une palette.</li>
+        </ul>
+        <p class="commits"><code>23565e2</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.5</span> Le chargement par un robot <span class="date">23/10</span></h3>
+        <ul>
+          <li>La baie garde la palette ; un robot la monte dans le camion ; la mesure devient le temps passé à quai par les camions.</li>
+        </ul>
+        <p class="commits"><code>80b7311</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.4</span> Les quais, les baies, les bornes <span class="date">23/10</span></h3>
+        <ul>
+          <li>Le plan à trois quais de Sami : les robots partent de leur borne, les commandes se préparent sur la baie avant leur camion.</li>
+        </ul>
+        <p class="commits"><code>4a82f18</code> <code>03e26bd</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.3</span> La recherche <span class="date">22/10, soir</span></h3>
+        <ul>
+          <li>La répartition par ISMCTS bat les trois règles sur les trois plans.</li>
+        </ul>
+        <p class="commits"><code>1f69b8e</code> <code>706022b</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.2</span> La journée d'entrepôt et sa page <span class="date">22/10</span></h3>
+        <ul>
+          <li>Des plans en texte, des robots aux chemins réservés (A*), une allée qui se bloque sans prévenir.</li>
+        </ul>
+        <p class="commits"><code>7869241</code> <code>6d2fe57</code></p>
+      </article>
+
+      <article class="version">
+        <h3><span class="tag">0.1</span> Le dépôt <span class="date">22/10</span></h3>
+        <ul>
+          <li>Le départ du projet, sur la bibliothèque commune mcts-commun.</li>
+        </ul>
+        <p class="commits"><code>b67b48b</code></p>
+      </article>
+      </section>
+      <p class="hint">Le détail de chaque version, ses chiffres et ses erreurs corrigées, est dans <code>docs/modele.md</code> du dépôt mcts-entrepot.</p>
+    </main>
+  </body>
+</html>
