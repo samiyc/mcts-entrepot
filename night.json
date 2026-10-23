@@ -1,0 +1,9 @@
+{
+  "about": "Les mesures de nuit de l'entrepôt (Sami, 23/10/2026) : la recherche contre les règles, 100 journées par plan, aux réglages par défaut (allée bloquée 80 % du temps). Une par plan, un fil chacune : mcts-backlog --add-file mcts-entrepot/night.json, puis mcts-backlog.",
+  "jobs": [
+    { "id": "ent-petit", "command": "npm run compare -- --plan petit --days 100 --search", "estimate": "8 min" },
+    { "id": "ent-sami", "command": "npm run compare -- --plan sami --days 100 --search", "estimate": "25 min" },
+    { "id": "ent-quais", "command": "npm run compare -- --plan quais --days 100 --search", "estimate": "25 min" },
+    { "id": "ent-couloirs", "command": "npm run compare -- --plan couloirs --days 100 --search", "estimate": "6 min" }
+  ]
+}
