@@ -240,6 +240,9 @@ function planLeg(state, robot, target) {
   const passable = (char, x, y) => state.warehouse.floor(char) && !(shut && char === "~") && !(pallets?.has(`${x},${y}`) && (x !== target.x || y !== target.y));
   // Someone parks on the target for good, or is due there past the horizon: no leg can end there, no need to search.
   if (!state.reservations.freeFrom(target.x, target.y, state.t + LEG_HORIZON, robot.id)) return false;
+  // Every way into the target held for good by others (a truck with one door, someone parked on it): no search either.
+  const ways = SIDES.map(([dx, dy]) => ({ x: target.x + dx, y: target.y + dy })).filter((cell) => passable(state.warehouse.plan.at(cell.x, cell.y), cell.x, cell.y));
+  if ((robot.x !== target.x || robot.y !== target.y) && !ways.some((cell) => (cell.x === robot.x && cell.y === robot.y) || state.reservations.freeFrom(cell.x, cell.y, state.t + LEG_HORIZON, robot.id))) return false;
   const path = astar(state.warehouse.plan, robot, target, { passable, reservations: state.reservations, unit: robot.id, start: state.t, horizon: LEG_HORIZON, park: true });
   if (!path) return false;
   state.reservations.release(robot.id);

@@ -215,6 +215,9 @@ le quai.
 
 Sur le plan de Sami, toutes les règles finissent (tours 91 à 115) et la recherche finit au tour 75. Ailleurs : petit entrepôt 44,1 à 46,5 (la liste et la plus proche), quais 100 (liste) et 114 (plus proche) au lieu de 104 et 126 ; plan de Sami et couloirs presque inchangés.
 
+
+**Une recherche douze fois plus rapide, mêmes coups** (Sami, le même soir, sur un plan à quatre bornes). Le premier tour prenait 20 s, presque tout en recherches de chemin qui échouaient : la file du camion redemandait à chaque tour un chemin vers un camion dont l'unique porte était tenue par un robot garé. Une recherche qui échoue fouille tout l'horizon (80 tours) : 13 ms, et 1 313 fois au premier tour. On regarde maintenant d'abord si chaque accès à la cible est tenu pour de bon, et on renonce sans chercher. Une journée de recherche : 43 s → 3,5 s sur ce plan, 28 → 3,6 s sur le camion à une porte, 17,5 → 2,1 s dans les couloirs ; les coups de toutes les règles et de la recherche sont identiques.
+
 ## La suite
 
 1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres
