@@ -17,7 +17,7 @@ const CELL = 34;
 const COMPARED = 100;
 const COMPARED_WITH_SEARCH = 12;
 const app = document.getElementById("app");
-const state = { planId: "sami", setup: { ...PLANS.sami }, rule: "list", seed: 1, speed: 4, day: null, choices: [], thinking: false, timer: null, compared: null, error: "", busy: "", run: 0 };
+const state = { planId: "sami", setup: { ...PLANS.sami }, rule: "search", seed: 1, speed: 4, day: null, choices: [], thinking: false, timer: null, compared: null, error: "", busy: "", run: 0 };
 
 /** The workers the search runs in, created on first use: one asked for each choice, others for whole days. */
 const workers = [];

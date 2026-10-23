@@ -297,7 +297,7 @@ function wayOut(state, from, to, blocked) {
     for (const [dx, dy] of SIDES) {
       const next = { x: cell.x + dx, y: cell.y + dy };
       const key = keyOf(next);
-      if (seen.has(key) || (blocked.has(key) && (next.x !== to.x || next.y !== to.y)) || !state.warehouse.floor(state.warehouse.plan.at(next.x, next.y))) continue;
+      if (seen.has(key) || (blocked.has(key) && (next.x !== to.x || next.y !== to.y)) || !state.warehouse.floor(state.warehouse.plan.at(next.x, next.y)) || state.warehouse.plan.at(next.x, next.y) === "~") continue;
       seen.add(key);
       queue.push(next);
     }
@@ -338,7 +338,8 @@ function shutsInNow(state, cell) {
         for (const [dx, dy] of SIDES) {
           const next = { x: queue[i].x + dx, y: queue[i].y + dy };
           const key = keyOf(next);
-          if (seen.has(key) || blocked.has(key) || !state.warehouse.floor(state.warehouse.plan.at(next.x, next.y))) continue;
+          // Not through the `~` aisle either: it may be blocked when the pallet has to go (Sami, 80 % blocked).
+          if (seen.has(key) || blocked.has(key) || !state.warehouse.floor(state.warehouse.plan.at(next.x, next.y)) || state.warehouse.plan.at(next.x, next.y) === "~") continue;
           seen.add(key);
           queue.push(next);
         }
@@ -428,8 +429,15 @@ function hold(state, robot, depth = 0) {
  * every robot knows, and those whose leg crosses one plan again, or hold where they are.
  */
 function discover(state) {
-  if (!blockedNow(state, state.t + 1) || closed(state)) return;
   const beside = (robot) => SIDES.some(([dx, dy]) => state.warehouse.plan.at(robot.x + dx, robot.y + dy) === "~");
+  // Thought closed but open again for the coming move, a robot beside it sees it free (Sami, 80 % blocked: the aisle
+  // reopened a turn or two between blockages and nobody used it).
+  if (closed(state) && !blockedNow(state, state.t + 1) && state.robots.some(beside)) {
+    state.known.blockedUntil = state.t;
+    state.log.push({ t: state.t, type: "reopened" });
+    return;
+  }
+  if (!blockedNow(state, state.t + 1) || closed(state)) return;
   const seer = state.robots.find(beside);
   if (!seer) return;
   Object.assign(state.known, { blockedUntil: state.t + state.setup.duration, seenAt: state.t, seen: (state.known.seen ?? 0) + 1 });
@@ -633,7 +641,8 @@ export function choose(state, choice, id) {
   const pallets = new Set(state.orders.filter((order) => order.cell).map((order) => keyOf(order.cell)));
   const cells = state.warehouse.blocks.get(chosen.block).filter((cell) => distances.has(`${cell.x},${cell.y}`) && !pallets.has(keyOf(cell)));
   cells.sort((a, b) => distances.get(`${a.x},${a.y}`) - distances.get(`${b.x},${b.y}`));
-  if (!cells.some((cell) => planLeg(state, robot, cell))) {
+  // The three nearest at most: each leg not found searches the whole horizon (an aisle blocked most of the time).
+  if (!cells.slice(0, 3).some((cell) => planLeg(state, robot, cell))) {
     standBy(state, robot);
     return;
   }

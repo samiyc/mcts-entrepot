@@ -268,6 +268,15 @@ Ce que ça donne (10 journées, tours jusqu'à la dernière livraison, attentes 
 - **À 80 %**, l'allée ne se rouvre qu'environ 2 tours entre deux blocages : dans le petit entrepôt, où elle est le seul détour autour d'une palette en attente, deux robots chargés y restent pris. À 50 %, toutes les journées finissent (testé).
 - Une recherche de chemin vers une case que l'allée fermée rend inaccessible n'est plus tentée : une journée de recherche sur le plan de Sami 14,3 → 5,9 s, mêmes coups.
 
+
+**Les réglages de Sami par défaut** (23/10, tard) : une allée bloquée 80 % du temps, 8 tours à chaque fois, et la recherche dans la page. Ce qu'il a fallu pour qu'aucune journée ne reste prise à 80 % :
+- **un robot à côté de l'allée la voit se rouvrir** : à 80 %, elle ne se rouvre qu'environ 2 tours entre deux blocages, et les robots, la croyant fermée pour toute la durée supposée, ne profitaient jamais de ces moments ;
+- **personne n'est enfermé, même allée bloquée** : la vérification avant de poser une palette ne compte plus l'allée `~` comme un passage (dans le petit entrepôt, deux robots chargés restaient pris dans le recoin (5,2)-(6,2), dont la seule autre sortie était l'allée) ;
+- **des journées plus longues** : le petit entrepôt 160 tours, le plan de Sami 260 (au pire 143 et 220 à 80 %) ;
+- en prenant une commande, un robot ne tente plus que les trois cases de ramassage les plus proches (mêmes coups mesurés, un peu plus vite).
+
+La recherche y est plus lente (allée fermée presque tout le temps, beaucoup de chemins impossibles) : 13 à 16 s par journée sur le plan de Sami et les quais, 7 à 10 s au premier tour ; elle tourne dans un worker, la page répond.
+
 ## La suite
 
 1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres
