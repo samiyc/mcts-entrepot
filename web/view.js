@@ -6,7 +6,7 @@ import { isBlock } from "../src/warehouse.js";
  * (app.js) only draws it.
  */
 export const STATUS_LABELS = Object.freeze({ open: "en attente", assigned: "attribuée", carried: "en route vers le quai", staged: "prête devant le quai", toTruck: "un robot vient la charger", delivered: "livrée" });
-const PHASE_LABELS = Object.freeze({ idle: "libre", toPick: "va chercher", picking: "prend", toDrop: "rapporte", dropping: "dépose", home: "rentre" });
+const PHASE_LABELS = Object.freeze({ idle: "libre", toPick: "va chercher", picking: "prend", toDrop: "rapporte", dropping: "dépose", home: "rentre", relay: "attend un relais" });
 
 /** The trucks: `{ id, x, y, at, there, left }`, `left` the orders not yet loaded. */
 export function trucksOf(state) {
@@ -29,7 +29,8 @@ export function blockageOf(state) {
 
 /**
  * Every cell to draw: `{ x, y, kind, letter, pending, pallet, truck }`, kind floor, block, dock, bay, charge,
- * blockable or wall; a bay cell with the block of the pallet waiting there, a dock with its truck.
+ * blockable or wall; a bay cell with the block of the pallet waiting there, a dock with its truck; a floor cell
+ * with the pallet left there for a relay (Sami, 23/10: a waiting cell for a moment).
  */
 export function cellsOf(state) {
   const { plan } = state.warehouse;
@@ -49,7 +50,7 @@ export function cellsOf(state) {
       else if (char === "w" || autoBay.has(`${x},${y}`)) cells.push({ x, y, kind: "bay", pallet: pallets.get(`${x},${y}`) ?? null, auto: char !== "w" });
       else if (char === "c") cells.push({ x, y, kind: "charge" });
       else if (char === "~") cells.push({ x, y, kind: "blockable" });
-      else if (char === ".") cells.push({ x, y, kind: "floor", home: homes.get(`${x},${y}`) ?? null });
+      else if (char === ".") cells.push({ x, y, kind: "floor", home: homes.get(`${x},${y}`) ?? null, pallet: pallets.get(`${x},${y}`) ?? null });
       else if (isBlock(char)) cells.push({ x, y, kind: "block", letter: char, pending: pending.get(char) ?? 0 });
       else cells.push({ x, y, kind: "wall" });
     }

@@ -109,6 +109,22 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     }
   });
 
+  it("passes a stuck pallet to the robot nearer the truck through a waiting cell (Sami's relays, 23/10), and finishes sooner", () => {
+    // Days with a relay (not every day has one: on days 3 and 8 nobody gets stuck).
+    for (const seed of [1, 2, 4, 5, 6, 7]) {
+      const { state, measures } = runDay(PLANS.quais, seed, RULES.nearest);
+      const off = runDay({ ...PLANS.quais, relay: false }, seed, RULES.nearest).measures;
+      assert.equal(measures.delivered, measures.orders);
+      assert.ok(measures.relays > 0, `jour ${seed} : aucun relais`);
+      assert.equal(off.relays, 0);
+      assert.ok(measures.finish < off.finish, `jour ${seed} : ${measures.finish} contre ${off.finish} sans relais`);
+      // The robot that set the pallet down is not the one that delivered it.
+      const relay = state.log.find((event) => event.type === "relay");
+      const delivered = state.log.find((event) => event.type === "delivered" && event.order === relay.order);
+      assert.equal(delivered.robot, relay.to);
+    }
+  });
+
   it("never puts two robots in one cell nor lets them swap, keeps them out of a blocked cell, and delivers all", () => {
     for (const setup of Object.values(PLANS)) {
       for (let seed = 1; seed <= 12; seed += 1) {

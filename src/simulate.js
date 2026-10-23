@@ -31,6 +31,11 @@ import { SIDES, distancesFrom, nearestPickup, readWarehouse } from "./warehouse.
  * is free again once its truck has left. A robot passes under a pallet waiting on a bay, but not with one on
  * its back: two pallets never share a cell, so the bay is loaded from the truck's side first.
  *
+ * **Relays** (Sami, 23/10: two robots stuck nose to nose in a narrow aisle). A robot with a pallet stuck in front of
+ * an empty one nearer its truck sets the pallet down where it stands, a waiting cell for a moment; it goes back to
+ * fetch what the other was to fetch, and the other carries the pallet on: the robot nearest the truck makes the
+ * short trips. `setup.relay: false` turns it off.
+ *
  * What the day hides (`drawDay`): whether the `~` cells get blocked, and when. A robot sees it only beside
  * them; then every robot knows, and keeps away from them for a blockage's length. It happens again and again in a
  * day (`blocking`: the share of the time it is blocked).
@@ -451,6 +456,107 @@ function discover(state) {
   }
 }
 
+/** A relay nobody completes in this many turns is called off. */
+const RELAY_PATIENCE = 20;
+const isEmpty = (state, robot) => robot.until === null && (robot.phase === "idle" || robot.phase === "home" || (robot.phase === "toPick" && orderOf(state, robot)?.status === "assigned"));
+
+/**
+ * A relay to start, or null: a robot with a pallet stuck for two turns (`loaded`) and an empty robot (going to
+ * fetch, idle or going home) nearer the pallet's drop cell (`taker`), the nearest such to it; `cell`, where the
+ * pallet will wait: the loaded robot's own when the two touch, else the free floor cell beside the taker nearest the
+ * loaded robot (Sami's temporary waiting zone).
+ */
+function relayPair(state) {
+  if (state.setup.relay === false) return null;
+  // Never on a robot's home: it would go back there and sit on the pallet.
+  const homes = new Set(state.robots.map((robot) => keyOf(robot.home)));
+  const busy = new Set([...state.robots.map(keyOf), ...state.claims.keys(), ...homes]);
+  for (const loaded of state.robots) {
+    if (loaded.phase !== "toDrop" || loaded.until !== null || loaded.relay) continue;
+    // Stuck short of its target, or waiting aside for a truck nobody is using (a robot parked on the only way).
+    const waiting = loaded.queued && !queueOf(state, loaded.queued).busy && state.t - loaded.queuedAt >= 2;
+    if (!(loaded.target && loaded.blockedFor >= 2) && !waiting) continue;
+    const toDrop = distancesFrom(state.warehouse, loaded.target ?? loaded.queued, closed(state));
+    const near = distancesFrom(state.warehouse, loaded, closed(state));
+    const mine = toDrop.get(keyOf(loaded)) ?? Infinity;
+    const takers = state.robots.filter((other) => other !== loaded && isEmpty(state, other) && (toDrop.get(keyOf(other)) ?? Infinity) < mine && near.has(keyOf(other))).sort((a, b) => near.get(keyOf(a)) - near.get(keyOf(b)));
+    for (const taker of takers) {
+      if (near.get(keyOf(taker)) === 1) {
+        if (state.warehouse.plan.at(loaded.x, loaded.y) === "." && !state.claims.has(keyOf(loaded)) && !homes.has(keyOf(loaded))) return { loaded, taker, cell: { x: loaded.x, y: loaded.y } };
+        continue;
+      }
+      const cells = SIDES.map(([dx, dy]) => ({ x: taker.x + dx, y: taker.y + dy })).filter((cell) => state.warehouse.plan.at(cell.x, cell.y) === "." && !busy.has(keyOf(cell)) && near.has(keyOf(cell)));
+      cells.sort((a, b) => near.get(keyOf(a)) - near.get(keyOf(b)));
+      if (cells.length > 0) return { loaded, taker, cell: cells[0] };
+    }
+  }
+  return null;
+}
+
+/**
+ * The relay starts: the loaded robot goes to the waiting cell (or is on it) and sets its pallet down, a turn; the
+ * taker waits where it is. False when the loaded robot finds no leg there.
+ */
+function startRelay(state, { loaded, taker, cell }) {
+  const here = loaded.x === cell.x && loaded.y === cell.y;
+  const goal = loaded.target ?? loaded.queued;
+  if (!here && !planLeg(state, loaded, cell)) return false;
+  for (const [key, queue] of state.queues) state.queues.set(key, queue.filter((id) => id !== loaded.id));
+  Object.assign(loaded, { relay: taker.id, relayGoal: goal, resume: null, blockedFor: 0, queued: null });
+  if (here) {
+    Object.assign(loaded, { phase: "dropping", until: state.t + 1, target: null });
+    hold(state, loaded);
+  }
+  Object.assign(taker, { relayOrder: taker.order, relaySince: state.t, phase: "relay", target: null, resume: null, blockedFor: 0 });
+  hold(state, taker);
+  state.relays = (state.relays ?? 0) + 1;
+  state.log.push({ t: state.t, type: "relay", robot: loaded.id, to: taker.id, order: loaded.order, cell });
+  return true;
+}
+
+/** A relay nobody completed in time: the loaded robot back to its drop cell, the taker back to what it was doing. */
+function callOff(state, taker) {
+  const loaded = state.robots.find((one) => one.relay === taker.id);
+  if (loaded && loaded.phase === "toDrop") {
+    const goal = loaded.relayGoal;
+    Object.assign(loaded, { relay: null, relayGoal: null, target: null });
+    goDrop(state, loaded, goal);
+  }
+  const theirs = state.orders.find((one) => one.id === taker.relayOrder) ?? null;
+  Object.assign(taker, { phase: theirs ? "toPick" : "idle", order: theirs?.id ?? null, relayOrder: null, relaySince: null });
+  if (theirs && !legToPickup(state, taker, theirs)) {
+    release(state, theirs);
+    Object.assign(theirs, { status: "open", robot: null });
+    Object.assign(taker, { phase: "idle", order: null });
+  }
+  state.log.push({ t: state.t, type: "relayOff", robot: loaded?.id ?? null, to: taker.id });
+}
+
+/** The pallet is down: the taker goes for it, the robot that set it down goes for what the taker was to fetch. */
+function handOver(state, robot, order) {
+  const taker = state.robots.find((one) => one.id === robot.relay);
+  for (const [key, queue] of state.queues) state.queues.set(key, queue.filter((id) => id !== robot.id));
+  release(state, order);
+  claim(state, order, { x: robot.x, y: robot.y });
+  Object.assign(order, { status: "toTruck", robot: taker.id, relayed: true });
+  aroundPallet(state, order.cell);
+  const theirs = state.orders.find((one) => one.id === taker.relayOrder) ?? null;
+  Object.assign(robot, { phase: "idle", order: null, target: null, relay: null, relayGoal: null });
+  if (theirs) {
+    Object.assign(theirs, { robot: robot.id });
+    Object.assign(robot, { phase: "toPick", order: theirs.id });
+    if (!legToPickup(state, robot, theirs)) {
+      // No way to it from here: the order is open again.
+      release(state, theirs);
+      Object.assign(theirs, { status: "open", robot: null });
+      Object.assign(robot, { phase: "idle", order: null });
+    }
+  }
+  Object.assign(taker, { phase: "toPick", order: order.id, relayOrder: null, relaySince: null });
+  // Kept as its target when the cell is still held: retried every turn until the other has left it.
+  if (!planLeg(state, taker, order.cell)) taker.target = order.cell;
+}
+
 /** Picks and drops that end now: an order carried, then delivered. */
 function finishActions(state) {
   for (const robot of state.robots) {
@@ -458,10 +564,16 @@ function finishActions(state) {
     const order = orderOf(state, robot);
     robot.until = null;
     if (robot.phase === "picking") {
+      // A pallet left for a relay: its waiting cell is free again once taken.
+      if (order.relayed) {
+        release(state, order);
+        order.relayed = false;
+      }
       order.status = "carried";
       robot.phase = "toDrop";
       goDrop(state, robot, dropCellOf(state, order, robot));
-    } else if (robot.phase === "dropping") {
+    } else if (robot.phase === "dropping" && robot.relay) handOver(state, robot, order);
+    else if (robot.phase === "dropping") {
       leaveQueue(state, robot, robot);
       const truck = truckOf(state, order);
       if (isThere(state, truck) && robot.x === truck.dock.x && robot.y === truck.dock.y) {
@@ -528,10 +640,13 @@ export function nextChoice(state) {
   return null;
 }
 
-/** A loader with nothing to do: off the docks, the bays and the cells beside a block, to the nearest free cell. */
+/**
+ * A loader with nothing to do: off the docks, the bays and the cells beside a block, to the nearest free cell; so is
+ * a robot left on a pallet it set down for a relay (the taker must get to it).
+ */
 function standBy(state, robot) {
   const { docking, pickups } = spotsOf(state.warehouse);
-  if (robot.target || (!docking.has(keyOf(robot)) && !pickups.has(keyOf(robot)))) return;
+  if (robot.target || (!docking.has(keyOf(robot)) && !pickups.has(keyOf(robot)) && !state.claims.has(keyOf(robot)))) return;
   goAside(state, robot, robot);
 }
 
@@ -560,6 +675,7 @@ function queueOf(state, cell) {
 
 /** `robot` waits its turn for `cell` (a truck's), aside. */
 function wait(state, robot, cell) {
+  if (!robot.queued) robot.queuedAt = state.t;
   robot.queued = cell;
   if (!goAside(state, robot, cell)) hold(state, robot);
 }
@@ -636,13 +752,7 @@ export function choose(state, choice, id) {
     state.log.push({ t: state.t, type: "load", robot: robot.id, order: chosen.id });
     return;
   }
-  // The nearest pickup cell a leg reaches: the nearest may hold a robot parked there for good.
-  // Not from under a pallet waiting on a bay: with the order on its back, the robot would hold two on one cell.
-  const pallets = new Set(state.orders.filter((order) => order.cell).map((order) => keyOf(order.cell)));
-  const cells = state.warehouse.blocks.get(chosen.block).filter((cell) => distances.has(`${cell.x},${cell.y}`) && !pallets.has(keyOf(cell)));
-  cells.sort((a, b) => distances.get(`${a.x},${a.y}`) - distances.get(`${b.x},${b.y}`));
-  // The three nearest at most: each leg not found searches the whole horizon (an aisle blocked most of the time).
-  if (!cells.slice(0, 3).some((cell) => planLeg(state, robot, cell))) {
+  if (!legToPickup(state, robot, chosen, distances)) {
     standBy(state, robot);
     return;
   }
@@ -651,6 +761,18 @@ export function choose(state, choice, id) {
   if (truck.dock.bay.length > 0 && (!isThere(state, truck) || !isLoader(state, truck, robot))) claim(state, chosen, bayCellFor(state, truck, robot));
   Object.assign(robot, { phase: "toPick", order: chosen.id });
   state.log.push({ t: state.t, type: "assigned", robot: robot.id, order: chosen.id });
+}
+
+/**
+ * `robot`'s leg to the nearest pickup cell of `order` a leg reaches (the nearest may hold a robot parked there for
+ * good). Not from under a pallet waiting on a bay: with the order on its back, the robot would hold two on one cell.
+ */
+function legToPickup(state, robot, order, distances = distancesFrom(state.warehouse, robot, closed(state))) {
+  const pallets = new Set(state.orders.filter((other) => other.cell).map((other) => keyOf(other.cell)));
+  const cells = state.warehouse.blocks.get(order.block).filter((cell) => distances.has(keyOf(cell)) && !pallets.has(keyOf(cell)));
+  cells.sort((a, b) => distances.get(keyOf(a)) - distances.get(keyOf(b)));
+  // The three nearest at most: each leg not found searches the whole horizon (an aisle blocked most of the time).
+  return cells.slice(0, 3).some((cell) => planLeg(state, robot, cell));
 }
 
 const positionAt = (path, t) => path.find((step) => step.t === t) ?? path.at(-1);
@@ -681,6 +803,7 @@ function arrive(state) {
     // Out of the way for another: back to its own target, retried from next turn.
     if (robot.resume) Object.assign(robot, { target: robot.resume, resume: null });
     else if (robot.phase === "toPick") Object.assign(robot, { phase: "picking", until: state.t + 1, target: null });
+    else if (robot.phase === "toDrop" && robot.relay) Object.assign(robot, { phase: "dropping", until: state.t + 1, target: null });
     else if (robot.phase === "toDrop" && robot.queued) robot.target = null;
     else if (robot.phase === "toDrop") Object.assign(robot, { phase: "dropping", until: state.t + 1, target: null });
     else if (robot.phase === "home") Object.assign(robot, { phase: "idle", target: null });
@@ -703,6 +826,9 @@ function retry(state) {
     }
     robot.blockedFor = planLeg(state, robot, robot.target) ? 0 : (robot.blockedFor ?? 0) + 1;
   }
+  for (const robot of state.robots) if (robot.phase === "relay" && state.t - robot.relaySince >= RELAY_PATIENCE) callOff(state, robot);
+  const pair = relayPair(state);
+  if (pair && startRelay(state, pair)) return;
   const stuck = state.robots.filter((robot) => robot.blockedFor >= 2 && !robot.resume).sort((a, b) => b.blockedFor - a.blockedFor || b.id - a.id)[0];
   if (stuck) giveWay(state, stuck);
 }
@@ -806,6 +932,7 @@ export function measuresOf(state) {
       return sum + Math.max(0, left - truck.at);
     }, 0),
     early: state.orders.filter((order) => order.stagedAt !== null && order.stagedAt < truckOf(state, order).at).length,
+    relays: state.relays ?? 0,
     blocked: state.day.blockages.length > 0,
     blockages: state.day.blockages.filter((blockage) => blockage.from <= state.t).length,
     seenAt: state.known.seenAt,

@@ -201,7 +201,7 @@ function board() {
     }
     if (cell.home) map.append(svg("circle", { cx: cell.x * CELL + CELL / 2, cy: cell.y * CELL + CELL / 2, r: CELL / 2 - 6, class: "home" }), svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 4, class: "home-id" }, String(cell.home)), svg("title", {}, `Départ du robot ${cell.home} : il part d'ici et y revient (pas de borne « c » pour lui)`));
     if (cell.kind === "charge") map.append(svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 6, class: "symbol" }, SYMBOLS.charge));
-    if (cell.pallet) map.append(svg("rect", { x: cell.x * CELL + 7, y: cell.y * CELL + 7, width: CELL - 14, height: CELL - 14, rx: 3, class: "parcel" }), svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 4, class: "letter pallet" }, cell.pallet));
+    if (cell.pallet) map.append(svg("rect", { x: cell.x * CELL + 7, y: cell.y * CELL + 7, width: CELL - 14, height: CELL - 14, rx: 3, class: `parcel${cell.kind === "floor" ? " relay" : ""}` }), svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 4, class: "letter pallet" }, cell.pallet));
   }
   for (const robot of robotsOf(state.day)) {
     if (robot.ahead.length > 1) map.append(svg("polyline", { points: robot.ahead.map((step) => `${step.x * CELL + CELL / 2},${step.y * CELL + CELL / 2}`).join(" "), class: `trail r${robot.id}` }));

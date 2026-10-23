@@ -72,6 +72,8 @@ button.quiet { background: var(--panel); color: var(--ink); border-color: var(--
 .robot circle { fill: var(--c); stroke: var(--panel); stroke-width: 2; }
 .robot-id { font: 700 12px system-ui, sans-serif; text-anchor: middle; fill: #fff; pointer-events: none; }
 .parcel { fill: #f2c14e; stroke: #7a5a12; stroke-width: 1; }
+/* A pallet left on the floor for a relay (23/10): a waiting cell for a moment. */
+.parcel.relay { stroke-width: 2; stroke-dasharray: 3 2; }
 .trail { fill: none; stroke: var(--c); stroke-width: 2.5; stroke-opacity: 0.55; stroke-dasharray: 4 3; }
 .r1 { --c: var(--r1); } .r2 { --c: var(--r2); } .r3 { --c: var(--r3); } .r4 { --c: var(--r4); } .r5 { --c: var(--r5); } .r6 { --c: var(--r6); }
 aside { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 12px 8px; }

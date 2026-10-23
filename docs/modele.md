@@ -284,15 +284,34 @@ La recherche y est plus lente (allée fermée presque tout le temps, beaucoup de
 - **La recherche gagne nettement sur trois plans** : −26 tours sur la meilleure règle dans le plan de Sami, −14 aux trois quais, −4 dans le petit entrepôt ; dans les couloirs, elle fait comme la plus lointaine d'abord (60,0 contre 59,7).
 - Ce n'était pas le cas au début de la journée (la liste battait souvent la recherche aux quais) : les zones, le chargeur par zone et l'allée qui se rouvre ont changé le problème.
 
+## Les relais : un colis passé d'un robot à l'autre (23/10 au soir, Sami)
+
+Deux robots coincés face à face : celui qui porte un colis ne passe pas, l'autre est entre lui et le camion. Sami : une case libre sert un moment de zone d'attente, et **le robot le plus proche du camion fait les allers-retours courts**.
+- **Quand** : un robot chargé n'a pas trouvé de chemin depuis deux tours (ou attend son tour au camion alors que personne ne l'utilise), et un robot vide (qui va chercher, libre ou qui rentre) est plus près du camion que lui.
+- **Comment** : le robot chargé va à la case libre juste devant l'autre (ou reste où il est s'ils se touchent), y pose le colis (un tour), et repart chercher ce que l'autre devait chercher. L'autre prend le colis et le porte au camion. Un relais que personne ne finit en 20 tours est annulé.
+- **La case d'attente** est du sol ordinaire, jamais un quai, une zone d'attente du plan, une borne, ni la place où rentre un robot : un robot qui y rentrait s'asseyait sur le colis. La page la dessine en pointillés. `relay: false` dans le plan coupe les relais.
+
+**Mesure** (40 journées par plan, la règle « la plus proche », dernière livraison au tour, sans relais → avec) :
+
+| plan | sans relais | avec | relais par jour |
+|---|---|---|---|
+| petit entrepôt | 54,9 | 53,7 | 0,03 |
+| plan de Sami | 123,6 | 123,3 | 0,13 |
+| trois quais | 126,3 | **119,1** | 0,82 |
+| deux couloirs | 97,4 | 97,4 | 0 |
+
+- **Aux trois quais, −7 tours** : un relais par jour à peu près, sur presque toutes les journées (le dernier colis au tour 118 au lieu de 126-127).
+- **Ailleurs, presque rien** : les chemins réservés dans l'espace et le temps évitent déjà les face-à-face. Dans le plan de Sami, les robots qui « cèdent le passage » sont surtout coincés dans un cul-de-sac pendant que l'allée `~` est fermée : aucun relais n'y peut rien.
+- **Ce qui reste** : un robot dont la place de départ est dans le seul couloir (un plan d'une ligne, `A........T`) bloque encore tout le monde. C'est le choix des places, pas un relais. La recherche n'a pas encore été remesurée avec les relais : ce sera fait par les mesures de nuit.
+
 ## La suite
 
 Les étapes communes aux trois dépôts sont dans la [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md) § 6 (Sami, 23/10 au soir) : l'ordonnanceur en commun pour les mesures de nuit, les replays avec un humain pour analyser les écarts, la vitrine. Le journal des versions est dans la page (`web/changelog.html`).
 
 1. **Les mesures de nuit** — prêtes (23/10) : `night.json` à la racine du dépôt, à ajouter à la file de la machine par `mcts-backlog --add-file` (mcts-commun), puis à lancer par `mcts-backlog` ; : la recherche contre les règles sur des centaines de journées, et ses réglages
    (budget, profondeur) à 80 % de blocage, où elle est la plus lente.
-2. **Le transfert de colis entre deux robots bloqués** (Sami) : dans une allée étroite, une case libre sert
-   un moment de zone d'attente ; le robot le plus proche du camion fait des allers-retours très courts, les
-   autres repartent au fond chercher les colis suivants.
+2. **Le transfert de colis entre deux robots bloqués** — fait le 23/10 au soir (« Les relais », plus haut) ; reste
+   à placer les robots hors du seul couloir d'un plan.
 3. **Un personnage au clavier** (Z Q S D et E, Sami) qui prend et pose des colis, comme le chef de la
    cuisine ; puis les replays de ses journées, comparées à la recherche.
 4. **Une zone d'assemblage** (Sami, à préciser) : une commande de plusieurs colis, réunis sur une zone avant
