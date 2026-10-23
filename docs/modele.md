@@ -304,6 +304,12 @@ Deux robots coincés face à face : celui qui porte un colis ne passe pas, l'aut
 - **Ailleurs, presque rien** : les chemins réservés dans l'espace et le temps évitent déjà les face-à-face. Dans le plan de Sami, les robots qui « cèdent le passage » sont surtout coincés dans un cul-de-sac pendant que l'allée `~` est fermée : aucun relais n'y peut rien.
 - **Ce qui reste** : un robot dont la place de départ est dans le seul couloir (un plan d'une ligne, `A........T`) bloque encore tout le monde. C'est le choix des places, pas un relais. La recherche n'a pas encore été remesurée avec les relais : ce sera fait par les mesures de nuit.
 
+## La page (23/10, tard)
+
+**Les replays rangés seuls** (Sami, 23/10 au soir) : chaque partie gardée par la page est aussi envoyée au serveur de la page (`POST /api/replays` de mcts-commun), qui l'écrit dans `replays/`, hors de git (comme `replays/` dans Lopin). Un serveur lancé avant cette version répond 404 : il faut relancer `npm run page`.
+
+**L'allure** (Sami, 23/10, tard) : la page prend l'allure commune des projets (`mcts-commun/web/theme.css`, dans l'esprit de Lopin) : un bandeau dans la couleur de l'application, les réglages en carte, les sections pliables bien visibles (une barre, un chevron qui tourne, « Ouvrir / Fermer »), les tableaux et le thème sombre. Ici, un bleu-gris métallique, industriel, avec de fines rayures, et 📦 devant le titre.
+
 ## La suite
 
 Les étapes communes aux trois dépôts sont dans la [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md) § 6 (Sami, 23/10 au soir) : l'ordonnanceur en commun pour les mesures de nuit, les replays avec un humain pour analyser les écarts, la vitrine. Le journal des versions est dans la page (`web/changelog.html`).
