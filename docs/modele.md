@@ -277,6 +277,13 @@ Ce que ça donne (10 journées, tours jusqu'à la dernière livraison, attentes 
 
 La recherche y est plus lente (allée fermée presque tout le temps, beaucoup de chemins impossibles) : 13 à 16 s par journée sur le plan de Sami et les quais, 7 à 10 s au premier tour ; elle tourne dans un worker, la page répond.
 
+
+## Les premières mesures de nuit (23/10 au soir, mcts-backlog)
+
+100 journées par plan, l'allée bloquée 80 % du temps, 8 tours à chaque fois ; tours jusqu'à la dernière livraison (la plus proche / la liste / la plus lointaine / le camion d'abord / la recherche) : petit entrepôt 54,4 / 81,4 / 71,6 / 54,4 / **50,3** ; plan de Sami 121,2 / 146,1 / 136,7 / 121,2 / **95,2** ; trois quais 125,7 / 123,4 / 148,3 / 149,0 / **109,2** ; deux couloirs 97,8 / 73,7 / **59,7** / 97,8 / 60,0.
+- **La recherche gagne nettement sur trois plans** : −26 tours sur la meilleure règle dans le plan de Sami, −14 aux trois quais, −4 dans le petit entrepôt ; dans les couloirs, elle fait comme la plus lointaine d'abord (60,0 contre 59,7).
+- Ce n'était pas le cas au début de la journée (la liste battait souvent la recherche aux quais) : les zones, le chargeur par zone et l'allée qui se rouvre ont changé le problème.
+
 ## La suite
 
 Les étapes communes aux trois dépôts sont dans la [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md) § 6 (Sami, 23/10 au soir) : l'ordonnanceur en commun pour les mesures de nuit, les replays avec un humain pour analyser les écarts, la vitrine. Le journal des versions est dans la page (`web/changelog.html`).

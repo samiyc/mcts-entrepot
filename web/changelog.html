@@ -16,19 +16,27 @@
     <main class="changelog">
       <section>
         <h2>Ce que gagne la recherche (ISMCTS)</h2>
-        <p class="hint">Tours jusqu'à la dernière livraison (pour les trois quais : temps passé à quai par les camions, cumulé), 8 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut du 23/10). Moins, c'est mieux. Peu de journées : un ordre de grandeur, pas une preuve.</p>
+        <p class="hint">Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut). Moins, c'est mieux. Les mesures du 23/10 au soir, jouées par l'ordonnanceur commun (mcts-backlog, night.json).</p>
         <div class="scroll"><table>
           <thead><tr><th>Plan</th><th class="num">la plus proche</th><th class="num">la liste</th><th class="num">la plus lointaine</th><th class="num">le camion d'abord</th><th class="num">recherche</th><th class="num">écart sur la meilleure règle</th></tr></thead>
           <tbody>
-          <tr><td>Petit entrepôt</td><td class="num">59,4</td><td class="num">83,4</td><td class="num">72,5</td><td class="num">59,4</td><td class="num"><strong>49,8</strong></td><td class="num">−9,6</td></tr>
-          <tr><td>Plan de Sami</td><td class="num">123,9</td><td class="num">153,8</td><td class="num">135,1</td><td class="num">123,9</td><td class="num"><strong>95,0</strong></td><td class="num">−28,9</td></tr>
-          <tr><td>Trois quais (temps à quai)</td><td class="num">185,6</td><td class="num">148,6</td><td class="num">305,3</td><td class="num">194,1</td><td class="num"><strong>121,5</strong></td><td class="num">−27,1</td></tr>
-          <tr><td>Deux couloirs étroits</td><td class="num">97,0</td><td class="num">74,0</td><td class="num">59,8</td><td class="num">97,0</td><td class="num"><strong>60,0</strong></td><td class="num">+0,3</td></tr>
+          <tr><td>Petit entrepôt</td><td class="num">54,4</td><td class="num">81,4</td><td class="num">71,6</td><td class="num">54,4</td><td class="num"><strong>50,3</strong></td><td class="num">−4,1</td></tr>
+          <tr><td>Plan de Sami</td><td class="num">121,2</td><td class="num">146,1</td><td class="num">136,7</td><td class="num">121,2</td><td class="num"><strong>95,2</strong></td><td class="num">−26,0</td></tr>
+          <tr><td>Trois quais</td><td class="num">125,7</td><td class="num">123,4</td><td class="num">148,3</td><td class="num">149,0</td><td class="num"><strong>109,2</strong></td><td class="num">−14,2</td></tr>
+          <tr><td>Deux couloirs étroits</td><td class="num">97,8</td><td class="num">73,7</td><td class="num">59,7</td><td class="num">97,8</td><td class="num"><strong>60,0</strong></td><td class="num">+0,3</td></tr>
           </tbody>
         </table></div>
       </section>
       <section>
         <h2>Les versions</h2>
+
+      <article class="version">
+        <h3><span class="tag">0.12</span> Les mesures de nuit <span class="date">23/10, soir</span></h3>
+        <ul>
+          <li>night.json : la recherche contre les règles, 100 journées par plan, jouées par l'ordonnanceur commun de mcts-commun (mcts-backlog), côte à côte avec les autres projets.</li>
+        </ul>
+        <p class="commits"><code>d453959</code> <code>0123673</code></p>
+      </article>
 
       <article class="version">
         <h3><span class="tag">0.11</span> Les réglages de Sami, des blocages qui reviennent <span class="date">23/10, soir</span></h3>
