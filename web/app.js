@@ -178,7 +178,7 @@ function comparison() {
   const rows = Object.entries(compared).map(([name, row]) =>
     el("tr", { class: name === state.rule ? "current" : null }, el("td", {}, RULE_LABELS[name]), el("td", { class: "num" }, fixed(row.delivered, 2)), el("td", { class: "num" }, fixed(row.finish)), el("td", { class: "num" }, fixed(row.truckWait)), el("td", { class: "num" }, name === "list" ? "—" : `${fixed(row.gain.mean)} (${fixed(row.gain.low)} à ${fixed(row.gain.high)})`), el("td", { class: "num" }, fixed(row.early)), el("td", { class: "num" }, fixed(row.waits)), el("td", { class: "num" }, fixed(row.replans, 2))),
   );
-  const head = ["Règle", "livrées", "fini au tour", "attente des camions (tours)", "attente gagnée sur la liste (IC 95 %)", "prêtes avant leur camion", "attentes des robots", "replanifiés"].map((label, i) => el("th", { class: i > 0 ? "num" : null }, label));
+  const head = ["Règle", "livrées", "fini au tour", "temps à quai des camions (tours)", "temps à quai gagné sur la liste (IC 95 %)", "prêtes avant leur camion", "attentes des robots", "replanifiés"].map((label, i) => el("th", { class: i > 0 ? "num" : null }, label));
   return [el("h2", {}, `Les règles sur les mêmes ${days} journées (blocage ${Math.round(100 * compared.list.blockedDays)} % des jours)`), el("div", { class: "scroll" }, el("table", {}, el("thead", {}, el("tr", {}, ...head)), el("tbody", {}, ...rows))), buttons];
 }
 

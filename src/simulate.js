@@ -10,9 +10,12 @@ import { SIDES, distancesFrom, nearestPickup, readWarehouse } from "./warehouse.
  * Trucks (Sami, 23/10/2026): the orders are split by `/` between the plan's docks, in reading order, and each
  * truck comes at its turn (`setup.trucks`, 0 by default). A dock with a bay (`w` cells) takes its orders on
  * the bay, one pallet a cell, before its truck is there: an order is only taken while its bay has a cell left
- * (claimed when it is taken), and a pallet waiting there is loaded, so delivered, when the truck comes. Once
- * the truck is there, a pallet dropped on the bay is loaded at once. A dock without a bay takes them on the
- * truck's cell, delivered when both the pallet and the truck are there.
+ * (claimed when it is taken). The bay only keeps the pallet waiting (Sami, 23/10): once the truck is there, a
+ * robot still has to take it from the bay into the truck (a "load", offered to idle robots before the orders
+ * to fetch), and an order picked while the truck is there goes straight into it. A pallet is delivered when a
+ * robot drops it on the truck's cell with the truck there; the truck leaves with its last pallet, and the
+ * measure is how long trucks stay at the dock. A dock without a bay takes the pallets on the truck's cell,
+ * delivered when both the pallet and the truck are there.
  * Every leg is a path in space and time (A* of mcts-commun) reserved around the paths already reserved, so
  * robots never meet in a cell nor swap cells; the truck's cell is shared (moves in and out of it are still
  * reserved). A robot that ends a leg off the truck keeps its cell reserved until it leaves.
@@ -54,8 +57,8 @@ export function createDay(setup, day) {
     orders: trucks.flatMap((truck) => [...truck.blocks].map((block) => ({ block, truck: truck.id - 1 }))).map(({ block, truck }, i) => ({ id: i + 1, block, truck, status: "open", robot: null, deliveredAt: null, stagedAt: null, cell: null })),
     claims: new Map(),
     known: { blockedUntil: -1, seenAt: null },
-    // Robots may share the truck's cell, and their charging points when there are fewer points than robots.
-    reservations: createReservations({ shared: [dock, ...(setup.robots > charges.length ? charges : [])] }),
+    // Robots may share the trucks' cells, and their charging points when there are fewer points than robots.
+    reservations: createReservations({ shared: [...warehouse.docks.map(({ x, y }) => ({ x, y })), ...(setup.robots > charges.length ? charges : [])] }),
     log: [],
     replans: 0,
     stuck: 0,
@@ -78,18 +81,25 @@ function claim(state, order, cell) {
   order.cell = cell;
   state.claims.set(keyOf(cell), order.id);
 }
-/** Where an order is dropped: its claimed bay cell, a free one, the bay's first, or the truck's cell. */
+function release(state, order) {
+  if (order.cell && state.claims.get(keyOf(order.cell)) === order.id) state.claims.delete(keyOf(order.cell));
+  order.cell = null;
+}
+/** Where an order is dropped: the truck's cell when it is there (or has no bay), else its claimed bay cell, a free one, or the bay's first. */
 function dropCellOf(state, order) {
   const truck = truckOf(state, order);
+  if (isThere(state, truck) || truck.dock.bay.length === 0) {
+    release(state, order);
+    return { x: truck.dock.x, y: truck.dock.y };
+  }
   if (order.cell) return order.cell;
-  if (truck.dock.bay.length === 0) return { x: truck.dock.x, y: truck.dock.y };
   const cell = freeBayCell(state, truck) ?? truck.dock.bay[0];
   claim(state, order, cell);
   return cell;
 }
 function deliver(state, order, t) {
-  if (order.cell && state.claims.get(keyOf(order.cell)) === order.id) state.claims.delete(keyOf(order.cell));
-  Object.assign(order, { status: "delivered", deliveredAt: t, cell: null });
+  release(state, order);
+  Object.assign(order, { status: "delivered", deliveredAt: t });
 }
 const closed = (state) => state.t <= state.known.blockedUntil;
 const blockedNow = (state, t) => Boolean(state.day.blockage) && t >= state.day.blockage.from && t < state.day.blockage.to;
@@ -149,7 +159,8 @@ function finishActions(state) {
       const cell = dropCellOf(state, order);
       if (!planLeg(state, robot, cell)) robot.target = cell;
     } else if (robot.phase === "dropping") {
-      if (isThere(state, truckOf(state, order))) {
+      const truck = truckOf(state, order);
+      if (isThere(state, truck) && robot.x === truck.dock.x && robot.y === truck.dock.y) {
         deliver(state, order, state.t);
         state.log.push({ t: state.t, type: "delivered", robot: robot.id, order: order.id });
       } else {
@@ -161,10 +172,10 @@ function finishActions(state) {
   }
 }
 
-/** A truck that has come loads the pallets waiting for it. */
+/** A truck that has come takes the pallets left on its own cell (a dock without a bay). */
 function load(state) {
   for (const order of state.orders) {
-    if (order.status !== "staged" || !isThere(state, truckOf(state, order))) continue;
+    if (order.status !== "staged" || order.cell || !isThere(state, truckOf(state, order))) continue;
     deliver(state, order, state.t);
     state.log.push({ t: state.t, type: "loaded", order: order.id });
   }
@@ -172,7 +183,9 @@ function load(state) {
 
 /**
  * The next idle robot of this turn that has an order to choose: `{ robot, open, reach }`, or null once every
- * robot has had its turn. An idle robot with no order it can take goes back where it started on the way.
+ * robot has had its turn. `open` lists first the pallets on a bay whose truck is there (to load), then the
+ * orders to fetch; `reach` is the distance to the pallet, or to the block. An idle robot with nothing it can
+ * take goes back where it started on the way.
  */
 export function nextChoice(state) {
   for (; state.cursor < state.robots.length; state.cursor += 1) {
@@ -180,8 +193,9 @@ export function nextChoice(state) {
     // A robot on its way back home may still be given an order.
     if (robot.phase !== "idle" && robot.phase !== "home") continue;
     const distances = distancesFrom(state.warehouse, robot, closed(state));
-    const reach = (order) => nearestPickup(state.warehouse, order.block, distances)?.steps ?? Infinity;
-    const open = state.orders.filter((order) => order.status === "open" && reach(order) < Infinity && canTake(state, order));
+    const reach = (order) => (order.status === "staged" ? (distances.get(keyOf(order.cell)) ?? Infinity) : (nearestPickup(state.warehouse, order.block, distances)?.steps ?? Infinity));
+    const loads = state.orders.filter((order) => order.status === "staged" && order.cell && isThere(state, truckOf(state, order)) && reach(order) < Infinity);
+    const open = [...loads, ...state.orders.filter((order) => order.status === "open" && reach(order) < Infinity && canTake(state, order))];
     if (open.length > 0) return { robot, open, reach, distances };
     if (robot.phase === "idle" && !isHome(robot) && planLeg(state, robot, robot.home)) robot.phase = "home";
   }
@@ -192,8 +206,16 @@ export function nextChoice(state) {
 export function choose(state, choice, id) {
   state.cursor += 1;
   const { robot, distances } = choice;
-  const chosen = state.orders.find((order) => order.id === id && order.status === "open");
+  const chosen = state.orders.find((order) => order.id === id && (order.status === "open" || order.status === "staged"));
   if (!chosen) return;
+  if (chosen.status === "staged") {
+    // A load: to the pallet on the bay, picked up like an order, then into the truck.
+    if (!planLeg(state, robot, chosen.cell)) return;
+    Object.assign(chosen, { status: "toTruck", robot: robot.id });
+    Object.assign(robot, { phase: "toPick", order: chosen.id });
+    state.log.push({ t: state.t, type: "load", robot: robot.id, order: chosen.id });
+    return;
+  }
   // The nearest pickup cell a leg reaches: the nearest may hold a robot parked there for good.
   const cells = state.warehouse.blocks.get(chosen.block).filter((cell) => distances.has(`${cell.x},${cell.y}`));
   cells.sort((a, b) => distances.get(`${a.x},${a.y}`) - distances.get(`${b.x},${b.y}`));

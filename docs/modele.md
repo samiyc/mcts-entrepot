@@ -102,27 +102,35 @@ c.III.JJJ.KKK.LLL.wwwT
 - **`T` un quai, `w` sa baie** : les cases devant la porte. Les commandes se répartissent entre les camions
   par `/` (`AFKD/EJCH/IBGL`, les quais de haut en bas), et chaque camion arrive à son tour (20, 40, 60).
   - Une commande se prépare **avant** son camion : la palette attend sur une case de la baie, une palette
-    par case, et elle est chargée quand le camion arrive.
+    par case.
+  - **La baie n'est qu'une zone réservée** (Sami, 23/10) : quand le camion arrive, il faut encore qu'un robot
+    reprenne chaque palette de la baie et la monte dans le camion. Ce chargement est proposé aux robots libres
+    avant les commandes à aller chercher. Une commande prise quand le camion est déjà là va directement dans
+    le camion.
   - Une commande ne se prend que s'il reste une case libre dans sa baie (elle la réserve en partant), ou
-    si son camion est déjà là, auquel cas la palette est chargée dès qu'elle est posée.
+    si son camion est déjà là.
   - La baie se remplit depuis le camion, pour que l'allée qui y mène reste libre.
 - **`#` le mur, ou l'extérieur** entre les camions.
-- **La mesure : l'attente des camions**, la somme, pour chaque camion, des tours entre son arrivée et sa
-  dernière palette. Avec un seul camion là dès le départ, c'est le tour de la fin, comme avant : les trois
+- **La mesure : le temps à quai des camions**, la somme, pour chaque camion, des tours entre son arrivée et sa
+  dernière palette chargée : un camion doit rouler, pas attendre, sinon les livraisons suivantes glissent. Avec un seul camion là dès le départ, c'est le tour de la fin, comme avant : les trois
   premiers plans et leurs chiffres ne bougent pas (vérifié, même empreinte). La recherche se juge sur cette
   attente, son échelle multipliée par le nombre de camions.
 - **Une quatrième règle** pour juger honnêtement : **le camion attendu d'abord**, la commande la plus
   proche parmi celles du camion qui arrive le premier.
 
-**Ce que ça donne** (30 journées, attente des camions en tours ; les journées se ressemblent presque toutes,
-le blocage ne changeant presque rien sur ce plan) :
+**Ce que ça donne**, avec le chargement par un robot (20 journées, temps à quai des trois camions en tours ;
+les journées se ressemblent presque toutes, le blocage ne changeant presque rien sur ce plan) :
 
 | la plus proche | la plus lointaine | le camion attendu d'abord | la liste | recherche |
 |---|---|---|---|---|
-| 84,1 | 134,1 | 67,9 | 39,0 | **32,0** (8 journées sur 8, +7 tours sur la liste) |
+| 94,0 | 177,4 | 96,0 | 76,0 | **66,1** (20 journées sur 20, +9,9 tours sur la liste) |
+
+Avant le chargement par un robot (la palette montait seule dans le camion), c'était 84,1 / 134,1 / 67,9 / 39,0
+/ 32,0 : le chargement coûte 25 à 40 tours de quai sur la journée, c'est-à-dire un trajet baie → camion par
+palette posée d'avance.
 
 - **La liste gagne parmi les règles**, parce qu'elle est écrite dans l'ordre des camions et qu'elle mélange
-  près et loin. « Le camion attendu d'abord » perd 29 tours sur elle : prendre d'abord les commandes proches
+  près et loin. « Le camion attendu d'abord » perd 20 tours sur elle : prendre d'abord les commandes proches
   de chaque camion laisse les lointaines pour la fin.
 - **La plus lointaine d'abord**, la meilleure règle des premiers plans, est **la pire ici** : elle ignore
   les camions.
@@ -130,7 +138,7 @@ le blocage ne changeant presque rien sur ce plan) :
   qu'à son arrivée. C'est ce qui rend la décision intéressante : quoi préparer à l'avance.
 - La recherche notait d'abord comme la liste, coup pour coup : avec trois camions, ses écarts dépassaient son
   échelle (20 tours) et chaque monde valait 0 ou 1. Avec l'échelle multipliée par le nombre de camions, elle
-  gagne 7 tours.
+  gagnait 7 tours, et 9,9 avec le chargement.
 
 **Une correction au passage.** Un robot garé pour de bon sur la case de ramassage d'un bloc empêchait les
 autres d'aller y chercher : leur trajet échouait, et ils restaient sur place toute la journée. Le robot

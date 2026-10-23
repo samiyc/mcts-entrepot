@@ -5,7 +5,7 @@ import { isBlock } from "../src/warehouse.js";
  * block's pending orders, the robots with what is left of their leg, the day in one line. The DOM layer
  * (app.js) only draws it.
  */
-export const STATUS_LABELS = Object.freeze({ open: "en attente", assigned: "attribuée", carried: "en route vers le quai", staged: "prête devant le quai", delivered: "livrée" });
+export const STATUS_LABELS = Object.freeze({ open: "en attente", assigned: "attribuée", carried: "en route vers le quai", staged: "prête devant le quai", toTruck: "un robot vient la charger", delivered: "livrée" });
 const PHASE_LABELS = Object.freeze({ idle: "libre", toPick: "va chercher", picking: "prend", toDrop: "rapporte", dropping: "dépose", home: "rentre" });
 
 /** The trucks: `{ id, x, y, at, there, left }`, `left` the orders not yet loaded. */
@@ -36,7 +36,7 @@ export function cellsOf(state) {
   const { plan } = state.warehouse;
   const pending = new Map();
   for (const order of state.orders) if (order.status !== "delivered") pending.set(order.block, (pending.get(order.block) ?? 0) + 1);
-  const pallets = new Map(state.orders.filter((order) => order.status === "staged").map((order) => [`${order.cell.x},${order.cell.y}`, order.block]));
+  const pallets = new Map(state.orders.filter((order) => (order.status === "staged" || order.status === "toTruck") && order.cell).map((order) => [`${order.cell.x},${order.cell.y}`, order.block]));
   const trucks = new Map(trucksOf(state).map((truck) => [`${truck.x},${truck.y}`, truck]));
   const cells = [];
   for (let y = 0; y < plan.height; y += 1) {
@@ -75,14 +75,14 @@ export function statusLine(state, measures) {
   const blockage = blockageOf(state);
   const corridor = state.day.blockage && blockage.now ? `allée bloquée${blockage.seen ? ` (vue au tour ${state.known.seenAt})` : ", pas encore vue"}` : "allées libres";
   const parts = [`Tour ${state.t} / ${state.setup.horizon}`, `${delivered} / ${state.orders.length} commandes livrées`];
-  const staged = state.orders.filter((order) => order.status === "staged").length;
+  const staged = state.orders.filter((order) => order.status === "staged" || order.status === "toTruck").length;
   if (staged > 0) parts.push(`${staged} prête${staged > 1 ? "s" : ""} devant les quais`);
   if (state.trucks.some((truck) => truck.at > 0)) {
     const trucks = trucksOf(state).map((truck) => `camion ${truck.id} ${truck.left === 0 ? "parti" : truck.there ? "à quai" : `au tour ${truck.at}`}`);
     parts.push(trucks.join(", "));
   }
   parts.push(corridor);
-  if (measures) parts.push(`fini au tour ${measures.finish}`, ...(state.trucks.length > 1 ? [`${measures.truckWait} tours d'attente des camions`] : []), `${measures.moves} pas, ${measures.waits} attente${measures.waits > 1 ? "s" : ""}`);
+  if (measures) parts.push(`fini au tour ${measures.finish}`, ...(state.trucks.length > 1 ? [`${measures.truckWait} tours à quai pour les camions`] : []), `${measures.moves} pas, ${measures.waits} attente${measures.waits > 1 ? "s" : ""}`);
   return parts.join(" · ");
 }
 

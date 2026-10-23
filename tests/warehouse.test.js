@@ -12,7 +12,7 @@ import { distancesFrom, readWarehouse } from "../src/warehouse.js";
 function playChecked(setup, seed, rule) {
   const state = createDay(setup, drawDay(seed, setup));
   const sharedCharges = setup.robots > state.warehouse.charges.length;
-  const shared = (robot) => (robot.x === state.warehouse.dock.x && robot.y === state.warehouse.dock.y) || (sharedCharges && state.warehouse.plan.at(robot.x, robot.y) === "c");
+  const shared = (robot) => state.warehouse.plan.at(robot.x, robot.y) === "T" || (sharedCharges && state.warehouse.plan.at(robot.x, robot.y) === "c");
   let before = state.robots.map((robot) => ({ ...robot }));
   while (!isOver(state)) {
     stepDay(state, rule);
@@ -66,14 +66,23 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     assert.throws(() => createDay({ ...PLANS.quais, orders: "A/B/C/D" }, { blockage: null }), /4 camions pour 3 quais/);
   });
 
-  it("starts robots at their charging points, prepares orders on the bays before their truck, loads them when it comes", () => {
+  it("starts robots at their charging points, prepares orders on the bays before their truck, and a robot loads each into it once there", () => {
     const setup = { ...PLANS.quais, blocking: 0 };
     const state = createDay(setup, drawDay(1, setup));
     assert.deepEqual(state.robots.map((robot) => `${robot.x},${robot.y}`), state.warehouse.charges.map((cell) => `${cell.x},${cell.y}`));
     while (!isOver(state)) stepDay(state, RULES.list);
-    const loaded = state.log.filter((event) => event.type === "loaded");
-    assert.ok(loaded.length > 0);
-    for (const { order: id, t } of loaded) assert.equal(t, state.trucks[state.orders.find((order) => order.id === id).truck].at);
+    // Every pallet left on a bay was then taken by a robot into its truck, after the truck came.
+    const staged = state.log.filter((event) => event.type === "staged");
+    assert.ok(staged.length > 0);
+    for (const { order: id } of staged) {
+      const load = state.log.find((event) => event.type === "load" && event.order === id);
+      const order = state.orders.find((one) => one.id === id);
+      assert.ok(load && load.t >= state.trucks[order.truck].at, `commande ${id} chargée par un robot`);
+      const delivered = state.log.find((event) => event.type === "delivered" && event.order === id);
+      assert.equal(delivered.robot, load.robot);
+      assert.ok(delivered.t > load.t);
+    }
+    assert.equal(state.claims.size, 0);
     assert.ok(state.orders.every((order) => order.deliveredAt >= state.trucks[order.truck].at));
     // The waits: each truck from its arrival to its last pallet.
     const waits = state.trucks.map((truck) => Math.max(...state.orders.filter((order) => order.truck === truck.id - 1).map((order) => order.deliveredAt)) - truck.at);

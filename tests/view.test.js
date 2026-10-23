@@ -27,7 +27,7 @@ describe("what the page shows (web/view.js)", () => {
     assert.ok(cellsOf(day).some((cell) => cell.kind === "bay" && cell.pallet));
     assert.ok(ordersOf(day).some((order) => order.status === "staged" && /^prête devant le quai/.test(order.label) && order.truck));
     while (!isOver(day)) stepDay(day, RULES.list);
-    assert.match(statusLine(day, measuresOf(day)), /camion 1 parti, camion 2 parti, camion 3 parti.*\d+ tours d'attente des camions/);
+    assert.match(statusLine(day, measuresOf(day)), /camion 1 parti, camion 2 parti, camion 3 parti.*\d+ tours à quai pour les camions/);
   });
 
   it("tells the robots, their legs, and the day as it goes", () => {
