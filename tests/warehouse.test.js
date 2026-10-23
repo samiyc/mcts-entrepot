@@ -35,8 +35,7 @@ function playChecked(setup, seed, rule) {
         assert.ok(!swapped, `jour ${seed}, tour ${state.t} : les robots ${a.id} et ${b.id} se croisent`);
       }
     }
-    const blockage = state.day.blockage;
-    if (blockage && state.t >= blockage.from && state.t < blockage.to) {
+    if (state.day.blockages.some((blockage) => state.t >= blockage.from && state.t < blockage.to)) {
       for (const robot of state.robots) {
         const was = before.find((one) => one.id === robot.id);
         // Backing out along the stretch it was in when the pallet went down is allowed; walking in is not.
@@ -114,7 +113,7 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     for (const setup of Object.values(PLANS)) {
       for (let seed = 1; seed <= 12; seed += 1) {
         for (const rule of Object.values(RULES)) {
-          const state = playChecked({ ...setup, blocking: 0.8 }, seed, rule);
+          const state = playChecked({ ...setup, blocking: 0.5 }, seed, rule);
           assert.ok(state.orders.every((order) => order.status === "delivered"), `${setup.label}, jour ${seed}`);
         }
       }
@@ -126,22 +125,24 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     for (const trucks of [[], [20]]) {
       for (let seed = 1; seed <= 12; seed += 1) {
         for (const rule of Object.values(RULES)) {
-          const state = playChecked({ ...PLANS.couloirs, text, trucks, blocking: 0.8, horizon: 200 }, seed, rule);
+          const state = playChecked({ ...PLANS.couloirs, text, trucks, blocking: 0.5, horizon: 200 }, seed, rule);
           assert.ok(state.orders.every((order) => order.status === "delivered"), `camion au tour ${trucks[0] ?? 0}, jour ${seed}`);
         }
       }
     }
   });
 
-  it("sees a blockage only from beside it, then routes around it", () => {
-    const setup = { ...PLANS.sami, blocking: 1 };
+  it("sees a blockage only from beside it, then routes around it, and again later in the day", () => {
+    const setup = { ...PLANS.sami, blocking: 0.3 };
     const seen = [];
     for (let seed = 1; seed <= 20; seed += 1) {
       const state = playChecked(setup, seed, RULES.list);
       if (state.known.seenAt !== null) seen.push(state);
     }
     assert.ok(seen.length > 0);
-    for (const state of seen) assert.ok(state.known.seenAt + 1 >= state.day.blockage.from && state.known.seenAt < state.day.blockage.to);
+    // Seen the turn before it began or while it was on; and over a day, again and again.
+    for (const state of seen) assert.ok(state.day.blockages.some((blockage) => state.known.seenAt + 1 >= blockage.from && state.known.seenAt < blockage.to));
+    assert.ok(seen.some((state) => state.known.seen > 1), "vue plusieurs fois dans une journée");
   });
 
   it("makes a waiting zone at the start for a truck the plan gives none, and robots then wait far less in a narrow aisle", () => {

@@ -7,7 +7,7 @@ import { drawWorld, searchRule } from "../src/search.js";
 import { advance, beginTurn, createDay, drawDay, runDay } from "../src/simulate.js";
 
 const blockedSeed = (setup) => {
-  for (let seed = 1; ; seed += 1) if (drawDay(seed, setup).blockage) return seed;
+  for (let seed = 1; ; seed += 1) if (drawDay(seed, setup).blockages.length > 0) return seed;
 };
 
 describe("the search (src/search.js)", () => {
@@ -20,9 +20,9 @@ describe("the search (src/search.js)", () => {
     const before = JSON.stringify({ robots: day.robots, orders: day.orders, known: day.known, cursor: day.cursor });
     const worlds = Array.from({ length: 40 }, (_, i) => drawWorld(day, createRng(i + 1)));
     assert.equal(JSON.stringify({ robots: day.robots, orders: day.orders, known: day.known, cursor: day.cursor }), before);
-    // Nothing seen yet: the blockage is drawn again, after now, sometimes none.
-    assert.ok(worlds.some((world) => world.day.blockage === null));
-    assert.ok(worlds.every((world) => world.day.blockage === null || world.day.blockage.from > day.t));
+    // Nothing seen yet: the blockages are drawn again, after now, differently from one world to the next.
+    assert.ok(new Set(worlds.map((world) => JSON.stringify(world.day.blockages))).size > 1);
+    assert.ok(worlds.every((world) => world.day.blockages.every((blockage) => blockage.from > day.t)));
     assert.ok(worlds.every((world) => world.choice.robot.id === choice.robot.id));
   });
 

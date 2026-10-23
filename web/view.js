@@ -22,10 +22,9 @@ export function trucksOf(state) {
 
 /** The blockage as the page tells it: none, coming (hidden), on and not yet seen, on and seen, over. */
 export function blockageOf(state) {
-  const blockage = state.day.blockage;
-  if (!blockage || state.t < blockage.from) return { now: false, seen: false };
-  const now = state.t < blockage.to;
-  return { now, seen: state.known.seenAt !== null };
+  const now = state.day.blockages.some((blockage) => state.t >= blockage.from && state.t < blockage.to);
+  // Seen: the robots know it (the one they saw, still on for them).
+  return { now, seen: now && state.known.seenAt !== null && state.t <= state.known.blockedUntil };
 }
 
 /**
@@ -79,7 +78,7 @@ export function robotsOf(state) {
 export function statusLine(state, measures) {
   const delivered = state.orders.filter((order) => order.status === "delivered").length;
   const blockage = blockageOf(state);
-  const corridor = state.day.blockage && blockage.now ? `allée bloquée${blockage.seen ? ` (vue au tour ${state.known.seenAt})` : ", pas encore vue"}` : "allées libres";
+  const corridor = blockage.now ? `allée bloquée${blockage.seen ? ` (vue au tour ${state.known.seenAt})` : ", pas encore vue"}` : "allées libres";
   const parts = [`Tour ${state.t} / ${state.setup.horizon}`, `${delivered} / ${state.orders.length} commandes livrées`];
   const staged = state.orders.filter((order) => order.status === "staged" || order.status === "toTruck").length;
   if (staged > 0) parts.push(`${staged} prête${staged > 1 ? "s" : ""} devant les quais`);

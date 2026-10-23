@@ -31,7 +31,7 @@ describe("what the page shows (web/view.js)", () => {
   });
 
   it("tells the robots, their legs, and the day as it goes", () => {
-    const setup = { ...PLANS.sami, blocking: 1 };
+    const setup = { ...PLANS.sami, blocking: 0 };
     const day = createDay(setup, drawDay(2, setup));
     stepDay(day, RULES.list);
     const robots = robotsOf(day);

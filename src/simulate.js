@@ -32,16 +32,29 @@ import { SIDES, distancesFrom, nearestPickup, readWarehouse } from "./warehouse.
  * its back: two pallets never share a cell, so the bay is loaded from the truck's side first.
  *
  * What the day hides (`drawDay`): whether the `~` cells get blocked, and when. A robot sees it only beside
- * them; then every robot knows, and keeps away from them for the blockage's length.
+ * them; then every robot knows, and keeps away from them for a blockage's length. It happens again and again in a
+ * day (`blocking`: the share of the time it is blocked).
  */
 const LEG_HORIZON = 80;
 
-/** What the day hides, drawn from a seed: the blockage, if any (`{ from, to }`, turns). */
+/**
+ * What the day hides, drawn from a seed: the blockages (`[{ from, to }]`, turns). The `~` aisle is blocked again
+ * and again (Sami, 23/10: it was once a day at most), `duration` turns each time, with free spells between drawn at
+ * random so that it is blocked `blocking` of the time on average (1: always).
+ */
 export function drawDay(seed, setup) {
-  const rng = createRng(seed);
-  const blocked = rng.next() < setup.blocking;
-  const from = 1 + rng.int(Math.max(1, setup.horizon - setup.duration - 1));
-  return { blockage: blocked ? { from, to: from + setup.duration } : null };
+  return { blockages: drawBlockages(createRng(seed), setup, 1) };
+}
+
+/** The blockages from turn `start` to the day's end, for `drawDay` and for the search's worlds. */
+export function drawBlockages(rng, { blocking, duration, horizon }, start) {
+  if (blocking <= 0) return [];
+  // A free spell's mean length, for the aisle to be blocked `blocking` of the time.
+  const free = (duration * (1 - Math.min(1, blocking))) / Math.min(1, blocking);
+  const gap = () => Math.round(-free * Math.log(1 - rng.next()));
+  const blockages = [];
+  for (let from = start + gap(); from < horizon; from += duration + gap()) blockages.push({ from, to: from + duration });
+  return blockages;
 }
 
 /** The day's trucks: the orders split by `/`, one group a dock, each truck with its arrival turn. */
@@ -121,6 +134,8 @@ export function createDay(setup, day) {
   const trucks = trucksOf(setup, warehouse);
   for (const block of new Set(setup.orders.replaceAll("/", ""))) if (!warehouse.blocks.get(block)?.length) throw new Error(`commande ${block} : pas de bloc ${block} accessible sur le plan`);
   const homes = homesOf(warehouse, setup.robots);
+  // Older callers give one `blockage` (or none): read as a list.
+  day = { blockages: day.blockages ?? (day.blockage ? [day.blockage] : []) };
   // Every robot holds its starting cell: nobody plans through a robot standing still.
   const reservations = createReservations();
   homes.forEach((home, i) => reservations.reserve(i + 1, [{ x: home.x, y: home.y, t: 0 }], { stay: true }));
@@ -259,7 +274,7 @@ function deliver(state, order, t) {
   Object.assign(order, { status: "delivered", deliveredAt: t });
 }
 const closed = (state) => state.t <= state.known.blockedUntil;
-const blockedNow = (state, t) => Boolean(state.day.blockage) && t >= state.day.blockage.from && t < state.day.blockage.to;
+const blockedNow = (state, t) => state.day.blockages.some((blockage) => t >= blockage.from && t < blockage.to);
 const orderOf = (state, robot) => state.orders.find((order) => order.id === robot.order);
 
 /** The cells holding a pallet: waiting on a bay, or about to be taken from it. */
@@ -377,6 +392,8 @@ function planLeg(state, robot, target) {
   const pallets = robot.phase === "toDrop" ? palletCells(state) : null;
   // A truck's cell is entered only to go into the truck, never crossed on the way elsewhere.
   const passable = (char, x, y) => state.warehouse.floor(char) && !(char === "T" && (x !== target.x || y !== target.y)) && !(closed(state) && char === "~" && !stretch?.has(`${x},${y}`)) && !(pallets?.has(`${x},${y}`) && (x !== target.x || y !== target.y));
+  // Out of reach on the floor itself, the aisle closed (no robot counted): no leg either (distances are remembered).
+  if (!stretch && !distancesFrom(state.warehouse, robot, closed(state)).has(keyOf(target))) return false;
   // Someone parks on the target for good, or is due there past the horizon: no leg can end there, no need to search.
   if (!state.reservations.freeFrom(target.x, target.y, state.t + LEG_HORIZON, robot.id)) return false;
   // Every way into the target held for good by others (a truck with one door, someone parked on it): no search either.
@@ -415,14 +432,14 @@ function discover(state) {
   const beside = (robot) => SIDES.some(([dx, dy]) => state.warehouse.plan.at(robot.x + dx, robot.y + dy) === "~");
   const seer = state.robots.find(beside);
   if (!seer) return;
-  Object.assign(state.known, { blockedUntil: state.t + state.setup.duration, seenAt: state.t });
+  Object.assign(state.known, { blockedUntil: state.t + state.setup.duration, seenAt: state.t, seen: (state.known.seen ?? 0) + 1 });
   state.log.push({ t: state.t, type: "blocked", robot: seer.id });
   for (const robot of state.robots) {
     const ahead = robot.path?.filter((step) => step.t > state.t) ?? [];
-    if (robot.target && ahead.some((step) => state.warehouse.plan.at(step.x, step.y) === "~")) {
-      state.replans += 1;
-      if (!planLeg(state, robot, robot.target)) hold(state, robot);
-    }
+    if (!ahead.some((step) => state.warehouse.plan.at(step.x, step.y) === "~")) continue;
+    // With a target, around the aisle; without one (a leg still running), stopped where it is.
+    state.replans += 1;
+    if (!robot.target || !planLeg(state, robot, robot.target)) hold(state, robot);
   }
 }
 
@@ -650,7 +667,8 @@ function move(state) {
 /** Robots that reached their leg's end: picking, dropping, or back home. */
 function arrive(state) {
   for (const robot of state.robots) {
-    if (!robot.target || robot.x !== robot.target.x || robot.y !== robot.target.y) continue;
+    // Arrived at the leg's end only: a leg may pass its target, waiting for a turn to park there.
+    if (!robot.target || robot.x !== robot.target.x || robot.y !== robot.target.y || (robot.path?.at(-1)?.t ?? 0) > state.t) continue;
     // Out of the way for another: back to its own target, retried from next turn.
     if (robot.resume) Object.assign(robot, { target: robot.resume, resume: null });
     else if (robot.phase === "toPick") Object.assign(robot, { phase: "picking", until: state.t + 1, target: null });
@@ -779,7 +797,8 @@ export function measuresOf(state) {
       return sum + Math.max(0, left - truck.at);
     }, 0),
     early: state.orders.filter((order) => order.stagedAt !== null && order.stagedAt < truckOf(state, order).at).length,
-    blocked: Boolean(state.day.blockage),
+    blocked: state.day.blockages.length > 0,
+    blockages: state.day.blockages.filter((blockage) => blockage.from <= state.t).length,
     seenAt: state.known.seenAt,
   };
 }

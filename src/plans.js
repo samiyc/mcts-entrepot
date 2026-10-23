@@ -11,8 +11,8 @@
  * - `#` a wall, or the outside.
  * Each plan comes with its robots and its orders (block letters, in the order they come, one group a truck
  * split by `/`, the docks in reading order), the trucks' arrival turns (`trucks`, 0 when left out);
- * `blocking` is the chance that the `~` cells get blocked during the day, for `duration` turns from an
- * unknown turn.
+ * `blocking` is the share of the time the `~` cells are blocked (23/10/2026: again and again, `duration` turns each
+ * time, at unknown turns; it was once a day at most).
  */
 export const PLANS = Object.freeze({
   petit: Object.freeze({
@@ -20,16 +20,16 @@ export const PLANS = Object.freeze({
     text: [".........", ".AA..BB..", "....~....", ".CC..DD.T"].join("\n"),
     robots: 2,
     orders: "ABCDBA",
-    blocking: 0.3,
+    blocking: 0.15,
     duration: 8,
-    horizon: 80,
+    horizon: 100,
   }),
   sami: Object.freeze({
     label: "Le plan de Sami (13 × 7, 4 robots, des bornes et deux zones d'attente)",
     text: ["c........www#", "AA.BB.CC.DDw#", "c.~~~~......#", "EE.FF.GG.HH.T", "c...........#", "II.JJ.KK.LLw#", "c........www#"].join("\n"),
     robots: 4,
     orders: "ABCDEFGHIJKL",
-    blocking: 0.2,
+    blocking: 0.15,
     duration: 10,
     horizon: 220,
   }),
@@ -39,7 +39,7 @@ export const PLANS = Object.freeze({
     robots: 4,
     orders: "AFKD/EJCH/IBGL",
     trucks: Object.freeze([20, 40, 60]),
-    blocking: 0.2,
+    blocking: 0.15,
     duration: 10,
     horizon: 240,
   }),
@@ -48,8 +48,8 @@ export const PLANS = Object.freeze({
     text: ["#############", "#AAAA.~.BBBB#", "#...........T", "#CCCC.~.DDDD#", "#############"].join("\n"),
     robots: 3,
     orders: "ABCDACBD",
-    blocking: 0.5,
+    blocking: 0.2,
     duration: 12,
-    horizon: 100,
+    horizon: 120,
   }),
 });

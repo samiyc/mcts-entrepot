@@ -227,7 +227,7 @@ function editor() {
     { class: "editor" },
     el("summary", {}, "Changer d'entrepôt"),
     el("p", { class: "hint" }, "Le plan en texte : « . » le sol, une majuscule un bloc de rayons, « T » un quai où vient un camion, « w » une case devant un quai où une palette attend son camion (une par case), « c » une borne de charge d'où part un robot et où il revient, « ~ » une case qui peut se bloquer, « # » un mur ou l'extérieur. Les commandes sont des lettres de blocs, dans l'ordre où elles arrivent, un groupe par camion séparé par « / » (les quais dans l'ordre de lecture, de haut en bas) ; les camions arrivent aux tours donnés, séparés par des espaces."),
-    el("form", { "data-form": "plan" }, el("textarea", { name: "text", rows: String(Math.max(5, setup.text.split("\n").length + 1)), spellcheck: "false" }, setup.text), el("div", { class: "fields" }, field("Robots", "robots", setup.robots, { type: "number", min: "1", max: "12" }), field("Commandes", "orders", setup.orders), field("Arrivée des camions (tours)", "trucks", (setup.trucks ?? []).join(" ")), field("Blocage (%)", "blocking", Math.round(100 * setup.blocking), { type: "number", min: "0", max: "100" }), field("Durée du blocage (tours)", "duration", setup.duration, { type: "number", min: "1" }), field("Fin de la journée (tours)", "horizon", setup.horizon, { type: "number", min: "10" }), el("label", { class: "check" }, el("input", { name: "autoZones", type: "checkbox", checked: setup.autoZones !== false }), "Zone d'attente automatique (jusqu'à 3 cases du camion) pour un camion qui n'en a pas")), el("button", { type: "submit" }, "Appliquer")),
+    el("form", { "data-form": "plan" }, el("textarea", { name: "text", rows: String(Math.max(5, setup.text.split("\n").length + 1)), spellcheck: "false" }, setup.text), el("div", { class: "fields" }, field("Robots", "robots", setup.robots, { type: "number", min: "1", max: "12" }), field("Commandes", "orders", setup.orders), field("Arrivée des camions (tours)", "trucks", (setup.trucks ?? []).join(" ")), field("Allée bloquée (% du temps)", "blocking", Math.round(100 * setup.blocking), { type: "number", min: "0", max: "100" }), field("Durée du blocage (tours)", "duration", setup.duration, { type: "number", min: "1" }), field("Fin de la journée (tours)", "horizon", setup.horizon, { type: "number", min: "10" }), el("label", { class: "check" }, el("input", { name: "autoZones", type: "checkbox", checked: setup.autoZones !== false }), "Zone d'attente automatique (jusqu'à 3 cases du camion) pour un camion qui n'en a pas")), el("button", { type: "submit" }, "Appliquer")),
     state.error ? el("p", { class: "error", role: "alert" }, state.error) : null,
   );
 }
@@ -269,7 +269,7 @@ function applyPlan(form) {
     autoZones: Boolean(data.get("autoZones")),
   };
   try {
-    createDay(setup, { blockage: null });
+    createDay(setup, { blockages: [] });
     Object.assign(state, { setup, error: "", compared: null });
     restart();
   } catch (error) {

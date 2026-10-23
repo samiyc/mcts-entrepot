@@ -261,6 +261,13 @@ Ce que ça donne (10 journées, tours jusqu'à la dernière livraison, attentes 
 - **Dans les couloirs**, les attentes disparaissent (66 → 1 avec la recherche) et la recherche finit 6 tours plus tôt : on ne se croise plus dans l'allée, on pose et on repart.
 - **Dans le petit entrepôt**, personne ne faisait la queue au camion : le passage par la zone et par le chargeur coûte 7 tours à la recherche. La case à décocher est faite pour ça. Les tests qui jugent les règles et la recherche sur ce plan s'y font sans zone.
 
+
+**Des blocages qui reviennent** (Sami, le même soir : à 100 %, l'allée ne s'est bloquée qu'une fois, en début de journée, puis plus rien). La journée tirait au plus **un** blocage, avec la probabilité « Blocage », à un tour au hasard. Maintenant l'allée se bloque encore et encore : `duration` tours à chaque fois, avec entre deux des moments libres tirés au hasard, de sorte qu'elle soit bloquée **une part donnée du temps** (« Allée bloquée (% du temps) » ; 100 % : toujours). Les robots ne voient toujours un blocage qu'à côté ; la recherche retire les blocages à venir dans chacun de ses mondes, celui qu'on a vu restant tel qu'on l'a vu.
+- **Valeurs par défaut** : 15 % (petit entrepôt, plan de Sami, quais), 20 % (couloirs) ; 2 à 4 blocages par journée. L'ancienne valeur (0,2 à 0,5) voulait dire « une chance par jour » : les mêmes nombres seraient bien plus durs aujourd'hui. Le petit entrepôt dure 100 tours, les couloirs 120.
+- **Deux erreurs que les blocages répétés ont fait sortir** : un robot se croyait arrivé dès qu'il passait sur sa case cible alors que son trajet continuait (il attendait d'y pouvoir rester) ; et, un blocage vu, seuls les robots qui avaient une cible replanifiaient : un robot sans cible gardait un trajet par l'allée bloquée, refusait d'y entrer, et un autre arrivait sur sa case.
+- **À 80 %**, l'allée ne se rouvre qu'environ 2 tours entre deux blocages : dans le petit entrepôt, où elle est le seul détour autour d'une palette en attente, deux robots chargés y restent pris. À 50 %, toutes les journées finissent (testé).
+- Une recherche de chemin vers une case que l'allée fermée rend inaccessible n'est plus tentée : une journée de recherche sur le plan de Sami 14,3 → 5,9 s, mêmes coups.
+
 ## La suite
 
 1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres

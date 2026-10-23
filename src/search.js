@@ -1,13 +1,13 @@
 import { search } from "mcts-commun/mcts.js";
 import { createRng } from "mcts-commun/random.js";
 import { RULES } from "./rules.js";
-import { advance, choose, cloneDay, measuresOf, nextChoice } from "./simulate.js";
+import { advance, choose, cloneDay, drawBlockages, measuresOf, nextChoice } from "./simulate.js";
 
 /**
  * The search (ISMCTS, `search` of mcts-commun) choosing which order an idle robot takes. It knows what the
  * robots know: the plan, the orders, where every robot is and where it goes. What it cannot know, the
- * blockage not seen yet, it draws again at every iteration from the plan's odds, starting after now (a
- * blockage seen is as seen). The robot's choices are judged on common worlds, a tree of `depth` choices
+ * blockages not seen yet, it draws again at every iteration from the plan's odds, starting after now (the one
+ * seen and still on is as seen). The robot's choices are judged on common worlds, a tree of `depth` choices
  * (this robot's, then the next idle robot's), the list order beyond, to the end of the day.
  *
  * A world is scored against the list order's day from the same point: ½ for the same finish, a turn earlier
@@ -18,13 +18,10 @@ export const SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.
 /** A world consistent with what the robots know at this choice. */
 export function drawWorld(state, rng) {
   const world = cloneDay(state);
-  if (state.known.seenAt === null) {
-    const { blocking, duration, horizon } = state.setup;
-    const room = horizon - duration - state.t - 1;
-    const blocked = rng.next() < blocking && room > 0;
-    const from = state.t + 1 + rng.int(Math.max(1, room));
-    world.day = { blockage: blocked ? { from, to: from + duration } : null };
-  }
+  // The blockage seen and still on is as seen; the ones to come are drawn again from the plan's odds.
+  const { known } = state;
+  const now = state.t <= known.blockedUntil ? [{ from: known.seenAt, to: known.blockedUntil + 1 }] : [];
+  world.day = { blockages: [...now, ...drawBlockages(rng, state.setup, Math.max(state.t, known.blockedUntil) + 1)] };
   world.choice = nextChoice(world);
   return world;
 }
