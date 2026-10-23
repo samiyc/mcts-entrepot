@@ -38,6 +38,8 @@ export function cellsOf(state) {
   for (const order of state.orders) if (order.status !== "delivered") pending.set(order.block, (pending.get(order.block) ?? 0) + 1);
   const pallets = new Map(state.orders.filter((order) => (order.status === "staged" || order.status === "toTruck") && order.cell).map((order) => [`${order.cell.x},${order.cell.y}`, order.block]));
   const trucks = new Map(trucksOf(state).map((truck) => [`${truck.x},${truck.y}`, truck]));
+  // Waiting zones made at the start for trucks the plan gave none.
+  const autoBay = new Set(state.warehouse.docks.filter((dock) => dock.auto).flatMap((dock) => dock.bay.map((cell) => `${cell.x},${cell.y}`)));
   // Where each robot starts and goes back to, when it is not a charging point.
   const homes = new Map(state.robots.filter((robot) => plan.at(robot.home.x, robot.home.y) !== "c").map((robot) => [`${robot.home.x},${robot.home.y}`, robot.id]));
   const cells = [];
@@ -45,7 +47,7 @@ export function cellsOf(state) {
     for (let x = 0; x < plan.width; x += 1) {
       const char = plan.at(x, y);
       if (char === "T") cells.push({ x, y, kind: "dock", truck: trucks.get(`${x},${y}`) ?? null });
-      else if (char === "w") cells.push({ x, y, kind: "bay", pallet: pallets.get(`${x},${y}`) ?? null });
+      else if (char === "w" || autoBay.has(`${x},${y}`)) cells.push({ x, y, kind: "bay", pallet: pallets.get(`${x},${y}`) ?? null, auto: char !== "w" });
       else if (char === "c") cells.push({ x, y, kind: "charge" });
       else if (char === "~") cells.push({ x, y, kind: "blockable" });
       else if (char === ".") cells.push({ x, y, kind: "floor", home: homes.get(`${x},${y}`) ?? null });

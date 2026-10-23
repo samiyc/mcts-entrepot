@@ -99,3 +99,4 @@ tr.current td { background: color-mix(in srgb, var(--accent) 10%, transparent); 
 .home-id { font-size: 10px; text-anchor: middle; fill: var(--muted, #8a8a8a); pointer-events: none; }
 .symbol.cross { opacity: 0.4; }
 .symbol.cross.seen { opacity: 1; }
+label.check { flex-direction: row; align-items: center; gap: 6px; }

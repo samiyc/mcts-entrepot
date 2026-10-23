@@ -43,9 +43,11 @@ function bayOf(plan, dock) {
 /**
  * Waiting zones away from the trucks (Sami, 23/10): a group of `w` cells touching no truck belongs to the truck
  * nearest it on the floor. Each dock keeps its `zones` (its own bay first, then the zones attached to it), and its
- * `bay`, every cell of them, nearest the truck first.
+ * `bay`, every cell of them, nearest the truck first. A truck left with no zone at all gets one: the plain floor up to
+ * three steps from it (`auto`).
  */
-function attachZones(plan, docks) {
+const AUTO_ZONE = 3;
+function attachZones(plan, docks, autoZones) {
   const key = (cell) => `${cell.x},${cell.y}`;
   const owned = new Set(docks.flatMap((dock) => dock.bay.map(key)));
   const floorFrom = (from) => {
@@ -81,14 +83,24 @@ function attachZones(plan, docks) {
     docks[nearest].zones.push(zone.sort((a, b) => maps[nearest].get(key(a)) - maps[nearest].get(key(b))));
     docks[nearest].bay.push(...zone);
   }
+  // A truck with no zone gets one (Sami, 23/10): the plain floor up to `AUTO_ZONE` steps from it, so robots leave
+  // their pallets there instead of queueing at the truck. Marked `auto`; robots pass under them as on any bay.
+  docks.forEach((dock, i) => {
+    if (!autoZones || dock.zones.length > 0) return;
+    const zone = [...maps[i]].filter(([cell, steps]) => steps >= 1 && steps <= AUTO_ZONE && plan.at(...cell.split(",").map(Number)) === ".").map(([cell]) => ({ x: Number(cell.split(",")[0]), y: Number(cell.split(",")[1]) }));
+    if (zone.length === 0) return;
+    dock.zones.push(zone);
+    dock.bay.push(...zone);
+    dock.auto = true;
+  });
   // A truck's waiting cells, all zones together, nearest it first (Sami: pallets are left as near the truck as can be).
   docks.forEach((dock, i) => dock.bay.sort((a, b) => maps[i].get(key(a)) - maps[i].get(key(b))));
 }
 
-export function readWarehouse(text) {
+export function readWarehouse(text, { autoZones = true } = {}) {
   const plan = parsePlan(text);
   const docks = plan.find("T").map((cell) => ({ ...cell, bay: bayOf(plan, cell) }));
-  attachZones(plan, docks);
+  attachZones(plan, docks, autoZones);
   const [dock] = docks;
   if (!dock) throw new Error("le plan n'a pas de camion (T)");
   const blocks = new Map();

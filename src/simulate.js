@@ -117,7 +117,7 @@ function spotsOf(warehouse) {
 
 /** The start of a day: robots at their charging point (or near the first dock), orders open, nothing known of the blockage. */
 export function createDay(setup, day) {
-  const warehouse = readWarehouse(setup.text);
+  const warehouse = readWarehouse(setup.text, { autoZones: setup.autoZones !== false });
   const trucks = trucksOf(setup, warehouse);
   for (const block of new Set(setup.orders.replaceAll("/", ""))) if (!warehouse.blocks.get(block)?.length) throw new Error(`commande ${block} : pas de bloc ${block} accessible sur le plan`);
   const homes = homesOf(warehouse, setup.robots);
@@ -375,7 +375,8 @@ function planLeg(state, robot, target) {
   const stretch = closed(state) && state.warehouse.plan.at(robot.x, robot.y) === "~" ? stretchOf(state, robot) : null;
   // A robot passes under a pallet waiting on a bay, but not with one on its back (Sami, 23/10): two pallets never share a cell.
   const pallets = robot.phase === "toDrop" ? palletCells(state) : null;
-  const passable = (char, x, y) => state.warehouse.floor(char) && !(closed(state) && char === "~" && !stretch?.has(`${x},${y}`)) && !(pallets?.has(`${x},${y}`) && (x !== target.x || y !== target.y));
+  // A truck's cell is entered only to go into the truck, never crossed on the way elsewhere.
+  const passable = (char, x, y) => state.warehouse.floor(char) && !(char === "T" && (x !== target.x || y !== target.y)) && !(closed(state) && char === "~" && !stretch?.has(`${x},${y}`)) && !(pallets?.has(`${x},${y}`) && (x !== target.x || y !== target.y));
   // Someone parks on the target for good, or is due there past the horizon: no leg can end there, no need to search.
   if (!state.reservations.freeFrom(target.x, target.y, state.t + LEG_HORIZON, robot.id)) return false;
   // Every way into the target held for good by others (a truck with one door, someone parked on it): no search either.

@@ -144,8 +144,19 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     for (const state of seen) assert.ok(state.known.seenAt + 1 >= state.day.blockage.from && state.known.seenAt < state.day.blockage.to);
   });
 
+  it("makes a waiting zone at the start for a truck the plan gives none, and robots then wait far less in a narrow aisle", () => {
+    const corridors = readWarehouse(PLANS.couloirs.text);
+    assert.equal(corridors.dock.auto, true);
+    assert.deepEqual(corridors.dock.bay, [{ x: 11, y: 2 }, { x: 10, y: 2 }, { x: 9, y: 2 }]);
+    assert.deepEqual(readWarehouse(PLANS.couloirs.text, { autoZones: false }).dock.bay, []);
+    // A plan that draws its zones keeps them as they are.
+    assert.ok(!readWarehouse(PLANS.sami.text).dock.auto);
+    const waits = (autoZones) => runDay({ ...PLANS.couloirs, autoZones }, 1, RULES.list).measures.waits;
+    assert.ok(waits(true) * 4 < waits(false), `${waits(true)} attentes contre ${waits(false)}`);
+  });
+
   it("compares the rules by pairs on the same days", () => {
-    const result = compareRules(PLANS.petit, { days: 30 });
+    const result = compareRules({ ...PLANS.petit, autoZones: false }, { days: 30 });
     assert.deepEqual(Object.keys(result), ["nearest", "list", "farthest", "truck"]);
     assert.ok(result.farthest.finish < result.list.finish, "la plus lointaine d'abord finit avant la liste");
     assert.equal(result.list.gain.mean, 0);

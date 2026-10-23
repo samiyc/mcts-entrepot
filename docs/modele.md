@@ -246,6 +246,21 @@ Sur le plan de Sami (40 journées, tours jusqu'à la dernière livraison) : la p
 
 Sur ce plan, toutes les journées finissent : 58 à 84 tours selon la règle (75 à 95 avec un camion au tour 20) ; testé avec un blocage fort. Les autres plans gardent exactement leurs chiffres.
 
+
+**Une zone d'attente faite au départ** (Sami, le même soir : sans zone, les robots font encore des allers-retours pour se laisser passer). Un camion à qui le plan ne donne aucune zone en reçoit une au début de la journée : le sol simple jusqu'à trois pas de lui (`auto`, dessinée comme une baie ; « Zone d'attente automatique » dans l'éditeur, `autoZones: false` pour s'en passer). Au passage, un robot ne traverse plus la case d'un camion pour aller ailleurs (dans le petit entrepôt, le camion est dans un coin et servait de raccourci).
+
+Ce que ça donne (10 journées, tours jusqu'à la dernière livraison, attentes des robots) :
+
+| Plan | | la plus proche | la liste | la plus lointaine | recherche |
+|---|---|---|---|---|---|
+| deux couloirs | sans zone | 77,0 (75) | 68,0 (68) | 64,0 (68) | 64,0 (66) |
+| | zone auto | 82,0 (4) | 69,0 (1) | **58,0** (1) | **58,2** (1) |
+| petit entrepôt | sans zone | 46,0 (5) | 43,6 (0) | 43,2 (3) | **40,9** (4) |
+| | zone auto | 43,0 (1) | 48,0 (2) | 56,4 (8) | 47,9 (1) |
+
+- **Dans les couloirs**, les attentes disparaissent (66 → 1 avec la recherche) et la recherche finit 6 tours plus tôt : on ne se croise plus dans l'allée, on pose et on repart.
+- **Dans le petit entrepôt**, personne ne faisait la queue au camion : le passage par la zone et par le chargeur coûte 7 tours à la recherche. La case à décocher est faite pour ça. Les tests qui jugent les règles et la recherche sur ce plan s'y font sans zone.
+
 ## La suite
 
 1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres
