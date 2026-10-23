@@ -42,7 +42,8 @@ function bayOf(plan, dock) {
  */
 /**
  * Waiting zones away from the trucks (Sami, 23/10): a group of `w` cells touching no truck belongs to the truck
- * nearest it on the floor, its cells after that truck's own bay, nearest the truck first.
+ * nearest it on the floor. Each dock keeps its `zones` (its own bay first, then the zones attached to it), and its
+ * `bay`, every cell of them, nearest the truck first.
  */
 function attachZones(plan, docks) {
   const key = (cell) => `${cell.x},${cell.y}`;
@@ -61,6 +62,7 @@ function attachZones(plan, docks) {
     return distances;
   };
   const maps = docks.map(floorFrom);
+  for (const dock of docks) dock.zones = dock.bay.length > 0 ? [[...dock.bay]] : [];
   for (const start of plan.find("w")) {
     if (owned.has(key(start))) continue;
     const zone = [start];
@@ -76,8 +78,11 @@ function attachZones(plan, docks) {
     const reach = maps.map((distances) => Math.min(...zone.map((cell) => distances.get(key(cell)) ?? Infinity)));
     const nearest = reach.indexOf(Math.min(...reach));
     if (reach[nearest] === Infinity) continue;
-    docks[nearest].bay.push(...zone.sort((a, b) => maps[nearest].get(key(a)) - maps[nearest].get(key(b))));
+    docks[nearest].zones.push(zone.sort((a, b) => maps[nearest].get(key(a)) - maps[nearest].get(key(b))));
+    docks[nearest].bay.push(...zone);
   }
+  // A truck's waiting cells, all zones together, nearest it first (Sami: pallets are left as near the truck as can be).
+  docks.forEach((dock, i) => dock.bay.sort((a, b) => maps[i].get(key(a)) - maps[i].get(key(b))));
 }
 
 export function readWarehouse(text) {

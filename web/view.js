@@ -60,13 +60,14 @@ export function cellsOf(state) {
 export function robotsOf(state) {
   return state.robots.map((robot) => {
     const order = state.orders.find((one) => one.id === robot.order);
-    const loading = state.trucks.find((truck) => truck.loader === robot.id && state.orders.some((one) => one.truck === truck.id - 1 && one.status !== "delivered"));
+    const loading = state.trucks.find((truck) => Object.values(truck.loaders).includes(robot.id) && state.orders.some((one) => one.truck === truck.id - 1 && one.status !== "delivered"));
+    const zone = loading && loading.dock.zones.length > 1 ? `, zone ${Number(Object.entries(loading.loaders).find(([, id]) => id === robot.id)[0]) + 1}` : "";
     return {
       id: robot.id,
       x: robot.x,
       y: robot.y,
       carrying: order?.status === "carried" ? order.block : null,
-      label: `Robot ${robot.id}${loading ? ` (charge le camion ${loading.id})` : ""}${robot.queued ? ", attend son tour au camion" : ""} : ${PHASE_LABELS[robot.phase]}${order ? ` (commande ${order.id}, bloc ${order.block}${state.trucks.length > 1 ? `, camion ${order.truck + 1}` : ""})` : ""}`,
+      label: `Robot ${robot.id}${loading ? ` (charge le camion ${loading.id}${zone})` : ""}${robot.queued ? ", attend son tour au camion" : ""} : ${PHASE_LABELS[robot.phase]}${order ? ` (commande ${order.id}, bloc ${order.block}${state.trucks.length > 1 ? `, camion ${order.truck + 1}` : ""})` : ""}`,
       ahead: robot.target ? (robot.path ?? []).filter((step) => step.t >= state.t) : [],
     };
   });

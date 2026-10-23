@@ -230,6 +230,14 @@ Sami a redessiné le plan de Sami (13 × 7 : quatre bornes, deux zones `w` dans 
 - **Les allées bloquées** portent une croix ❌, pâle tant qu'aucun robot ne l'a vue.
 - **La recherche, plus rapide, mêmes coups** : les vérifications de chemins se font en un balayage par destination, et sont gardées en mémoire (comme les distances au sol, qui ne dépendent que du plan). Une journée de recherche : 31 → 7,9 s sur le plan de Sami, 19,6 → 3,0 s sur les quais (empreinte des coups identique).
 
+
+**Au plus près du camion, et un chargeur par zone** (Sami, le même soir, en regardant le plan de Sami : le robot 3 chargeait tout seul pendant que les deux zones se remplissaient).
+- **Une palette se pose sur la case libre la plus proche du camion**, toutes zones confondues (et non plus au fond) ; le camion là, jamais sur une case qui touche sa porte, le passage des chargeurs. Les autres garde-fous restent : personne enfermé, pas de pose sous un robot qui vient prendre.
+- **Un chargeur par zone** : le premier robot qui prend une palette dans une zone en devient le chargeur ; un robot ne charge qu'une zone. Sur le plan de Sami, la zone du haut et celle du bas ont chacune le leur, qui entrent au camion tour à tour par sa file. Un chargeur ne va chercher lui-même qu'une fois sa zone vide.
+- En route, trois accrocs corrigés : un robot chargé dont le chemin passait par une case où l'on vient de poser une palette replanifie ; on ne propose pas une palette sous un autre robot ; un robot qui ne peut pas aller où il a choisi sort des zones au lieu d'y rester planté (les quatre robots, chacun sous une palette, attendaient chacun celle d'un autre).
+
+Sur le plan de Sami (40 journées, tours jusqu'à la dernière livraison) : la plus proche 163 → 109, la liste 178 → 102, la plus lointaine 196 → 124 ; **la recherche 167 → 93** (3,3 s par journée). Les trois quais, qui n'ont qu'une zone par camion, ne bougent presque pas (liste 120, plus proche 188 tours à quai cumulés).
+
 ## La suite
 
 1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres

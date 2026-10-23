@@ -20,7 +20,7 @@ function playChecked(setup, seed, rule) {
       // Into a truck with a bay, only its loader, unless the bay is full.
       const inside = state.robots.filter((robot) => robot.x === truck.dock.x && robot.y === truck.dock.y);
       const full = (robot) => state.log.some((event) => event.type === "overflow" && event.robot === robot.id && event.truck === truck.id);
-      if (truck.dock.bay.length > 0 && state.t >= truck.at) for (const robot of inside) assert.ok(robot.id === truck.loader || full(robot) || robot.phase === "idle", `jour ${seed}, tour ${state.t} : le robot ${robot.id} entre dans le camion ${truck.id}, chargé par ${truck.loader}`);
+      if (truck.dock.bay.length > 0 && state.t >= truck.at) for (const robot of inside) assert.ok(Object.values(truck.loaders).includes(robot.id) || full(robot) || robot.phase === "idle", `jour ${seed}, tour ${state.t} : le robot ${robot.id} entre dans le camion ${truck.id}, chargé par ${truck.loader}`);
       const waiting = state.orders.filter((order) => order.truck === truck.id - 1 && order.cell);
       assert.ok(state.t >= truck.at || waiting.length <= truck.dock.bay.length, `jour ${seed}, tour ${state.t} : trop de palettes pour le quai ${truck.id}`);
     }
@@ -52,8 +52,9 @@ function playChecked(setup, seed, rule) {
 describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
   it("reads Sami's plan: the truck, its two waiting zones, twelve blocks each with pickup cells, four cells that may block", () => {
     const warehouse = readWarehouse(PLANS.sami.text);
-    // The zones touch no truck: they belong to the only one, nearest it first (Sami, 23/10).
-    assert.deepEqual(warehouse.dock, { x: 12, y: 3, bay: ["11,1", "11,0", "10,0", "9,0", "11,5", "11,6", "10,6", "9,6"].map((key) => ({ x: Number(key.split(",")[0]), y: Number(key.split(",")[1]) })) });
+    // The zones touch no truck: they belong to the only one, two zones, every cell nearest it first (Sami, 23/10).
+    const cells = (keys) => keys.split(" ").map((key) => ({ x: Number(key.split(",")[0]), y: Number(key.split(",")[1]) }));
+    assert.deepEqual(warehouse.dock, { x: 12, y: 3, bay: cells("11,1 11,5 11,0 11,6 10,0 10,6 9,0 9,6"), zones: [cells("11,1 11,0 10,0 9,0"), cells("11,5 11,6 10,6 9,6")] });
     assert.equal(warehouse.charges.length, 4);
     assert.equal(warehouse.blocks.size, 12);
     assert.ok([...warehouse.blocks.values()].every((cells) => cells.length >= 4));
