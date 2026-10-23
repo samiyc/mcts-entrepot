@@ -218,6 +218,18 @@ Sur le plan de Sami, toutes les règles finissent (tours 91 à 115) et la recher
 
 **Une recherche douze fois plus rapide, mêmes coups** (Sami, le même soir, sur un plan à quatre bornes). Le premier tour prenait 20 s, presque tout en recherches de chemin qui échouaient : la file du camion redemandait à chaque tour un chemin vers un camion dont l'unique porte était tenue par un robot garé. Une recherche qui échoue fouille tout l'horizon (80 tours) : 13 ms, et 1 313 fois au premier tour. On regarde maintenant d'abord si chaque accès à la cible est tenu pour de bon, et on renonce sans chercher. Une journée de recherche : 43 s → 3,5 s sur ce plan, 28 → 3,6 s sur le camion à une porte, 17,5 → 2,1 s dans les couloirs ; les coups de toutes les règles et de la recherche sont identiques.
 
+
+## Les nouveaux plans de Sami : obstacles, bornes, zones d'attente (23/10, tard le soir)
+
+Sami a redessiné le plan de Sami (13 × 7 : quatre bornes, deux zones `w` dans les coins, un camion à une porte) et les trois quais (16 × 7, avec des murs et deux allées `~`). Ce que ça a demandé :
+- **Une zone d'attente n'a plus besoin de toucher le camion** : un groupe de `w` qui ne touche aucun quai appartient au camion le plus proche, ses cases après la baie de ce camion, les plus proches d'abord.
+- **Une zone n'est pas une ligne** : le chargeur s'est retrouvé coincé dans un coin derrière deux palettes. Une palette ne se pose maintenant que si toutes les palettes en attente ou promises, et tout robot qui en porte une, gardent un chemin libre jusqu'au camion (ou jusqu'à leur case).
+- **Pas de commande sans place** : le camion là, un robot autre que le chargeur réserve sa case dans la zone en partant chercher (au fond, jamais à la porte), et le chargeur ne va chercher lui-même qu'une fois sa baie vide. Sans quoi les quatre robots finissaient chacun une palette dans les mains devant un camion dont l'unique porte portait une palette en attente.
+- **On ne ramasse pas sous une palette** : une case de zone peut toucher un bloc (le `w` en (11,1) touche D) ; on n'y prend rien quand une palette y attend, et on n'y pose rien quand un robot y va pour prendre.
+- **Le plan de Sami dure 220 tours** : le camion est là dès le départ, donc tout passe par les zones et le seul chargeur ; 122 à 196 tours selon la règle et le blocage. Les trois quais : 92 à 247 tours à quai cumulés selon la règle.
+- **Les allées bloquées** portent une croix ❌, pâle tant qu'aucun robot ne l'a vue.
+- **La recherche, plus rapide, mêmes coups** : les vérifications de chemins se font en un balayage par destination, et sont gardées en mémoire (comme les distances au sol, qui ne dépendent que du plan). Une journée de recherche : 31 → 7,9 s sur le plan de Sami, 19,6 → 3,0 s sur les quais (empreinte des coups identique).
+
 ## La suite
 
 1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres

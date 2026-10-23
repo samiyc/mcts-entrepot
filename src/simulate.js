@@ -149,11 +149,30 @@ const truckOf = (state, order) => state.trucks[order.truck];
 const isThere = (state, truck) => state.t >= truck.at;
 const keyOf = (cell) => `${cell.x},${cell.y}`;
 /** The free cell of a truck's bay nearest the truck, or null (none left, or no bay). */
-const freeBayCell = (state, truck) => truck.dock.bay.find((cell) => !state.claims.has(keyOf(cell))) ?? null;
+/** Can a pallet be left on bay cell `cell`: not claimed, and no robot on its way there to pick (a bay cell may be beside a block). */
+const bayFree = (state, cell) => !state.claims.has(keyOf(cell)) && !shutsIn(state, cell) && !state.robots.some((robot) => (robot.phase === "toPick" || robot.phase === "picking") && ((robot.target && keyOf(robot.target) === keyOf(cell)) || keyOf(robot) === keyOf(cell)));
+const freeBayCell = (state, truck) => truck.dock.bay.find((cell) => bayFree(state, cell)) ?? null;
+/**
+ * The bay cell `robot` would leave a pallet of `truck` on: before the truck, the free one nearest it; the truck
+ * there, for anyone but its loader, the free one at the bay's far end, never the one at the truck's door (the
+ * loader's way in).
+ */
+function bayCellFor(state, truck, robot) {
+  if (!isThere(state, truck) || truck.loader === robot.id) return freeBayCell(state, truck);
+  return [...truck.dock.bay].reverse().find((cell, i, cells) => i < cells.length - 1 && bayFree(state, cell)) ?? null;
+}
 /** Can an order be taken now: its truck is there, or has no bay, or its bay has a cell left. */
-const canTake = (state, order) => {
+/**
+ * Can `robot` take order `order` now. Without a bay, always. With one: a cell left on it, claimed when it sets off;
+ * once the truck is there, its loader carries straight in, but only once no pallet of its truck waits on the bay
+ * (with one in hand it could not get past them), and the others still need a cell on the bay (Sami's docks,
+ * 23/10: four robots with a pallet each, the truck's only door behind a waiting pallet, nobody left to load it).
+ */
+const canTake = (state, order, robot) => {
   const truck = truckOf(state, order);
-  return truck.dock.bay.length === 0 || isThere(state, truck) || freeBayCell(state, truck) !== null;
+  if (truck.dock.bay.length === 0) return true;
+  if (isThere(state, truck) && truck.loader === robot.id) return !state.orders.some((other) => other.truck === order.truck && other.cell && (other.status === "staged" || other.status === "toTruck"));
+  return bayCellFor(state, truck, robot) !== null;
 };
 function claim(state, order, cell) {
   order.cell = cell;
@@ -184,7 +203,7 @@ function dropCellOf(state, order, robot) {
     if (!order.cell) {
       // The truck there, the bay is a stack the loader empties from the truck's side: drop at its far end, never
       // on the cell at the truck's door, so the loader's way in stays open.
-      const free = [...truck.dock.bay].reverse().find((cell, i, cells) => i < cells.length - 1 && !state.claims.has(keyOf(cell)));
+      const free = [...truck.dock.bay].reverse().find((cell, i, cells) => i < cells.length - 1 && bayFree(state, cell));
       if (!free) {
         // The bay is full: this pallet goes into the truck anyway.
         state.log.push({ t: state.t, type: "overflow", robot: robot.id, truck: truck.id });
@@ -212,21 +231,80 @@ const palletCells = (state) => new Set(state.orders.filter((order) => order.cell
 
 /** Can the pallet of `order`, on its bay, be carried into its truck without going through another pallet? */
 function clearToTruck(state, order) {
-  const { dock } = truckOf(state, order);
   // The cells promised to other pallets count too: one is on its way there.
   const pallets = new Set(state.orders.filter((other) => other.cell && other !== order).map((other) => keyOf(other.cell)));
-  const seen = new Set([keyOf(order.cell)]);
-  const queue = [order.cell];
+  return wayOut(state, order.cell, truckOf(state, order).dock, pallets);
+}
+
+/** Is there a floor way from `from` to `to` through no cell of `blocked` (pallets)? */
+function wayOut(state, from, to, blocked) {
+  const seen = new Set([keyOf(from)]);
+  const queue = [from];
   for (let i = 0; i < queue.length; i += 1) {
     const cell = queue[i];
-    if (cell.x === dock.x && cell.y === dock.y) return true;
+    if (cell.x === to.x && cell.y === to.y) return true;
     for (const [dx, dy] of SIDES) {
       const next = { x: cell.x + dx, y: cell.y + dy };
       const key = keyOf(next);
-      if (seen.has(key) || pallets.has(key) || !state.warehouse.floor(state.warehouse.plan.at(next.x, next.y))) continue;
+      if (seen.has(key) || (blocked.has(key) && (next.x !== to.x || next.y !== to.y)) || !state.warehouse.floor(state.warehouse.plan.at(next.x, next.y))) continue;
       seen.add(key);
       queue.push(next);
     }
+  }
+  return false;
+}
+
+/**
+ * Would a pallet left on `cell` shut another in (Sami's waiting zones, 23/10: a zone is not a line, the loader got
+ * boxed in a corner)? It must leave every pallet waiting or promised a way to its truck, and every robot carrying
+ * one a way to where it goes, without going through another pallet.
+ */
+function shutsIn(state, cell) {
+  // The answer depends only on the pallets' cells and the loaded robots: remembered per warehouse, since the
+  // search asks it again and again in worlds alike.
+  const carried = state.robots.filter((robot) => robot.phase === "toDrop" && robot.order);
+  const signature = `${keyOf(cell)}|${state.orders.filter((order) => order.cell).map((order) => `${order.truck}:${keyOf(order.cell)}`).join(" ")}|${carried.map((robot) => `${keyOf(robot)}>${orderOf(state, robot).cell ? keyOf(orderOf(state, robot).cell) : orderOf(state, robot).truck}`).join(" ")}`;
+  if (!shutMemo.has(state.warehouse)) shutMemo.set(state.warehouse, new Map());
+  const memo = shutMemo.get(state.warehouse);
+  if (!memo.has(signature)) {
+    if (memo.size > 200_000) memo.clear();
+    memo.set(signature, shutsInNow(state, cell));
+  }
+  return memo.get(signature);
+}
+const shutMemo = new WeakMap();
+
+function shutsInNow(state, cell) {
+  const blocked = new Set([keyOf(cell), ...state.orders.filter((order) => order.cell).map((order) => keyOf(order.cell))]);
+  // One sweep a destination: the cells reached from it through no pallet. A pallet (or a robot with one) gets
+  // there when it stands in that region or beside it: the same answer as a search from each, once.
+  const regions = new Map();
+  const regionOf = (to) => {
+    if (!regions.has(keyOf(to))) {
+      const seen = new Set([keyOf(to)]);
+      const queue = [to];
+      for (let i = 0; i < queue.length; i += 1) {
+        for (const [dx, dy] of SIDES) {
+          const next = { x: queue[i].x + dx, y: queue[i].y + dy };
+          const key = keyOf(next);
+          if (seen.has(key) || blocked.has(key) || !state.warehouse.floor(state.warehouse.plan.at(next.x, next.y))) continue;
+          seen.add(key);
+          queue.push(next);
+        }
+      }
+      regions.set(keyOf(to), seen);
+    }
+    return regions.get(keyOf(to));
+  };
+  const reaches = (from, to) => {
+    const region = regionOf(to);
+    return region.has(keyOf(from)) || SIDES.some(([dx, dy]) => region.has(`${from.x + dx},${from.y + dy}`));
+  };
+  for (const order of state.orders) if (order.cell && !reaches(order.cell, truckOf(state, order).dock)) return true;
+  for (const robot of state.robots) {
+    if (robot.phase !== "toDrop" || !robot.order) continue;
+    const order = orderOf(state, robot);
+    if (!reaches(robot, order.cell ?? truckOf(state, order).dock)) return true;
   }
   return false;
 }
@@ -335,7 +413,13 @@ export function nextChoice(state) {
     const distances = distancesFrom(state.warehouse, robot, closed(state));
     const reach = (order) => (order.status === "staged" ? (distances.get(keyOf(order.cell)) ?? Infinity) : (nearestPickup(state.warehouse, order.block, distances)?.steps ?? Infinity));
     const loads = state.orders.filter((order) => order.status === "staged" && order.cell && isThere(state, truckOf(state, order)) && reach(order) < Infinity && mayLoad(state, truckOf(state, order), robot) && clearToTruck(state, order));
-    const fetches = state.orders.filter((order) => order.status === "open" && reach(order) < Infinity && canTake(state, order));
+    // Whether a truck takes one more pallet is the same for all its orders: asked once per truck.
+    const takes = new Map();
+    const canTakeFor = (order) => {
+      if (!takes.has(order.truck)) takes.set(order.truck, canTake(state, order, robot));
+      return takes.get(order.truck);
+    };
+    const fetches = state.orders.filter((order) => order.status === "open" && reach(order) < Infinity && canTakeFor(order));
     // A truck's loader keeps to it: its bay's pallets, then its orders, else it waits off the bay.
     const loading = state.trucks.find((truck) => truck.loader === robot.id && !truckDone(state, truck));
     if (loading) {
@@ -459,12 +543,14 @@ export function choose(state, choice, id) {
     return;
   }
   // The nearest pickup cell a leg reaches: the nearest may hold a robot parked there for good.
-  const cells = state.warehouse.blocks.get(chosen.block).filter((cell) => distances.has(`${cell.x},${cell.y}`));
+  // Not from under a pallet waiting on a bay: with the order on its back, the robot would hold two on one cell.
+  const pallets = new Set(state.orders.filter((order) => order.cell).map((order) => keyOf(order.cell)));
+  const cells = state.warehouse.blocks.get(chosen.block).filter((cell) => distances.has(`${cell.x},${cell.y}`) && !pallets.has(keyOf(cell)));
   cells.sort((a, b) => distances.get(`${a.x},${a.y}`) - distances.get(`${b.x},${b.y}`));
   if (!cells.some((cell) => planLeg(state, robot, cell))) return;
   Object.assign(chosen, { status: "assigned", robot: robot.id });
   const truck = truckOf(state, chosen);
-  if (truck.dock.bay.length > 0 && !isThere(state, truck)) claim(state, chosen, freeBayCell(state, truck));
+  if (truck.dock.bay.length > 0 && (!isThere(state, truck) || truck.loader !== robot.id)) claim(state, chosen, bayCellFor(state, truck, robot));
   Object.assign(robot, { phase: "toPick", order: chosen.id });
   state.log.push({ t: state.t, type: "assigned", robot: robot.id, order: chosen.id });
 }

@@ -188,6 +188,8 @@ function board() {
     const kind = cell.kind === "blockable" && blockage.now ? `blockable blocked${blockage.seen ? " seen" : ""}` : cell.kind;
     const done = cell.kind === "block" && cell.pending === 0 ? " done" : "";
     map.append(svg("rect", { x: cell.x * CELL + 1, y: cell.y * CELL + 1, width: CELL - 2, height: CELL - 2, rx: 4, class: `cell ${kind}${done}` }));
+    // A blocked `~`: a cross, faint while the robots do not know yet.
+    if (cell.kind === "blockable" && blockage.now) map.append(svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 6, class: `symbol cross${blockage.seen ? " seen" : ""}` }, "❌"), svg("title", {}, blockage.seen ? "Allée bloquée : les robots le savent" : "Allée bloquée : aucun robot ne l'a encore vue"));
     if (cell.kind === "block") map.append(svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 5, class: "letter" }, cell.pending > 1 ? `${cell.letter}×${cell.pending}` : cell.letter));
     if (cell.kind === "dock") {
       const { truck } = cell;

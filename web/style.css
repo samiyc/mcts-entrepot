@@ -97,3 +97,5 @@ th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 tr.current td { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .home { fill: none; stroke: var(--muted, #8a8a8a); stroke-width: 1.5; stroke-dasharray: 3 3; }
 .home-id { font-size: 10px; text-anchor: middle; fill: var(--muted, #8a8a8a); pointer-events: none; }
+.symbol.cross { opacity: 0.4; }
+.symbol.cross.seen { opacity: 1; }

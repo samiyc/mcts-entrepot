@@ -37,8 +37,8 @@ describe("what the page shows (web/view.js)", () => {
     const robots = robotsOf(day);
     assert.equal(robots.length, 4);
     assert.ok(robots.some((robot) => robot.ahead.length > 1));
-    assert.match(robots[0].label, /^Robot 1 : va chercher \(commande 1, bloc A\)$/);
-    assert.match(statusLine(day), /^Tour 1 \/ 140 · 0 \/ 12 commandes livrées · allées libres$/);
+    assert.match(robots[0].label, /^Robot 1 : (va chercher|prend) \(commande 1, bloc A\)$/);
+    assert.match(statusLine(day), /^Tour 1 \/ 220 · 0 \/ 12 commandes livrées · allées libres$/);
     while (!isOver(day)) stepDay(day, RULES.list);
     assert.match(statusLine(day, measuresOf(day)), /12 \/ 12 commandes livrées · allées libres · fini au tour \d+ · \d+ pas, \d+ attentes$/);
     assert.ok(ordersOf(day).every((order) => /^livrée, robot \d au tour \d+$/.test(order.label)));

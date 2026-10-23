@@ -50,24 +50,26 @@ function playChecked(setup, seed, rule) {
 }
 
 describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
-  it("reads Sami's plan: the truck, twelve blocks each with pickup cells, five cells that may block", () => {
+  it("reads Sami's plan: the truck, its two waiting zones, twelve blocks each with pickup cells, four cells that may block", () => {
     const warehouse = readWarehouse(PLANS.sami.text);
-    assert.deepEqual(warehouse.dock, { x: 16, y: 3, bay: [] });
-    assert.deepEqual(warehouse.charges, []);
+    // The zones touch no truck: they belong to the only one, nearest it first (Sami, 23/10).
+    assert.deepEqual(warehouse.dock, { x: 12, y: 3, bay: ["11,1", "11,0", "10,0", "9,0", "11,5", "11,6", "10,6", "9,6"].map((key) => ({ x: Number(key.split(",")[0]), y: Number(key.split(",")[1]) })) });
+    assert.equal(warehouse.charges.length, 4);
     assert.equal(warehouse.blocks.size, 12);
     assert.ok([...warehouse.blocks.values()].every((cells) => cells.length >= 4));
-    assert.equal(warehouse.blockable.length, 5);
+    assert.equal(warehouse.blockable.length, 4);
     const open = distancesFrom(warehouse, warehouse.dock);
     const shut = distancesFrom(warehouse, warehouse.dock, true);
-    assert.equal(open.get("0,2"), 17);
-    assert.ok(shut.get("0,2") > open.get("0,2"));
+    assert.equal(open.get("1,2"), 12);
+    // The aisle blocked, the cell beside the second charging point is cut off: its only way in is the aisle.
+    assert.equal(shut.get("1,2"), undefined);
     assert.throws(() => createDay({ ...PLANS.petit, orders: "AZ" }, { blockage: null }), /pas de bloc Z/);
   });
 
   it("reads the docks plan: three docks, each with a bay of three cells filled from the truck, four charging points", () => {
     const warehouse = readWarehouse(PLANS.quais.text);
     assert.equal(warehouse.docks.length, 3);
-    assert.deepEqual(warehouse.docks[0].bay, [{ x: 20, y: 1 }, { x: 19, y: 1 }, { x: 18, y: 1 }]);
+    assert.deepEqual(warehouse.docks[0].bay, [{ x: 14, y: 1 }, { x: 13, y: 1 }, { x: 12, y: 1 }]);
     assert.equal(warehouse.charges.length, 4);
     assert.throws(() => createDay({ ...PLANS.quais, orders: "A/B/C/D" }, { blockage: null }), /4 camions pour 3 quais/);
   });

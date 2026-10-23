@@ -4,7 +4,8 @@
  * - `.` the floor, where robots move;
  * - a capital letter, a block of shelves (not passable): an order is fetched from a floor cell beside it;
  * - `T` a truck's dock, where orders are dropped, one robot at a time (23/10/2026);
- * - `w` a bay cell in front of a dock (floor): one pallet waits there for its truck (23/10/2026);
+ * - `w` a bay cell in front of a dock (floor): one pallet waits there for its truck (23/10/2026); a group of `w`
+ *   touching no dock is a waiting zone of the nearest truck;
  * - `c` a charging point (floor), where a robot starts and goes back when it has nothing to do (23/10/2026);
  * - `~` floor that may get blocked for a while (a pallet left in the aisle), seen only by a robot next to it;
  * - `#` a wall, or the outside.
@@ -24,17 +25,17 @@ export const PLANS = Object.freeze({
     horizon: 80,
   }),
   sami: Object.freeze({
-    label: "Le plan de Sami (17 × 7, 4 robots)",
-    text: [".................", ".AAA.BBB.CCC.DDD.", "....~~~~~........", ".EEE.FFF.GGG.HHHT", ".................", ".III.JJJ.KKK.LLL.", "................."].join("\n"),
+    label: "Le plan de Sami (13 × 7, 4 robots, des bornes et deux zones d'attente)",
+    text: ["c........www#", "AA.BB.CC.DDw#", "c.~~~~......#", "EE.FF.GG.HH.T", "c...........#", "II.JJ.KK.LLw#", "c........www#"].join("\n"),
     robots: 4,
     orders: "ABCDEFGHIJKL",
     blocking: 0.2,
     duration: 10,
-    horizon: 140,
+    horizon: 220,
   }),
   quais: Object.freeze({
-    label: "Trois quais et leurs camions (22 × 7, 4 robots, Sami)",
-    text: [".....................#", "c.AAA.BBB.CCC.DDD.wwwT", "c....~~~~~...........#", "..EEE.FFF.GGG.HHH.wwwT", "c....................#", "c.III.JJJ.KKK.LLL.wwwT", ".....................#"].join("\n"),
+    label: "Trois quais et leurs camions (16 × 7, 4 robots, Sami, avec des obstacles)",
+    text: ["c..#...........#", "AA.BB.CC.DD.wwwT", "c...~~~...#....#", "EE.FF.GG.HH.wwwT", "c..#...........#", "II.JJ.KK.LL.wwwT", "c......~~~#....#"].join("\n"),
     robots: 4,
     orders: "AFKD/EJCH/IBGL",
     trucks: Object.freeze([20, 40, 60]),
