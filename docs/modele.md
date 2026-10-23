@@ -208,6 +208,13 @@ le quai.
 
 **La page ne gèle plus pendant la recherche** (Sami, le même soir). Sur le plan de Sami, la recherche réfléchit 1,7 s au premier tour (8 s dans les couloirs), et la page jouait ses tours dans le fil de la page : Chrome finissait par dire « Page ne répondant pas ». La recherche tourne maintenant dans des workers (`web/search-worker.js`). L'état d'une journée ne se transmet pas (il contient des fonctions) : le worker la refait depuis son plan, son numéro et les choix déjà faits, puis cherche le suivant ; même journée, mêmes coups (le plan de Sami finit au tour 69 dans la page comme sous Node). La comparaison joue ses 12 journées de recherche en même temps, sur les cœurs moins deux : 11 s. Et **les points de départ** des robots sans borne sont dessinés : un cercle pointillé à leur numéro.
 
+**Un camion à une seule porte** (Sami, le même soir : son plan, le camion en 18e colonne, entouré de l'extérieur). Sa seule porte, (16,3), est aussi la case où l'on prend « H ». Aucune règle ne finissait la journée (5 à 10 livraisons sur 12), et la recherche mettait 77 s à son premier tour, chaque monde simulé s'y bloquant. Trois corrections :
+- **un robot qui ne peut pas entrer dans le camion** attend son tour à l'écart, jamais sur la porte ;
+- **les cases d'attente et de départ sont à trois pas au moins d'un quai** : deux robots garés de part et d'autre de la porte enfermaient celui du camion ;
+- **une erreur de `mcts-commun`** : un robot qui replanifie ne voyait pas un robot arrêté pour de bon sur une case de son ancien chemin, et y entrait. Corrigée et testée là-bas. Elle cachait un face-à-face dans les couloirs : deux robots nez à nez dans l'allée unique se voient garés pour de bon. **Celui qui attend depuis le plus longtemps cède le passage** : il s'écarte sur la case libre la plus proche, à quatre pas au plus, puis repart.
+
+Sur le plan de Sami, toutes les règles finissent (tours 91 à 115) et la recherche finit au tour 75. Ailleurs : petit entrepôt 44,1 à 46,5 (la liste et la plus proche), quais 100 (liste) et 114 (plus proche) au lieu de 104 et 126 ; plan de Sami et couloirs presque inchangés.
+
 ## La suite
 
 1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres

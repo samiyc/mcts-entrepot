@@ -76,7 +76,7 @@ function homesOf(warehouse, robots) {
 
 const spots = new WeakMap();
 /**
- * The warehouse's cells by use, computed once: `docking` (the docks, their bays and the cells beside a dock),
+ * The warehouse's cells by use, computed once: `docking` (the docks, their bays and the floor up to two steps from a dock),
  * `pickups` (beside a block), and `aside`, where a robot may wait without blocking anyone: floor off the docks,
  * not a `~`, whose loss leaves every other floor cell connected (no aisle of one cell); the cells off the
  * pickups first (`rank` 0), then the pickup cells (1).
@@ -84,7 +84,8 @@ const spots = new WeakMap();
 function spotsOf(warehouse) {
   if (spots.has(warehouse)) return spots.get(warehouse);
   const { plan } = warehouse;
-  const docking = new Set(warehouse.docks.flatMap((one) => [keyOf(one), ...one.bay.map(keyOf), ...SIDES.map(([dx, dy]) => `${one.x + dx},${one.y + dy}`)]));
+  // Two cells around a dock: robots waiting right beside its door could shut in the one inside (Sami, 23/10).
+  const docking = new Set(warehouse.docks.flatMap((one) => [...one.bay.map(keyOf), ...[...distancesFrom(warehouse, one)].filter(([, steps]) => steps <= 2).map(([key]) => key)]));
   const pickups = new Set([...warehouse.blocks.values()].flat().map(keyOf));
   const floor = [...distancesFrom(warehouse, warehouse.dock).keys()];
   const connectedWithout = (cut) => {
@@ -128,7 +129,7 @@ export function createDay(setup, day) {
     day,
     t: 0,
     trucks,
-    robots: homes.map((home, i) => ({ id: i + 1, x: home.x, y: home.y, home: { x: home.x, y: home.y }, phase: "idle", order: null, target: null, queued: null, path: null, until: null, moves: 0, waits: 0 })),
+    robots: homes.map((home, i) => ({ id: i + 1, x: home.x, y: home.y, home: { x: home.x, y: home.y }, phase: "idle", order: null, target: null, queued: null, resume: null, blockedFor: 0, path: null, until: null, moves: 0, waits: 0 })),
     orders: trucks.flatMap((truck) => [...truck.blocks].map((block) => ({ block, truck: truck.id - 1 }))).map(({ block, truck }, i) => ({ id: i + 1, block, truck, status: "open", robot: null, deliveredAt: null, stagedAt: null, cell: null })),
     claims: new Map(),
     // One robot at a time goes into a truck's cell: the others wait their turn aside, in order.
@@ -247,12 +248,20 @@ function planLeg(state, robot, target) {
   return true;
 }
 
-/** Holds `robot` where it stands, its cell reserved, when no leg can be found. */
-function hold(state, robot) {
+/**
+ * Holds `robot` where it stands, its cell reserved, when no leg can be found. Robots that had planned through that
+ * cell plan again around it (or hold too): a robot held never has another walk into it.
+ */
+function hold(state, robot, depth = 0) {
   const here = [{ x: robot.x, y: robot.y, t: state.t }];
   state.reservations.release(robot.id);
   state.reservations.reserve(robot.id, here, { stay: true });
   robot.path = here;
+  for (const other of state.robots) {
+    if (other === robot || !other.path?.some((step) => step.t > state.t && step.x === robot.x && step.y === robot.y)) continue;
+    state.replans += 1;
+    if ((!other.target || !planLeg(state, other, other.target)) && depth < state.robots.length) hold(state, other, depth + 1);
+  }
 }
 
 /**
@@ -395,7 +404,10 @@ function goDrop(state, robot, cell) {
     }
   }
   robot.queued = null;
-  if (!planLeg(state, robot, cell)) robot.target = cell;
+  if (planLeg(state, robot, cell)) return;
+  // No way into the truck now (someone still inside, its only door held): wait aside, never on the door.
+  if (isDock(state, cell)) wait(state, robot, cell);
+  else robot.target = cell;
 }
 
 /**
@@ -478,20 +490,49 @@ function move(state) {
 function arrive(state) {
   for (const robot of state.robots) {
     if (!robot.target || robot.x !== robot.target.x || robot.y !== robot.target.y) continue;
-    if (robot.phase === "toPick") Object.assign(robot, { phase: "picking", until: state.t + 1, target: null });
+    // Out of the way for another: back to its own target, retried from next turn.
+    if (robot.resume) Object.assign(robot, { target: robot.resume, resume: null });
+    else if (robot.phase === "toPick") Object.assign(robot, { phase: "picking", until: state.t + 1, target: null });
     else if (robot.phase === "toDrop" && robot.queued) robot.target = null;
     else if (robot.phase === "toDrop") Object.assign(robot, { phase: "dropping", until: state.t + 1, target: null });
     else if (robot.phase === "home") Object.assign(robot, { phase: "idle", target: null });
   }
 }
 
-/** Robots held short of their target (no leg was found) try again. */
+/**
+ * Robots held short of their target (no leg was found) try again. Two of them nose to nose in a one-cell aisle
+ * each see the other parked for good: the one held longest (the higher number between equals) gives way, to the
+ * nearest free cell off the aisle, lets the other pass, and sets off again from there.
+ */
 function retry(state) {
   callQueues(state);
   for (const robot of state.robots) {
     const end = robot.path?.at(-1);
     const short = robot.target && end && end.t <= state.t && (end.x !== robot.target.x || end.y !== robot.target.y);
-    if (short) planLeg(state, robot, robot.target);
+    if (!short) {
+      robot.blockedFor = 0;
+      continue;
+    }
+    robot.blockedFor = planLeg(state, robot, robot.target) ? 0 : (robot.blockedFor ?? 0) + 1;
+  }
+  const stuck = state.robots.filter((robot) => robot.blockedFor >= 2 && !robot.resume).sort((a, b) => b.blockedFor - a.blockedFor || b.id - a.id)[0];
+  if (stuck) giveWay(state, stuck);
+}
+
+/** `robot`, stuck, to the nearest free cell (an aside cell first) within four steps; its target kept for after. */
+function giveWay(state, robot) {
+  const taken = new Set(state.robots.filter((other) => other !== robot).flatMap((other) => [keyOf(other), ...(other.target ? [keyOf(other.target)] : [])]));
+  const { aside, docking } = spotsOf(state.warehouse);
+  const pocket = new Set(aside);
+  const near = [...distancesFrom(state.warehouse, robot, closed(state))].filter(([key, steps]) => steps > 0 && steps <= 4 && !taken.has(key) && !docking.has(key)).sort((a, b) => Number(pocket.has(b[0])) - Number(pocket.has(a[0])) || a[1] - b[1]);
+  const goal = robot.target;
+  for (const [key] of near) {
+    const [x, y] = key.split(",").map(Number);
+    if (planLeg(state, robot, { x, y })) {
+      Object.assign(robot, { resume: goal, blockedFor: 0 });
+      state.log.push({ t: state.t, type: "gaveWay", robot: robot.id });
+      return;
+    }
   }
 }
 
