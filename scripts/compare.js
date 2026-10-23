@@ -12,7 +12,7 @@ const days = args.includes("--days") ? Number(args[args.indexOf("--days") + 1]) 
 const named = args.includes("--plan") ? [args[args.indexOf("--plan") + 1]] : Object.keys(PLANS);
 const searching = args.includes("--search");
 const budget = searching && /^\d+$/.test(args[args.indexOf("--search") + 1] ?? "") ? Number(args[args.indexOf("--search") + 1]) : undefined;
-const rules = searching ? { ...RULES, search: searchRule({ budget }) } : RULES;
+const rules = searching ? { ...RULES, search: searchRule(budget ? { budget } : {}) } : RULES;
 const fixed = (value, digits = 1) => value.toFixed(digits).replace(".", ",");
 for (const id of named) {
   const setup = PLANS[id];
