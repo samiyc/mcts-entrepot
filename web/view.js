@@ -38,6 +38,8 @@ export function cellsOf(state) {
   for (const order of state.orders) if (order.status !== "delivered") pending.set(order.block, (pending.get(order.block) ?? 0) + 1);
   const pallets = new Map(state.orders.filter((order) => (order.status === "staged" || order.status === "toTruck") && order.cell).map((order) => [`${order.cell.x},${order.cell.y}`, order.block]));
   const trucks = new Map(trucksOf(state).map((truck) => [`${truck.x},${truck.y}`, truck]));
+  // Where each robot starts and goes back to, when it is not a charging point.
+  const homes = new Map(state.robots.filter((robot) => plan.at(robot.home.x, robot.home.y) !== "c").map((robot) => [`${robot.home.x},${robot.home.y}`, robot.id]));
   const cells = [];
   for (let y = 0; y < plan.height; y += 1) {
     for (let x = 0; x < plan.width; x += 1) {
@@ -46,7 +48,7 @@ export function cellsOf(state) {
       else if (char === "w") cells.push({ x, y, kind: "bay", pallet: pallets.get(`${x},${y}`) ?? null });
       else if (char === "c") cells.push({ x, y, kind: "charge" });
       else if (char === "~") cells.push({ x, y, kind: "blockable" });
-      else if (char === ".") cells.push({ x, y, kind: "floor" });
+      else if (char === ".") cells.push({ x, y, kind: "floor", home: homes.get(`${x},${y}`) ?? null });
       else if (isBlock(char)) cells.push({ x, y, kind: "block", letter: char, pending: pending.get(char) ?? 0 });
       else cells.push({ x, y, kind: "wall" });
     }

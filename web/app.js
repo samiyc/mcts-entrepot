@@ -1,7 +1,6 @@
 import { PLANS } from "../src/plans.js";
 import { RULE_LABELS, RULES, compareRules, summaryOf } from "../src/rules.js";
-import { searchRule } from "../src/search.js";
-import { createDay, drawDay, isOver, measuresOf, runDay, stepDay } from "../src/simulate.js";
+import { beginTurn, choose, createDay, drawDay, endTurn, isOver, measuresOf, nextChoice, runDay, stepDay } from "../src/simulate.js";
 import { blockageOf, cellsOf, ordersOf, robotsOf, statusLine } from "./view.js";
 
 const SYMBOLS = Object.freeze({ charge: "⚡", truck: "🚚" });
@@ -9,17 +8,72 @@ const SYMBOLS = Object.freeze({ charge: "⚡", truck: "🚚" });
 /**
  * The page: a day in the chosen warehouse under the chosen rule, played turn by turn (or all at once), then
  * the rules on the same 100 days. The plan can be edited (text, robots, orders, blockage): a new warehouse is
- * a new text. The search (src/search.js) thinks for a while at each choice: its days are played turn by turn,
- * the page breathing between two, and compared on fewer days. What it shows is computed in view.js; this
+ * a new text. The search (src/search.js) thinks for a while at each choice (seconds at a day's start): it runs in
+ * workers (search-worker.js), the page asking for each choice and drawing between two, and is compared on fewer
+ * days, several at once. What it shows is computed in view.js; this
  * module only draws and listens.
  */
 const CELL = 34;
 const COMPARED = 100;
 const COMPARED_WITH_SEARCH = 12;
 const app = document.getElementById("app");
-const state = { planId: "sami", setup: { ...PLANS.sami }, rule: "list", seed: 1, speed: 4, day: null, timer: null, compared: null, error: "", busy: "", run: 0 };
-const ruleOf = (name) => (name === "search" ? searchRule() : RULES[name]);
-const breathe = () => new Promise((resolve) => setTimeout(resolve, 0));
+const state = { planId: "sami", setup: { ...PLANS.sami }, rule: "list", seed: 1, speed: 4, day: null, choices: [], thinking: false, timer: null, compared: null, error: "", busy: "", run: 0 };
+
+/** The workers the search runs in, created on first use: one asked for each choice, others for whole days. */
+const workers = [];
+let jobs = 0;
+const workerAt = (i) => {
+  workers[i] ??= new Worker(new URL("./search-worker.js", import.meta.url), { type: "module" });
+  return workers[i];
+};
+/** Asks worker `i` for `message`'s answer. */
+function ask(i, message) {
+  const worker = workerAt(i);
+  const job = ++jobs;
+  return new Promise((resolve, reject) => {
+    const done = ({ data }) => {
+      if (data.job !== job) return;
+      worker.removeEventListener("message", done);
+      resolve(data);
+    };
+    worker.addEventListener("message", done);
+    worker.onerror = (error) => reject(error);
+    worker.postMessage({ ...message, job });
+  });
+}
+/** Every worker stopped (a new day, a new plan): the answers of a search under way would be for another day. */
+function stopWorkers() {
+  for (const worker of workers.splice(0)) worker.terminate();
+}
+
+/**
+ * One turn of the shown day: under a rule at once; under the search, each robot's choice asked of the worker,
+ * then the turn played. False when a newer run started meanwhile.
+ */
+async function playTurn(run) {
+  const day = state.day;
+  if (state.rule !== "search") {
+    stepDay(day, RULES[state.rule]);
+    return true;
+  }
+  state.thinking = true;
+  try {
+    if (day.cursor === null) beginTurn(day);
+    for (let choice = nextChoice(day); choice; choice = nextChoice(day)) {
+      state.busy = `La recherche réfléchit (tour ${day.t}, robot ${choice.robot.id})…`;
+      render();
+      const { id } = await ask(0, { kind: "choice", setup: state.setup, seed: state.seed, choices: state.choices });
+      if (run !== state.run) return false;
+      choose(day, choice, id);
+      state.choices.push(id);
+    }
+    endTurn(day);
+    state.busy = "";
+    return true;
+  } finally {
+    state.thinking = false;
+  }
+}
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -36,20 +90,9 @@ function svg(tag, attrs = {}, text = null) {
 
 function restart() {
   stop();
-  Object.assign(state, { run: state.run + 1, busy: "" });
+  stopWorkers();
+  Object.assign(state, { run: state.run + 1, busy: "", choices: [], thinking: false });
   state.day = createDay(state.setup, drawDay(state.seed, state.setup));
-}
-
-/** Plays `day` to its end under `rule`, breathing every turn; false if a newer run started meanwhile. */
-async function playOut(day, rule, run, label) {
-  while (!isOver(day)) {
-    stepDay(day, rule);
-    state.busy = `${label} : tour ${day.t} / ${day.setup.horizon}`;
-    render();
-    await breathe();
-    if (run !== state.run) return false;
-  }
-  return true;
 }
 
 async function finish() {
@@ -57,24 +100,44 @@ async function finish() {
   const run = ++state.run;
   if (state.rule !== "search") {
     while (!isOver(state.day)) stepDay(state.day, RULES[state.rule]);
-  } else if (!(await playOut(state.day, ruleOf("search"), run, "La recherche réfléchit"))) {
-    return;
+  } else {
+    while (!isOver(state.day)) {
+      if (!(await playTurn(run))) return;
+      render();
+    }
   }
   state.busy = "";
   render();
 }
 
-/** The rules and the search on the same few days, breathing between two turns of the search. */
+/** The rules and the search on the same few days, the search's days in several workers at once. */
 async function compareWithSearch() {
   stop();
   const run = ++state.run;
   const runs = { ...Object.fromEntries(Object.keys(RULES).map((name) => [name, []])), search: [] };
-  for (let i = 0; i < COMPARED_WITH_SEARCH; i += 1) {
-    for (const [name, rule] of Object.entries(RULES)) runs[name].push(runDay(state.setup, state.seed + i, rule).measures);
-    const day = createDay(state.setup, drawDay(state.seed + i, state.setup));
-    if (!(await playOut(day, ruleOf("search"), run, `Comparaison, journée ${i + 1} sur ${COMPARED_WITH_SEARCH}`))) return;
-    runs.search.push(measuresOf(day));
-  }
+  for (let i = 0; i < COMPARED_WITH_SEARCH; i += 1) for (const [name, rule] of Object.entries(RULES)) runs[name].push(runDay(state.setup, state.seed + i, rule).measures);
+  const pool = Math.max(1, Math.min(COMPARED_WITH_SEARCH, (navigator.hardwareConcurrency || 4) - 2));
+  let next = 0;
+  let done = 0;
+  const found = [];
+  state.busy = `Comparaison : la recherche joue ${COMPARED_WITH_SEARCH} journées, ${pool} à la fois…`;
+  render();
+  // Worker 0 answers the shown day's choices; the days go to workers 1 to pool.
+  await Promise.all(
+    Array.from({ length: pool }, async (_, w) => {
+      while (next < COMPARED_WITH_SEARCH) {
+        const i = next++;
+        const { measures } = await ask(w + 1, { kind: "day", setup: state.setup, seed: state.seed + i });
+        if (run !== state.run) return;
+        found[i] = measures;
+        done += 1;
+        state.busy = `Comparaison : ${done} journées de recherche sur ${COMPARED_WITH_SEARCH}`;
+        render();
+      }
+    }),
+  );
+  if (run !== state.run) return;
+  runs.search = found;
   Object.assign(state, { compared: { days: COMPARED_WITH_SEARCH, rows: summaryOf(runs) }, busy: "" });
   render();
 }
@@ -84,14 +147,15 @@ function stop() {
 }
 function play() {
   stop();
-  state.timer = setInterval(() => {
+  const run = state.run;
+  state.timer = setInterval(async () => {
+    if (state.thinking) return;
     if (isOver(state.day)) {
       stop();
       render();
       return;
     }
-    stepDay(state.day, ruleOf(state.rule));
-    render();
+    if (await playTurn(run)) render();
   }, 1000 / state.speed);
 }
 
@@ -133,6 +197,7 @@ function board() {
       map.append(svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + (there ? 7 : 4), class: `letter dock-letter${there ? " truck" : " due"}` }, text));
       if (truck) map.append(svg("title", {}, `Camion ${truck.id} : ${gone ? "chargé, parti" : truck.there ? `à quai, ${truck.left} commande${truck.left > 1 ? "s" : ""} à charger` : `attendu au tour ${truck.at}`}`));
     }
+    if (cell.home) map.append(svg("circle", { cx: cell.x * CELL + CELL / 2, cy: cell.y * CELL + CELL / 2, r: CELL / 2 - 6, class: "home" }), svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 4, class: "home-id" }, String(cell.home)), svg("title", {}, `Départ du robot ${cell.home} : il part d'ici et y revient (pas de borne « c » pour lui)`));
     if (cell.kind === "charge") map.append(svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 6, class: "symbol" }, SYMBOLS.charge));
     if (cell.pallet) map.append(svg("rect", { x: cell.x * CELL + 7, y: cell.y * CELL + 7, width: CELL - 14, height: CELL - 14, rx: 3, class: "parcel" }), svg("text", { x: cell.x * CELL + CELL / 2, y: cell.y * CELL + CELL / 2 + 4, class: "letter pallet" }, cell.pallet));
   }
@@ -214,7 +279,7 @@ const ACTIONS = {
   pause: stop,
   step: () => {
     stop();
-    if (!isOver(state.day)) stepDay(state.day, ruleOf(state.rule));
+    if (!isOver(state.day) && !state.thinking) playTurn(state.run).then((played) => played && render());
   },
   finish,
   restart,

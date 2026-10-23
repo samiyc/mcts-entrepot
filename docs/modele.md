@@ -206,6 +206,8 @@ le quai.
   maintenant d'un coup d'œil, avant de chercher : une journée du plan de Sami est passée de 350 à 14 ms, sans
   changer un seul coup.
 
+**La page ne gèle plus pendant la recherche** (Sami, le même soir). Sur le plan de Sami, la recherche réfléchit 1,7 s au premier tour (8 s dans les couloirs), et la page jouait ses tours dans le fil de la page : Chrome finissait par dire « Page ne répondant pas ». La recherche tourne maintenant dans des workers (`web/search-worker.js`). L'état d'une journée ne se transmet pas (il contient des fonctions) : le worker la refait depuis son plan, son numéro et les choix déjà faits, puis cherche le suivant ; même journée, mêmes coups (le plan de Sami finit au tour 69 dans la page comme sous Node). La comparaison joue ses 12 journées de recherche en même temps, sur les cœurs moins deux : 11 s. Et **les points de départ** des robots sans borne sont dessinés : un cercle pointillé à leur numéro.
+
 ## La suite
 
 1. **Le cariste** : un humain simulé (le plus proche, le plus urgent, au hasard) qui prend ses propres
