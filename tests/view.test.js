@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { PLANS } from "../src/plans.js";
 import { RULES } from "../src/rules.js";
 import { createDay, drawDay, isOver, measuresOf, stepDay } from "../src/simulate.js";
-import { blockageOf, cellsOf, ordersOf, robotsOf, statusLine } from "../web/view.js";
+import { blockageOf, cellsOf, ordersOf, robotsOf, stationsOf, statusLine } from "../web/view.js";
 
 describe("what the page shows (web/view.js)", () => {
   it("draws every cell of the plan, the blocks with their pending orders", () => {
@@ -56,5 +56,23 @@ describe("the days of a comparison by pairs (web/view.js)", () => {
     assert.deepEqual(paired.rows, [{ name: "nearest", diffs: [{ seed: 5, gain: -2 }, { seed: 6, gain: 5 }] }]);
     assert.equal(paired.low, -2);
     assert.equal(paired.high, 5);
+  });
+});
+
+describe("the assembly station on the page (web/view.js)", () => {
+  it("shows the station, its kit waiting for its parts then at work, and what each order is to a kit", () => {
+    const setup = PLANS.assemblage;
+    const day = createDay(setup, drawDay(1, setup));
+    const cell = cellsOf(day).find((one) => one.kind === "assembly");
+    assert.deepEqual({ x: cell.x, y: cell.y }, { x: 1, y: 7 });
+    assert.deepEqual(stationsOf(day), [{ x: 1, y: 7, kit: 1, parts: 2, partsIn: 0, working: false, since: null }]);
+    const orders = ordersOf(day);
+    assert.match(orders.find((order) => order.block === "I").label, /^pièce du kit 1 : /);
+    assert.match(orders.find((order) => order.block === "S1").label, /^colis assemblé \(kit 1\) : en attente de son assemblage/);
+    while (!day.kits.some((kit) => kit.startedAt !== null)) stepDay(day, RULES.nearest);
+    const [station] = stationsOf(day);
+    assert.equal(station.working, true);
+    assert.equal(station.since, day.kits.find((kit) => kit.startedAt !== null).startedAt);
+    assert.ok(!statusLine(day).includes("camion 2"));
   });
 });

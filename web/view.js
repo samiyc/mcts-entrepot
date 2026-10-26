@@ -5,12 +5,13 @@ import { isBlock } from "../src/warehouse.js";
  * block's pending orders, the robots with what is left of their leg, the day in one line. The DOM layer
  * (app.js) only draws it.
  */
-export const STATUS_LABELS = Object.freeze({ open: "en attente", assigned: "attribuée", carried: "en route vers le quai", staged: "prête devant le quai", toTruck: "un robot vient la charger", delivered: "livrée", pending: "pas encore arrivée" });
+export const STATUS_LABELS = Object.freeze({ open: "en attente", assigned: "attribuée", carried: "en route vers le quai", staged: "prête devant le quai", toTruck: "un robot vient la charger", delivered: "livrée", pending: "pas encore arrivée", kit: "en attente de son assemblage" });
 const PHASE_LABELS = Object.freeze({ idle: "libre", toPick: "va chercher", picking: "prend", toDrop: "rapporte", dropping: "dépose", home: "rentre", relay: "attend un relais" });
 
 /** The trucks: `{ id, x, y, at, there, left }`, `left` the orders not yet loaded. */
 export function trucksOf(state) {
-  return state.trucks.map((truck) => ({
+  // The assembly stations are docks for the robots, not trucks (day-kits.js).
+  return state.trucks.filter((truck) => !truck.station).map((truck) => ({
     id: truck.id,
     x: truck.dock.x,
     y: truck.dock.y,
@@ -42,6 +43,7 @@ function cellAt(ctx, x, y) {
   const char = ctx.plan.at(x, y);
   const key = `${x},${y}`;
   if (char === "T") return { x, y, kind: "dock", truck: found(ctx.trucks, key) };
+  if (char === "S") return { x, y, kind: "assembly", assembly: found(ctx.stations, key) };
   if (char === "w" || ctx.autoBay.has(key)) return { x, y, kind: "bay", pallet: found(ctx.pallets, key), auto: char !== "w" };
   if (char === ".") return { x, y, kind: "floor", home: found(ctx.homes, key), pallet: found(ctx.pallets, key) };
   return otherCell(ctx, char, x, y);
@@ -59,10 +61,11 @@ export function cellsOf(state) {
   const pallets = new Map(state.orders.filter((order) => (order.status === "staged" || order.status === "toTruck") && order.cell).map((order) => [`${order.cell.x},${order.cell.y}`, order.block]));
   const trucks = new Map(trucksOf(state).map((truck) => [`${truck.x},${truck.y}`, truck]));
   // Waiting zones made at the start for trucks the plan gave none.
-  const autoBay = new Set(state.warehouse.docks.filter((dock) => dock.auto).flatMap((dock) => dock.bay.map((cell) => `${cell.x},${cell.y}`)));
+  const autoBay = new Set([...state.warehouse.docks, ...(state.warehouse.stations ?? [])].filter((dock) => dock.auto).flatMap((dock) => dock.bay.map((cell) => `${cell.x},${cell.y}`)));
+  const stations = new Map(stationsOf(state).map((station) => [`${station.x},${station.y}`, station]));
   // Where each robot starts and goes back to, when it is not a charging point.
   const homes = new Map(state.robots.filter((robot) => plan.at(robot.home.x, robot.home.y) !== "c").map((robot) => [`${robot.home.x},${robot.home.y}`, robot.id]));
-  const ctx = { plan, pending, pallets, trucks, autoBay, homes };
+  const ctx = { plan, pending, pallets, trucks, autoBay, homes, stations };
   const rows = Array.from({ length: plan.height }, (_, y) => y);
   return rows.flatMap((y) => Array.from({ length: plan.width }, (__, x) => cellAt(ctx, x, y)));
 }
@@ -75,8 +78,13 @@ function zoneText(loading, robot) {
   const zone = Number(Object.entries(loading.loaders).find(([, id]) => id === robot.id)[0]) + 1;
   return `, zone ${zone}`;
 }
+/** Where an order goes, as a robot's label says it: its truck when there are several, or the assembly station. */
+function goesTo(state, order) {
+  if (state.trucks[order.truck]?.station) return ", pour le poste d'assemblage";
+  return trucksOf(state).length > 1 ? `, camion ${order.truck + 1}` : "";
+}
 function orderText(state, order) {
-  const truck = state.trucks.length > 1 ? `, camion ${order.truck + 1}` : "";
+  const truck = goesTo(state, order);
   return ` (commande ${order.id}, bloc ${order.block}${truck})`;
 }
 function robotLabel(state, robot, order) {
@@ -114,7 +122,7 @@ function truckText(truck) {
   return truck.there ? `camion ${truck.id} à quai` : `camion ${truck.id} au tour ${truck.at}`;
 }
 function measuresText(state, measures) {
-  const docks = state.trucks.length > 1 ? [`${measures.truckWait} tours à quai pour les camions`] : [];
+  const docks = trucksOf(state).length > 1 ? [`${measures.truckWait} tours à quai pour les camions`] : [];
   return [`fini au tour ${measures.finish}`, ...docks, `${measures.moves} pas, ${measures.waits} attente${plural(measures.waits)}`];
 }
 
@@ -130,14 +138,35 @@ export function statusLine(state, measures) {
   return parts.join(" · ");
 }
 
+/** What an order is to a kit (day-kits.js): a part for the station, or the parcel assembled there; nothing else. */
+function kitText(state, order) {
+  if (order.kit === undefined) return "";
+  return order.parcel ? `colis assemblé (kit ${order.kit + 1}) : ` : `pièce du kit ${order.kit + 1} : `;
+}
+
+/**
+ * The assembly stations (day-kits.js): `{ x, y, kit, parts, partsIn, working, since }`, the kit at work or the next
+ * one waiting for its parts; how long the work will take is hidden, as for the robots.
+ */
+export function stationsOf(state) {
+  const stations = state.warehouse.stations ?? [];
+  if (!state.kits) return [];
+  return stations.map((station, s) => {
+    const mine = state.kits.filter((kit) => kit.station === s && kit.doneAt === null);
+    const kit = mine.find((one) => one.startedAt !== null) ?? mine[0] ?? null;
+    const parts = kit ? state.orders.filter((order) => order.kit === kit.k && !order.parcel) : [];
+    return { x: station.x, y: station.y, kit: kit ? kit.k + 1 : null, parts: parts.length, partsIn: parts.filter((order) => order.status === "delivered").length, working: Boolean(kit && kit.startedAt !== null), since: kit?.startedAt ?? null };
+  });
+}
+
 /** The orders, in their order, with their state; an order not arrived yet keeps its block to itself (`?`). */
 export function ordersOf(state) {
   return state.orders.map((order) => ({
     id: order.id,
     block: order.status === "pending" ? "?" : order.block,
     status: order.status,
-    truck: state.trucks.length > 1 ? order.truck + 1 : null,
-    label: STATUS_LABELS[order.status] + (order.robot ? `, robot ${order.robot}` : "") + (order.deliveredAt === null ? "" : ` au tour ${order.deliveredAt}`),
+    truck: trucksOf(state).length > 1 && !state.trucks[order.truck].station ? order.truck + 1 : null,
+    label: kitText(state, order) + STATUS_LABELS[order.status] + (order.robot ? `, robot ${order.robot}` : "") + (order.deliveredAt === null ? "" : ` au tour ${order.deliveredAt}`),
   }));
 }
 
