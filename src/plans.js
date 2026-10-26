@@ -13,7 +13,8 @@
  * split by `/`, the docks in reading order), the trucks' arrival turns (`trucks`, 0 when left out);
  * `blocking` is the share of the time the `~` cells are blocked (23/10/2026: again and again, `duration` turns each
  * time, at unknown turns; it was once a day at most). Sami's test settings are the defaults: 80 % of the time, 8 turns
- * at a time.
+ * at a time. The days are long enough for every rule to finish with 90 s to set a pallet into a truck (26/10/2026,
+ * warehouse-hypotheses.js; `loadTurns: 1` plays the days as before, on the shorter horizons they had).
  */
 export const PLANS = Object.freeze({
   petit: Object.freeze({
@@ -23,7 +24,7 @@ export const PLANS = Object.freeze({
     orders: "ABCDBA",
     blocking: 0.8,
     duration: 8,
-    horizon: 160,
+    horizon: 220,
   }),
   sami: Object.freeze({
     label: "Le plan de Sami (13 × 7, 4 robots, des bornes et deux zones d'attente)",
@@ -32,7 +33,7 @@ export const PLANS = Object.freeze({
     orders: "ABCDEFGHIJKL",
     blocking: 0.8,
     duration: 8,
-    horizon: 260,
+    horizon: 420,
   }),
   quais: Object.freeze({
     label: "Trois quais et leurs camions (16 × 7, 4 robots, Sami, avec des obstacles)",
@@ -42,7 +43,7 @@ export const PLANS = Object.freeze({
     trucks: Object.freeze([20, 40, 60]),
     blocking: 0.8,
     duration: 8,
-    horizon: 240,
+    horizon: 300,
   }),
   couloirs: Object.freeze({
     label: "Deux couloirs étroits (13 × 5, 3 robots)",
@@ -51,7 +52,7 @@ export const PLANS = Object.freeze({
     orders: "ABCDACBD",
     blocking: 0.8,
     duration: 8,
-    horizon: 120,
+    horizon: 280,
   }),
   // Orders that arrive during the day (26/10/2026, day-arrivals.js): Sami's plan, 4 orders known at the start, then one
   // every 15 turns on average (a hypothesis), hidden until it comes; none after turn 200, the cut-off.
@@ -63,6 +64,6 @@ export const PLANS = Object.freeze({
     arrivals: Object.freeze({ known: 4, every: 15, until: 200 }),
     blocking: 0.8,
     duration: 8,
-    horizon: 300,
+    horizon: 420,
   }),
 });

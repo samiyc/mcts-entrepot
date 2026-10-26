@@ -122,10 +122,12 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
   });
 
   it("passes a stuck pallet to the robot nearer the truck through a waiting cell (Sami's relays, 23/10), and finishes sooner", () => {
-    // Days with a relay (not every day has one: on days 3 and 8 nobody gets stuck).
+    // Days with a relay (not every day has one: on days 3 and 8 nobody gets stuck), a pallet set into a truck in a turn:
+    // at 90 s the truck's queue paces the robots and nobody gets stuck on these days (26/10/2026).
+    const setup = { ...PLANS.quais, loadTurns: 1, horizon: 240 };
     for (const seed of [1, 2, 4, 5, 6, 7]) {
-      const { state, measures } = runDay(PLANS.quais, seed, RULES.nearest);
-      const off = runDay({ ...PLANS.quais, relay: false }, seed, RULES.nearest).measures;
+      const { state, measures } = runDay(setup, seed, RULES.nearest);
+      const off = runDay({ ...setup, relay: false }, seed, RULES.nearest).measures;
       assert.equal(measures.delivered, measures.orders);
       assert.ok(measures.relays > 0, `jour ${seed} : aucun relais`);
       assert.equal(off.relays, 0);
@@ -153,7 +155,7 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     for (const trucks of [[], [20]]) {
       for (let seed = 1; seed <= 12; seed += 1) {
         for (const rule of Object.values(RULES)) {
-          const state = playChecked({ ...PLANS.couloirs, text, trucks, blocking: 0.5, horizon: 200 }, seed, rule);
+          const state = playChecked({ ...PLANS.couloirs, text, trucks, blocking: 0.5, horizon: 400 }, seed, rule);
           assert.ok(state.orders.every((order) => order.status === "delivered"), `camion au tour ${trucks[0] ?? 0}, jour ${seed}`);
         }
       }
@@ -185,7 +187,8 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
   });
 
   it("compares the rules by pairs on the same days", () => {
-    const result = compareRules({ ...PLANS.petit, autoZones: false }, { days: 30 });
+    // A pallet into a truck in a turn, as when this was measured (at 90 s the truck's queue evens the rules out).
+    const result = compareRules({ ...PLANS.petit, autoZones: false, loadTurns: 1, horizon: 160 }, { days: 30 });
     assert.deepEqual(Object.keys(result), ["nearest", "list", "farthest", "truck"]);
     assert.ok(result.farthest.finish < result.list.finish, "la plus lointaine d'abord finit avant la liste");
     assert.equal(result.list.gain.mean, 0);

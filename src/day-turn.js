@@ -4,6 +4,7 @@ import { aroundPallet, giveWay, planLeg, replanOrHold } from "./day-legs.js";
 import { deliver, dropCellOf, release } from "./day-bays.js";
 import { callQueues, goDrop, leaveQueue } from "./day-queues.js";
 import { handOver, relays } from "./day-relays.js";
+import { WAREHOUSE } from "./warehouse-hypotheses.js";
 
 /**
  * What happens in a turn around the robots' choices (simulate.js, split on 26/10/2026): blockages seen, legs
@@ -140,10 +141,22 @@ export function move(state) {
 /** Arrived at the leg's end only: a leg may pass its target, waiting for a turn to park there. */
 const hasArrived = (state, robot) => Boolean(robot.target) && sameCell(robot, robot.target) && (robot.path?.at(-1)?.t ?? 0) <= state.t;
 
-/** At its drop cell: `robot` drops, unless it only waited aside for a truck's turn. */
+/** Does `robot` set its pallet into its truck now (the truck there, the robot at its dock)? */
+const intoTruck = (state, robot) => {
+  const order = orderOf(state, robot);
+  if (!order || robot.relay) return false;
+  const truck = truckOf(state, order);
+  // The line has no truck: its bins take a turn.
+  return Boolean(truck) && isThere(state, truck) && sameCell(robot, truck.dock);
+};
+
+/**
+ * At its drop cell: `robot` drops, unless it only waited aside for a truck's turn. Into a truck it takes
+ * `setup.loadTurns` (warehouse-hypotheses.js: 90 s), elsewhere a turn.
+ */
 function atDrop(state, robot) {
   if (robot.queued && !robot.relay) robot.target = null;
-  else Object.assign(robot, { phase: "dropping", until: state.t + 1, target: null });
+  else Object.assign(robot, { phase: "dropping", until: state.t + (intoTruck(state, robot) ? (state.setup.loadTurns ?? WAREHOUSE.loadTurns) : 1), target: null });
 }
 
 /** Robots that reached their leg's end: picking, dropping, or back home. */
