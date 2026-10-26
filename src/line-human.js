@@ -23,7 +23,7 @@ export function addHuman(state, script = null) {
   const first = [...state.warehouse.blocks.values()][0][0];
   const from = distancesFrom(state.warehouse, first);
   const key = [...aside].filter((one) => !taken.has(one)).sort((a, b) => (from.get(a) ?? Infinity) - (from.get(b) ?? Infinity))[0];
-  state.human = { id: HUMAN, ...cellOfKey(key), load: null, next: null, actions: [], script, moves: 0, delivered: 0 };
+  state.human = { id: HUMAN, ...cellOfKey(key), load: null, next: null, actions: [], script, moves: 0, delivered: 0, watching: null };
   hold(state, state.human);
   return state.human;
 }
@@ -44,7 +44,10 @@ function take(state, human) {
   const request = block && state.orders.find((order) => order.status === "open" && order.block === block);
   if (!request) return;
   if (isShortNow(state, block)) {
-    if (state.known.short[block] === undefined) state.known.short[block] = state.t;
+    if (state.known.short[block] === undefined) {
+      state.known.short[block] = state.t;
+      human.watching = block;
+    }
     return;
   }
   Object.assign(request, { status: "carried", robot: HUMAN });
@@ -72,6 +75,17 @@ function step(state, human, action) {
   hold(state, human);
 }
 
+/**
+ * A shortage the driver saw holds while it stays by the block; gone, nobody watches the block any more, and a robot will
+ * go and see (26/10/2026: a shortage marked by a driver who walked away was never lifted, and the line stood still to
+ * the end of the hour).
+ */
+function leaveWatch(state, human) {
+  if (human.watching === null || besideBlock(state, human) === human.watching) return;
+  delete state.known.short[human.watching];
+  human.watching = null;
+}
+
 /** The driver's action of this turn: its script's, else the one asked (`next`), else waiting; written down. */
 export function humanTurn(state) {
   const human = state.human;
@@ -82,4 +96,5 @@ export function humanTurn(state) {
   if (action === "act" && human.load === null) take(state, human);
   else if (action === "act") drop(state, human);
   else if (STEPS[action]) step(state, human, action);
+  leaveWatch(state, human);
 }

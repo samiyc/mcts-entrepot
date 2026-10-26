@@ -56,4 +56,4 @@ export function randomDriver(seed) {
   return () => actions[rng.int(actions.length)];
 }
 
-export const DRIVERS = Object.freeze({ helping: () => helpingDriver, random: randomDriver });
+export const DRIVERS = Object.freeze({ helping: (_seed) => helpingDriver, random: randomDriver });

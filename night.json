@@ -40,6 +40,26 @@
       "id": "ligne-etroite",
       "command": "npm run line -- --plan etroite --days 100 --search",
       "estimate": "8 min"
+    },
+    {
+      "id": "ligne-retours",
+      "command": "npm run line -- --plan retours --days 100 --search",
+      "estimate": "45 min"
+    },
+    {
+      "id": "ligne-tournee",
+      "command": "npm run line -- --plan tournee --days 100 --search",
+      "estimate": "15 min"
+    },
+    {
+      "id": "ligne-melange",
+      "command": "npm run line -- --plan melange --days 100 --search",
+      "estimate": "10 min"
+    },
+    {
+      "id": "ligne-cariste",
+      "command": "node scripts/line-drivers.js --days 100",
+      "estimate": "15 min"
     }
   ]
 }

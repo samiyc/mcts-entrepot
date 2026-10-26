@@ -89,18 +89,30 @@ l'arrêt de la ligne.
 - les comparaisons, les replays et les stats reçoivent la ligne ;
 - `docs/modele-ligne.md` donne les premiers chiffres.
 
-## Étape 2 : la ligne plus vraie
+## Étape 2 : la ligne plus vraie (faite le 26/10, sauf le supermarché)
 
-- **Les bacs vides repartent** au supermarché : une deuxième tâche pour les robots (Bae et al. ; Savino et Mazza).
-- **Le mélange de modèles** : une séquence de versions connue d'avance (la *heijunka*). Au-delà d'une fenêtre figée,
-  elle pourrait devenir un aléa caché.
-- **Plusieurs bacs par trajet** : la tournée d'un train de manutention, et l'ordre de la tournée comme décision.
-- **Le supermarché réapprovisionné** depuis l'entrepôt : les deux simulations se rejoignent.
+Chaque point est une option du plan ; les plans de l'étape 1 jouent coup pour coup comme avant
+([../modele-ligne.md](../modele-ligne.md)).
+- **Les bacs vides repartent** (fait, plan `retours`) : à chaque poste, le robot reprend les vides qui attendent, puis
+  les pose sur une étagère de retour `r`.
+- **Plusieurs bacs par trajet** (fait, plan `tournee`) : tant qu'il lui reste de la place au supermarché, le robot se
+  voit proposer une autre demande ; il livre au poste le plus proche d'abord. Le choix des bacs qui complètent une
+  tournée est une décision pour la recherche.
+- **Le mélange de modèles** (fait, plan `melange`) : essence et hybride, chacun sans les pièces de l'autre. Les robots
+  connaissent les 20 véhicules à venir ; la recherche tire les suivants.
+- **Le supermarché réapprovisionné depuis l'entrepôt** : **pas fait**. Relier les deux simulations est un gros
+  morceau ; en attendant, la rupture fournisseur tient lieu de supermarché à sec. À reprendre si Sami le veut.
 
-## Étape 3 : l'humain au clavier
+## Étape 3 : l'humain au clavier (faite le 26/10)
 
-Le cariste (Z Q S D et E) qui dépanne une rupture ou porte un bac urgent. La machine ordonnance le reste
-([homme-robot.md](homme-robot.md)). Un cariste au hasard pour mesurer, puis le replay de sa journée.
+Le cariste (Z Q S D ou les flèches, et E) prend un bac à côté d'un bloc et le pose devant son poste. La machine
+ordonnance le reste ([homme-robot.md](homme-robot.md)). Il tient sa case, et les robots replanifient autour de lui.
+Ses actions sont gardées dans le replay. Pour mesurer sans personne au clavier, deux caristes simulés : un qui aide
+(la couverture la plus courte d'abord), un au hasard (`scripts/line-drivers.js`).
+
+Ce qui reste de l'étape 3 :
+- le replay d'analyse de la journée, pour voir l'effet du cariste sur l'ensemble ;
+- le ralentissement des robots près d'une personne : une zone de prudence plutôt qu'une case tenue.
 
 ## À faire : l'atelier d'usinage (job shop)
 

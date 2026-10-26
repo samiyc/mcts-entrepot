@@ -143,3 +143,23 @@ describe("the line, step 3: the driver at the keys (src/line-human.js)", () => {
     assert.ok(helped.humanDelivered > 0);
   });
 });
+
+describe("the driver and a shortage", () => {
+  it("lifts a shortage it saw once it walks away, so that a robot goes and sees", async () => {
+    const { humanTurn } = await import("../src/line-human.js");
+    const { startLine } = await import("../src/line.js");
+    const setup = { ...LINE_PLANS.seul, human: true, shortagesPerHour: 0, blocking: 0 };
+    const state = startLine(setup, 1);
+    // The driver put beside block A (its pickup cell (1,0)), A short for the whole hour, a request for A open.
+    Object.assign(state.human, { x: 1, y: 0 });
+    state.day.shortages = [{ block: "A", from: 0, to: 10_000 }];
+    state.orders.push({ id: 1, block: "A", station: 0, lane: 0, status: "open", robot: null, at: 0, deliveredAt: null, cell: null });
+    state.human.next = "act";
+    humanTurn(state);
+    assert.notEqual(state.known.short.A, undefined, "le cariste voit la rupture");
+    assert.equal(state.orders[0].status, "open");
+    state.human.next = "down";
+    humanTurn(state);
+    assert.equal(state.known.short.A, undefined, "parti, il ne la tient plus");
+  });
+});
