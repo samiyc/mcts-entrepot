@@ -3,6 +3,7 @@ import { createRng } from "mcts-commun/random.js";
 import { homesOf } from "./day-spots.js";
 import { drawSequence, modelAt, uses, vehiclesOf } from "./line-models.js";
 import { readLine } from "./line-plan.js";
+import { drawLeads, stockOf } from "./line-supermarket.js";
 import { drawBlockages } from "./simulate.js";
 
 /**
@@ -42,8 +43,13 @@ export function drawLineDay(seed, setup) {
   const stock = Array.from({ length: lanes }, () => 1 + rng.int(setup.binPieces));
   // The mix of models (step 2, line-models.js): drawn last, so that a line without one draws as in step 1.
   const sequence = setup.models ? drawSequence(rng, setup, vehiclesOf(setup)) : null;
-  return { blockages, shortages, stock, sequence };
+  // The warehouse's lead times for the supermarket (step 2, line-supermarket.js), drawn last too.
+  const leads = setup.supermarket ? drawLeads(rng, setup) : null;
+  return { blockages, shortages, stock, sequence, leads };
 }
+
+/** The hour's counts at its start: the next takt, the vehicles, the stops (the turns stood still, for the analysis too). */
+const hourCounts = (setup) => ({ nextTakt: setup.takt, produced: 0, stopped: 0, stoppedAt: [], stopRun: 0, longestStop: 0, stops: {} });
 
 /** The start of the day: the robots at home, every lane with its spare bins and its bin in use as drawn, nothing known. */
 export function createLine(setup, day) {
@@ -77,13 +83,14 @@ export function createLine(setup, day) {
     replans: 0,
     stuck: 0,
     cursor: null,
-    nextTakt: setup.takt,
-    produced: 0,
-    stopped: 0,
-    stopRun: 0,
-    longestStop: 0,
-    stops: {},
+    ...hourCounts(setup),
+    // The driver at the keys (step 3, line-human.js), when the setup has one.
+    human: null,
     maxWip: binsOnLine(lanes),
+    // The supermarket's stock (step 2), null when it is endless; the orders under way to the warehouse.
+    stock: stockOf(setup),
+    restocks: [],
+    ordered: 0,
   };
 }
 
@@ -111,6 +118,8 @@ export function takt(state) {
     const key = `${state.lanes[missing].station + 1}:${state.lanes[missing].ref}`;
     if (state.stopRun === 0) state.log.push({ t: state.t, type: "stopped", lane: key });
     Object.assign(state, { stopped: state.stopped + 1, stopRun: state.stopRun + 1 });
+    // The turns the line stood still, for the analysis of an hour (line-analysis.js); out of the measures.
+    state.stoppedAt.push(state.t);
     state.stops[key] = (state.stops[key] ?? 0) + 1;
     state.longestStop = Math.max(state.longestStop, state.stopRun);
     return;
@@ -132,6 +141,9 @@ export function bringBin(state, i) {
  * the stops by station and reference, the most bins on the line side, the requests served and how long they waited,
  * the robots' moves and waits.
  */
+/** What only an hour with a driver (step 3) or a supermarket fed from the warehouse (step 2) measures: kept out of the other hours, whose measures stay as they were. */
+const driverMeasures = (state) => ({ ...(state.human ? { cautions: state.cautions ?? 0 } : {}), ...(state.stock ? { ordered: state.ordered } : {}) });
+
 export function measuresOfLine(state) {
   const served = state.orders.filter((order) => order.status === "delivered");
   return {
@@ -154,5 +166,6 @@ export function measuresOfLine(state) {
     emptiesLeft: state.empties.reduce((sum, count) => sum + count, 0),
     blocked: state.day.blockages.length > 0,
     humanDelivered: state.human?.delivered ?? 0,
+    ...driverMeasures(state),
   };
 }

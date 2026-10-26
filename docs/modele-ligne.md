@@ -167,3 +167,39 @@ tours d'arrêt par heure, entre parenthèses l'arrêt gagné sur les robots seul
 - Deux erreurs du cariste simulé, corrigées en route : il gardait pour toujours une rupture vue puis quittée (la ligne
   s'arrêtait jusqu'à la fin de l'heure), et, sans rien à faire, il restait planté sur la case de ramassage que visait le
   seul robot occupé. Il retourne maintenant à sa place.
+
+## La suite des étapes 2 et 3 (26/10, le soir)
+
+**Le supermarché réapprovisionné par l'entrepôt** (`supermarket`, `src/line-supermarket.js`, plan `supermarche`, sans
+rupture fournisseur pour voir le stock seul).
+- Chaque référence a un stock de bacs pleins, que tout le monde voit, comme dans un logiciel d'entrepôt.
+- Quand il tombe au seuil, une commande part à l'entrepôt ; les bacs reviennent après un délai que personne ne connaît,
+  et que la recherche retire au sort dans ses mondes.
+- Personne ne va chercher une référence vide ; un robot déjà en route attend sur place.
+- Hypothèses : 3 bacs par référence (environ 33 minutes de ligne), une commande quand il en reste un, retour en 10 à 40
+  minutes.
+
+Ce que ça donne (20 heures, la ligne de Sami à deux robots, tours d'arrêt par heure ; le kanban / la couverture / la
+plus proche) :
+
+| Supermarché | arrêt |
+|---|---|
+| 4 bacs, commande à 1, retour en 5 à 20 min | 0 / 0 / 0 |
+| 2 bacs, commande à 1, retour en 10 à 30 min | 5,8 / 3,1 / 6,8 |
+| 3 bacs, commande à 1, retour en 10 à 40 min (le plan) | 73,9 / 71,7 / 69,9 |
+| 4 bacs, commande à 2, retour en 30 à 75 min | 29,4 / 29,1 / 28,6 |
+
+**Bien dimensionné, le supermarché n'arrête jamais la ligne ; trop juste, il l'arrête quelle que soit la règle des
+robots.** Quand le bac n'est pas au supermarché, l'ordre des demandes n'y peut rien : la décision qui compte devient
+le seuil de commande et la taille du stock, une décision pour une prochaine étape.
+
+**La zone de prudence** (`caution`, `src/line-human.js`) : un robot qui va bouger depuis une case voisine du cariste
+attend ce tour-là, un tour sur deux, comme l'ISO 3691-4 demande à un véhicule sans conducteur de ralentir près d'une
+personne. Elle est active dès qu'il y a un cariste (`caution: false` pour l'enlever). Avec le cariste qui aide, sur 20
+heures : la ligne à un robot passe de 48,7 à 77,4 tours d'arrêt (12,6 ralentissements par heure : quand le robot est la
+ressource rare, chaque tour perdu se paie), les autres ne bougent guère.
+
+**L'analyse d'une heure jouée avec le cariste** (`src/line-analysis.js`, onglet Replays, « Analyser ») : l'heure
+rejouée telle qu'elle a été, contre la même heure sans le cariste, les robots sous la même règle (la couverture quand la
+recherche jouait : une heure de recherche est trop longue pour la page). L'arrêt de la ligne par tranches de 5 minutes,
+les deux côte à côte ; le tableau des mêmes chiffres ; ce que le cariste a fait.

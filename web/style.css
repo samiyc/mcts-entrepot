@@ -1,6 +1,9 @@
 /* L'entrepôt : bleu-gris, métal industriel (Sami, 23/10). The shared look: mcts-commun/web/theme.css. */
 :root {
   --bg: #eef1f4;
+  /* The analysis's two series (analysis-view.js), checked by the dataviz validator in both themes. */
+  --series-with: #3a74c4;
+  --series-without: #d9573b;
   --panel: #ffffff;
   --ink: #1b2229;
   --ink-2: #56616c;
@@ -27,6 +30,8 @@
 }
 @media (prefers-color-scheme: dark) {
   :root {
+    --series-with: #4a86d9;
+    --series-without: #d9643f;
     --bg: #12171b;
     --panel: #1a2026;
     --ink: #e5eaef;
@@ -160,3 +165,15 @@ main.layout.folded .sidebar { display: none; }
 
 /* Step 3: the driver at the keys, a square badge among the round robots. */
 .human rect:first-of-type { fill: var(--ink); stroke: #f2c14e; stroke-width: 2.5; }
+
+/* Step 3: the analysis of an hour with the driver (analysis-view.js). */
+.analysis-chart { width: 100%; height: auto; display: block; }
+.analysis-chart .bar.with { fill: var(--series-with); }
+.analysis-chart .bar.without { fill: var(--series-without); }
+.analysis-chart .bar:hover { opacity: 0.8; }
+.axis-line { stroke: var(--ink-2); stroke-width: 1; }
+.axis-label { font: 11px system-ui, sans-serif; fill: var(--ink-2); text-anchor: middle; }
+.axis-label.end { text-anchor: end; }
+.swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; }
+.swatch.with { background: var(--series-with); }
+.swatch.without { background: var(--series-without); }

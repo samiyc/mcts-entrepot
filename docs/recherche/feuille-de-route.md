@@ -89,7 +89,7 @@ l'arrêt de la ligne.
 - les comparaisons, les replays et les stats reçoivent la ligne ;
 - `docs/modele-ligne.md` donne les premiers chiffres.
 
-## Étape 2 : la ligne plus vraie (faite le 26/10, sauf le supermarché)
+## Étape 2 : la ligne plus vraie (faite le 26/10)
 
 Chaque point est une option du plan ; les plans de l'étape 1 jouent coup pour coup comme avant
 ([../modele-ligne.md](../modele-ligne.md)).
@@ -100,8 +100,9 @@ Chaque point est une option du plan ; les plans de l'étape 1 jouent coup pour c
   tournée est une décision pour la recherche.
 - **Le mélange de modèles** (fait, plan `melange`) : essence et hybride, chacun sans les pièces de l'autre. Les robots
   connaissent les 20 véhicules à venir ; la recherche tire les suivants.
-- **Le supermarché réapprovisionné depuis l'entrepôt** : **pas fait**. Relier les deux simulations est un gros
-  morceau ; en attendant, la rupture fournisseur tient lieu de supermarché à sec. À reprendre si Sami le veut.
+- **Le supermarché réapprovisionné depuis l'entrepôt** (fait le soir, plan `supermarche`) : un stock fini par
+  référence, vu de tous ; sous le seuil, une commande à l'entrepôt, de retour après un délai inconnu. L'entrepôt n'est
+  pas encore joué : son délai est tiré. Le jouer vraiment relierait les deux simulations.
 
 ## Étape 3 : l'humain au clavier (faite le 26/10)
 
@@ -110,9 +111,18 @@ ordonnance le reste ([homme-robot.md](homme-robot.md)). Il tient sa case, et les
 Ses actions sont gardées dans le replay. Pour mesurer sans personne au clavier, deux caristes simulés : un qui aide
 (la couverture la plus courte d'abord), un au hasard (`scripts/line-drivers.js`).
 
-Ce qui reste de l'étape 3 :
-- le replay d'analyse de la journée, pour voir l'effet du cariste sur l'ensemble ;
-- le ralentissement des robots près d'une personne : une zone de prudence plutôt qu'une case tenue.
+Fait le soir :
+- **le replay d'analyse** : une heure jouée avec le cariste, contre la même heure sans lui, minute par minute (onglet
+  Replays, « Analyser ») ;
+- **la zone de prudence** : un robot à côté du cariste avance à demi-vitesse.
+
+## Les suites possibles
+
+- Le seuil de commande et la taille du stock du supermarché comme décisions : c'est là que se joue l'arrêt quand le
+  stock est juste.
+- L'entrepôt joué vraiment pour réapprovisionner le supermarché (les deux simulations reliées).
+- La recherche plus rapide sur les lignes à deux robots (27 s par heure).
+- La règle de jeu de la recherche : la couverture plutôt que la plus proche (campagne `night-rollout.json` en cours).
 
 ## À faire : l'atelier d'usinage (job shop)
 

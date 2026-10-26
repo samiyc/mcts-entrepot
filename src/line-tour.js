@@ -1,6 +1,7 @@
 import { closed, keyOf, sameCell } from "./day-basics.js";
 import { planLeg } from "./day-legs.js";
-import { bringBin, isShortNow } from "./line-day.js";
+import { bringBin } from "./line-day.js";
+import { isEmptyAt, takeFromStock } from "./line-supermarket.js";
 import { distancesFrom } from "./warehouse.js";
 
 /**
@@ -54,12 +55,13 @@ function seeShort(state, robot, request) {
 
 /** At the block: a full bin taken (then another, or the round), or the reference short, waited for. */
 function picked(state, robot, request) {
-  if (isShortNow(state, request.block)) return seeShort(state, robot, request);
+  if (isEmptyAt(state, request.block)) return seeShort(state, robot, request);
   if (state.known.short[request.block] !== undefined) {
     delete state.known.short[request.block];
     state.log.push({ t: state.t, type: "restocked", block: request.block });
   }
   request.status = "carried";
+  takeFromStock(state, request.block);
   robot.load.push(request.id);
   if (robot.load.length < (state.setup.capacity ?? 1)) Object.assign(robot, { phase: "loading", order: null, target: null });
   else startDelivery(state, robot);

@@ -60,6 +60,11 @@
       "id": "ligne-cariste",
       "command": "node scripts/line-drivers.js --days 100",
       "estimate": "15 min"
+    },
+    {
+      "id": "ligne-supermarche",
+      "command": "npm run line -- --plan supermarche --days 100 --search",
+      "estimate": "1 h"
     }
   ]
 }

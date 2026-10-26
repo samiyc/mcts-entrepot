@@ -2,7 +2,8 @@ import { closed, isHome } from "./day-basics.js";
 import { legToPickup, planLeg, standBy } from "./day-legs.js";
 import { arrive, discover, move, retry } from "./day-turn.js";
 import { createLine, drawLineDay, measuresOfLine, takt } from "./line-day.js";
-import { addHuman, humanTurn } from "./line-human.js";
+import { addHuman, caution, humanTurn } from "./line-human.js";
+import { knownOut, restock } from "./line-supermarket.js";
 import { arriveAtShelf, finishActions, startDelivery } from "./line-tour.js";
 import { distancesFrom, nearestPickup } from "./warehouse.js";
 
@@ -24,7 +25,7 @@ import { distancesFrom, nearestPickup } from "./warehouse.js";
 function choiceOf(state, robot) {
   const distances = distancesFrom(state.warehouse, robot, closed(state));
   const reach = (order) => nearestPickup(state.warehouse, order.block, distances)?.steps ?? Infinity;
-  const open = state.orders.filter((order) => order.status === "open" && state.known.short[order.block] === undefined && reach(order) < Infinity);
+  const open = state.orders.filter((order) => order.status === "open" && state.known.short[order.block] === undefined && !knownOut(state, order.block) && reach(order) < Infinity);
   if (open.length > 0) return { robot, open, reach, distances };
   if (robot.phase === "loading") startDelivery(state, robot);
   else if (robot.phase === "idle" && !isHome(robot)) {
@@ -63,6 +64,7 @@ export function choose(state, choice, id) {
 
 /** The start of a turn: the aisle seen, legs retried, picks and drops ended. */
 export function beginTurn(state) {
+  restock(state);
   discover(state);
   retry(state);
   finishActions(state);
@@ -72,6 +74,7 @@ export function beginTurn(state) {
 /** The end of a turn: the driver acts (step 3), every robot moves, those arrived start their work, and the takt comes when it is due. */
 export function endTurn(state) {
   humanTurn(state);
+  caution(state);
   move(state);
   arrive(state);
   arriveAtShelf(state);
@@ -117,6 +120,9 @@ export function cloneLine(state) {
     human: state.human ? { ...state.human, actions: [...state.human.actions], script: [...state.human.actions], next: null } : undefined,
     known: { ...state.known, short: { ...state.known.short } },
     stops: { ...state.stops },
+    stoppedAt: [...state.stoppedAt],
+    stock: state.stock ? { ...state.stock } : null,
+    restocks: [...state.restocks],
     claims: new Map(),
     queues: new Map(),
     reservations: state.reservations.clone(),

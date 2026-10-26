@@ -1,3 +1,5 @@
+import { analyse } from "../../src/line-analysis.js";
+import { analysisView } from "../analysis-view.js";
 import { el } from "../dom.js";
 import { panelOf } from "../knobs.js";
 import { MODELS } from "../models.js";
@@ -13,7 +15,7 @@ export const replaysPanel = ({ state }) =>
     "Les replays",
     state.sims.entrepot,
     [],
-    el("p", { class: "hint" }, "Chaque journée jouée jusqu'au bout se garde ici, dans ce navigateur, et dans le dossier replays/ du projet quand la page passe par son serveur (npm run page). Rouverte, elle se rejoue coup pour coup, quelle que soit la règle qui l'avait jouée, la recherche comprise."),
+    el("p", { class: "hint" }, "Chaque journée jouée jusqu'au bout se garde ici, dans ce navigateur, et dans le dossier replays/ du projet quand la page passe par son serveur (npm run page). Rouverte, elle se rejoue coup pour coup, quelle que soit la règle qui l'avait jouée, la recherche comprise. Une heure de ligne jouée avec le cariste s'analyse : la même heure sans vous, les robots seuls, minute par minute."),
   );
 
 const when = (replay) => replay.savedAt.slice(0, 16).replace("T", " ");
@@ -36,6 +38,7 @@ function keptList() {
       el("button", { type: "button", class: "quiet", "data-replay": String(i), "data-do": "open" }, "Rouvrir"),
       " ",
       el("button", { type: "button", class: "quiet", "data-replay": String(i), "data-do": "download" }, "Télécharger"),
+      ...(replay.setup.humanScript ? [" ", el("button", { type: "button", class: "quiet", "data-replay": String(i), "data-do": "analyse" }, "Analyser")] : []),
     );
   return el("ol", { class: "replay-list" }, ...kept.map(item));
 }
@@ -61,7 +64,9 @@ function askServer(ctx) {
 
 export function replaysView(ctx) {
   askServer(ctx);
-  return [el("h2", {}, "Gardés dans ce navigateur"), keptList(), el("h2", {}, "Le dossier replays/ du projet"), serverList(ctx.state.serverReplays)];
+  const analysis = ctx.state.analysis ? [analysisView(ctx.state.analysis.report, ctx.state.analysis.turnSeconds)] : [];
+  return [
+    ...analysis,el("h2", {}, "Gardés dans ce navigateur"), keptList(), el("h2", {}, "Le dossier replays/ du projet"), serverList(ctx.state.serverReplays)];
 }
 
 /** A kept day opened again in its tab, or downloaded; true if the click was this tab's. */
@@ -70,7 +75,11 @@ export function replaysClick(ctx, target) {
   if (!button) return false;
   const replay = keptReplays()[Number(button.getAttribute("data-replay"))];
   if (!replay) return true;
-  if (button.getAttribute("data-do") === "download") download(replay);
-  else ctx.openReplay(replay);
+  const what = button.getAttribute("data-do");
+  if (what === "download") download(replay);
+  else if (what === "analyse") {
+    ctx.state.analysis = { report: analyse(replay), turnSeconds: replay.setup.turnSeconds };
+    ctx.render();
+  } else ctx.openReplay(replay);
   return true;
 }

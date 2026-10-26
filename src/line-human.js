@@ -1,7 +1,8 @@
 import { besides, blockedNow, cellOfKey, keyOf, sameCell } from "./day-basics.js";
 import { hold } from "./day-legs.js";
 import { spotsOf } from "./day-spots.js";
-import { bringBin, isShortNow } from "./line-day.js";
+import { bringBin } from "./line-day.js";
+import { isEmptyAt, takeFromStock } from "./line-supermarket.js";
 import { distancesFrom } from "./warehouse.js";
 
 /**
@@ -43,7 +44,7 @@ function take(state, human) {
   const block = besideBlock(state, human);
   const request = block && state.orders.find((order) => order.status === "open" && order.block === block);
   if (!request) return;
-  if (isShortNow(state, block)) {
+  if (isEmptyAt(state, block)) {
     if (state.known.short[block] === undefined) {
       state.known.short[block] = state.t;
       human.watching = block;
@@ -51,6 +52,7 @@ function take(state, human) {
     return;
   }
   Object.assign(request, { status: "carried", robot: HUMAN });
+  takeFromStock(state, block);
   human.load = request.id;
   state.log.push({ t: state.t, type: "humanTook", order: request.id });
 }
@@ -97,4 +99,28 @@ export function humanTurn(state) {
   else if (action === "act") drop(state, human);
   else if (STEPS[action]) step(state, human, action);
   leaveWatch(state, human);
+}
+
+/**
+ * Robots beside the driver go at half speed (step 3, Sami, 26/10/2026; ISO 3691-4 asks a driverless truck to slow down
+ * where a person may be): a robot about to move from a cell touching the driver's waits that turn, every other turn,
+ * and plans again from where it stands. `setup.caution: false` turns it off; without a driver, nothing changes.
+ */
+/** Is `robot` about to move from a cell touching the driver's, and did it not wait last turn? */
+function slowsNear(state, robot, human) {
+  const next = robot.path?.find((step) => step.t === state.t + 1);
+  const near = Math.abs(robot.x - human.x) + Math.abs(robot.y - human.y) <= 1;
+  return Boolean(next) && !sameCell(next, robot) && near && !robot.slowed;
+}
+
+export function caution(state) {
+  const human = state.human;
+  if (!human || state.setup.caution === false) return;
+  for (const robot of state.robots) {
+    const slows = slowsNear(state, robot, human);
+    robot.slowed = slows;
+    if (!slows) continue;
+    state.cautions = (state.cautions ?? 0) + 1;
+    hold(state, robot);
+  }
 }

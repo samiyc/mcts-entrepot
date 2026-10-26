@@ -14,8 +14,10 @@ function stationMarks(cell) {
 }
 
 function blockMarks(cell) {
-  if (!cell.short) return letterOf(cell);
-  return [...letterOf(cell), svg("title", {}, `Référence ${cell.letter} : rupture vue, les robots attendent les bacs`)];
+  const plural = cell.stock > 1 ? "s" : "";
+  const stock = cell.stock === null ? "" : ` · ${cell.stock} bac${plural} au supermarché`;
+  const title = cell.short ? `Référence ${cell.letter} : plus de bac, les robots attendent${stock}` : `Référence ${cell.letter}${stock}`;
+  return [...letterOf(cell), svg("title", {}, title)];
 }
 
 /** What a cell shows over its square, in drawing order. */

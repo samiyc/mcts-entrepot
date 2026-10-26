@@ -18,6 +18,12 @@ const minutes = (seconds) => (seconds < 60 ? `${seconds} s` : `${Math.floor(seco
 /** The lane the line stands still for, or null while it runs. */
 export const stoppedLane = (state) => (state.stopRun > 0 ? (state.lanes.find((lane) => lane.pieces === 0) ?? null) : null);
 
+/** A block of the supermarket: its letter, the bins asked of it, whether it is out (a shortage seen, its stock empty), its stock. */
+function blockView(state, char, waiting) {
+  const stock = state.stock?.[char] ?? null;
+  return { kind: "block", letter: char, pending: waiting.get(char) ?? 0, short: state.known.short[char] !== undefined || stock === 0, stock };
+}
+
 /** Every cell to draw: `{ x, y, kind, … }`, kind floor, block, station, slot, charge, blockable or wall. */
 export function cellsOfLine(state) {
   const { drawn } = state;
@@ -31,7 +37,7 @@ export function cellsOfLine(state) {
     const station = stationAt.get(`${x},${y}`);
     if (station) return { kind: "station", id: station.id, stopped: stopped?.station === station.id - 1 };
     if (slotAt.has(`${x},${y}`)) return { kind: "slot", station: slotAt.get(`${x},${y}`) };
-    if (isBlock(char)) return { kind: "block", letter: char, pending: waiting.get(char) ?? 0, short: state.known.short[char] !== undefined };
+    if (isBlock(char)) return blockView(state, char, waiting);
     return { kind: { c: "charge", "~": "blockable", ".": "floor" }[char] ?? "wall" };
   };
   return Array.from({ length: drawn.height }, (_, y) => Array.from({ length: drawn.width }, (__, x) => ({ x, y, ...kindOf(drawn.at(x, y), x, y) }))).flat();
@@ -93,6 +99,8 @@ export function lineStatus(state) {
   if (state.stopped > 0) parts.push(`arrêt cumulé ${minutes(state.stopped * state.setup.turnSeconds)}`);
   const short = Object.keys(state.known.short);
   if (short.length) parts.push(`rupture vue : ${short.join(", ")}`);
+  const out = state.stock ? Object.keys(state.stock).filter((ref) => state.stock[ref] === 0) : [];
+  if (out.length) parts.push(`supermarché vide : ${out.join(", ")} (réappro en route)`);
   parts.push(state.t <= state.known.blockedUntil ? "allée bloquée" : "allées libres");
   const human = humanOf(state);
   if (human) parts.push(human.label);

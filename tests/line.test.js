@@ -163,3 +163,42 @@ describe("the driver and a shortage", () => {
     assert.equal(state.known.short.A, undefined, "parti, il ne la tient plus");
   });
 });
+
+describe("the analysis of an hour with the driver (src/line-analysis.js)", () => {
+  it("plays the hour again, and the same hour without the driver, the stops by slices adding up", async () => {
+    const { analyse, slicesOf } = await import("../src/line-analysis.js");
+    const { helpingDriver } = await import("../src/line-drivers.js");
+    const { recording, replayOf } = await import("../src/replay.js");
+    const setup = { ...LINE_PLANS.seul, human: true };
+    const choices = [];
+    const { state, measures } = runLine(setup, 3, recording(LINE_RULES.nearest, choices), helpingDriver);
+    const replay = replayOf({ kind: "ligne", planId: "seul", setup, seed: 3, rule: "nearest", choices, measures, humanActions: state.human.actions });
+    const report = analyse(replay);
+    assert.deepEqual(report.with, measures);
+    assert.equal(report.without.stopped, runLine(LINE_PLANS.seul, 3, LINE_RULES.nearest).measures.stopped);
+    assert.equal(report.slices.reduce((sum, one) => sum + one.with, 0), measures.stopped);
+    assert.equal(report.slices.length, 12);
+    assert.equal(report.actions.steps + report.actions.act + report.actions.wait, setup.horizon);
+    assert.deepEqual(slicesOf([1, 60, 61, 720], 720).slice(0, 2), [2, 1]);
+    assert.equal(analyse({ ...replay, kind: "entrepot" }), null);
+  });
+});
+
+describe("the supermarket fed from the warehouse (src/line-supermarket.js)", () => {
+  it("takes a bin from the stock, orders at the reorder point, fills up when the order comes, fetches nothing out of stock", async () => {
+    const { knownOut } = await import("../src/line-supermarket.js");
+    const setup = LINE_PLANS.supermarche;
+    const { state } = runLine(setup, 1, LINE_RULES.kanban);
+    const ordered = state.log.filter((event) => event.type === "ordered");
+    const back = state.log.filter((event) => event.type === "restockedFromWarehouse");
+    assert.ok(ordered.length > 0 && back.length > 0 && back.length <= ordered.length);
+    assert.ok(Object.values(state.stock).every((count) => count >= 0 && count <= setup.supermarket.bins));
+    // Every bin taken came out of the stock: what is left is what was there, filled by the orders come back.
+    const taken = state.orders.filter((order) => order.status === "carried" || order.status === "delivered").length;
+    assert.ok(taken > 0);
+    state.stock.A = 0;
+    assert.ok(knownOut(state, "A"));
+    // A line without a supermarket has an endless stock.
+    assert.equal(createLine(LINE_PLANS.sami, drawLineDay(1, LINE_PLANS.sami)).stock, null);
+  });
+});

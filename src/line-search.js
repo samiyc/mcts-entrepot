@@ -2,6 +2,7 @@ import { search } from "mcts-commun/mcts.js";
 import { createRng } from "mcts-commun/random.js";
 import { drawShortages } from "./line-day.js";
 import { worldSequence } from "./line-models.js";
+import { worldRestocks } from "./line-supermarket.js";
 import { LINE_RULES, coverOf } from "./line-rules.js";
 import { advance, choose, cloneLine, nextChoice } from "./line.js";
 import { drawBlockages } from "./simulate.js";
@@ -30,7 +31,9 @@ export function drawLineWorld(state, rng, limit = state.setup.horizon) {
   const { known } = state;
   const now = state.t <= known.blockedUntil ? [{ from: known.seenAt, to: known.blockedUntil + 1 }] : [];
   const blockages = [...now, ...drawBlockages(rng, state.setup, Math.max(state.t, known.blockedUntil) + 1)];
-  world.day = { ...state.day, blockages, shortages: worldShortages(state, rng), sequence: worldSequence(state, rng) };
+  const { restocks, leads } = worldRestocks(state, rng);
+  world.day = { ...state.day, blockages, shortages: worldShortages(state, rng), sequence: worldSequence(state, rng), leads };
+  world.restocks = restocks;
   world.limit = limit;
   world.choice = nextChoice(world);
   return world;
