@@ -30,3 +30,21 @@ describe("the replays (src/replay.js)", () => {
     assert.match(replay.savedAt, /^\d{4}-\d\d-\d\dT/);
   });
 });
+
+describe("the replays of the assembly line", () => {
+  it("plays an hour of the line again from its choices, under every rule and plan", async () => {
+    const { LINE_PLANS } = await import("../src/line-plan.js");
+    const { LINE_RULES } = await import("../src/line-rules.js");
+    const { measuresOfLine, runLine } = await import("../src/line.js");
+    for (const [planId, setup] of Object.entries(LINE_PLANS)) {
+      for (const [name, rule] of Object.entries(LINE_RULES)) {
+        const choices = [];
+        const { state, measures } = runLine(setup, 4, recording(rule, choices));
+        const { day, choice } = replayDay(setup, 4, choices, "ligne");
+        assert.equal(choice, null, `${planId}, ${name} : l'heure rejouée ne finit pas`);
+        assert.deepEqual(measuresOfLine(day), measures, `${planId}, ${name} : pas la même heure`);
+        assert.deepEqual(day.log, state.log);
+      }
+    }
+  });
+});

@@ -6,12 +6,12 @@ import { panelOf } from "../knobs.js";
  * The tab « Stats » (Sami, 26/10/2026): what is measured and stays. The night measures (docs/changelog.json, played by
  * mcts-backlog from night.json), then the last comparison of the Comparaisons tab, day by day. `ctx`: the page's `state`.
  */
-export const statsPanel = () =>
+export const statsPanel = ({ state }) =>
   panelOf(
     "Les mesures",
-    {},
+    state.sims.entrepot,
     [],
-    el("p", { class: "hint" }, "Les mesures de nuit : des centaines de journées par plan, jouées par l'ordonnanceur commun (night.json). Journée par journée : la dernière comparaison de l'onglet Comparaisons."),
+    el("p", { class: "hint" }, "Les mesures de nuit de l'entrepôt : des centaines de journées par plan, jouées par l'ordonnanceur commun (night.json). Puis la dernière comparaison de l'onglet Comparaisons, pour l'entrepôt et pour la ligne, journée par journée et heure par heure."),
     el("p", { class: "row-buttons" }, el("a", { href: "#comparaisons" }, "Lancer une comparaison")),
   );
 
@@ -24,6 +24,6 @@ function gainsTable(gains) {
 }
 
 export function statsView({ state }) {
-  const strip = pairedStrip(state.compared);
-  return [...gainsTable(state.gains), ...(strip.length ? strip : [el("p", { class: "hint" }, "Journée par journée : lancez une comparaison dans l'onglet Comparaisons.")])];
+  const strips = [...pairedStrip(state.sims.entrepot.compared, "entrepot"), ...pairedStrip(state.sims.ligne.compared, "ligne")];
+  return [...gainsTable(state.gains), ...(strips.length ? strips : [el("p", { class: "hint" }, "Journée par journée : lancez une comparaison dans l'onglet Comparaisons.")])];
 }

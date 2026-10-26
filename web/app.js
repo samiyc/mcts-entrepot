@@ -1,19 +1,20 @@
-import { PLANS } from "../src/plans.js";
-import { createDay } from "../src/simulate.js";
+import { MODELS, simOf } from "./models.js";
 import { compare, compareWithSearch, finish, play, restart, step, stop } from "./game.js";
 import { readPlan } from "./panels.js";
 import { comparaisonsPanel, comparaisonsView } from "./tabs/comparaisons.js";
 import { entrepotPanel, entrepotView } from "./tabs/entrepot.js";
+import { lignePanel, ligneView } from "./tabs/ligne.js";
 import { replaysClick, replaysPanel, replaysView } from "./tabs/replays.js";
 import { statsPanel, statsView } from "./tabs/stats.js";
 
 /**
- * The page, in tabs (Sami, 26/10/2026, the layout of lopin and mcts-urgences): a tab per simulation, and the
- * comparisons, the replays, the stats; the settings of the tab open in the panel on the left, which folds. The settings shared by the tabs live
- * in `state`; the tabs are in tabs/, the playing in game.js, the drawing in board.js and view.js. This module only
- * keeps the page's state and listens (event delegation on the layout).
+ * The page, in tabs (Sami, 26/10/2026, the layout of lopin and mcts-urgences): a tab per simulation (the warehouse, the
+ * assembly line), the comparisons, the replays, the stats; the settings of the tab open in the panel on the left, which
+ * folds. Each simulation keeps its own state (`state.sims`, models.js); the tabs are in tabs/, the playing in game.js,
+ * the drawing in board.js, line-board.js and their views. This module only keeps the page's state and listens (event
+ * delegation on the layout).
  */
-const TAB_NAMES = ["entrepot", "comparaisons", "replays", "stats"];
+const TAB_NAMES = ["entrepot", "ligne", "comparaisons", "replays", "stats"];
 const STORE = "entrepot-onglet";
 const FOLDED = "entrepot-replie";
 const read = (key) => {
@@ -32,12 +33,14 @@ const write = (key, value) => {
 };
 const firstTab = () => [location.hash.slice(1), read(STORE)].find((name) => TAB_NAMES.includes(name)) ?? "entrepot";
 
-const state = { tab: firstTab(), planId: "sami", setup: { ...PLANS.sami }, rule: "search", seed: 1, speed: 4, day: null, choices: [], thinking: false, timer: null, compared: null, error: "", busy: "", run: 0, replay: null, kept: false, gains: null, serverReplays: undefined };
+const state = { tab: firstTab(), sims: { entrepot: simOf("entrepot", "sami"), ligne: simOf("ligne", "sami") }, compareKind: "entrepot", gains: null, serverReplays: undefined };
 const layout = document.getElementById("layout");
 const sidebar = document.getElementById("sidebar");
 const app = document.getElementById("app");
 const ctx = { state, render: () => render(), openReplay: (replay) => openReplay(replay) };
-const TABS = { entrepot: [entrepotPanel, entrepotView], comparaisons: [comparaisonsPanel, comparaisonsView], replays: [replaysPanel, replaysView], stats: [statsPanel, statsView] };
+const TABS = { entrepot: [entrepotPanel, entrepotView], ligne: [lignePanel, ligneView], comparaisons: [comparaisonsPanel, comparaisonsView], replays: [replaysPanel, replaysView], stats: [statsPanel, statsView] };
+/** The game of simulation `kind`: its own state, and the page's render. */
+const gameOf = (kind) => ({ sim: state.sims[kind], render });
 
 function render() {
   for (const button of document.querySelectorAll(".tabs [role=tab]")) button.setAttribute("aria-selected", String(/** @type {HTMLElement} */ (button).dataset.tab === state.tab));
@@ -53,65 +56,72 @@ function openTab(name) {
   render();
 }
 
-/** A kept day, opened again in its tab: its plan, its day, its rule, its own choices. */
+/** A kept day (or hour of the line), opened again in its tab: its plan, its day, its rule, its own choices. */
 function openReplay(replay) {
-  Object.assign(state, { replay, planId: replay.planId, setup: replay.setup, seed: replay.seed, rule: replay.rule, compared: null, error: "" });
-  restart(ctx);
-  openTab("entrepot");
+  const kind = replay.kind ?? "entrepot";
+  Object.assign(state.sims[kind], { replay, planId: replay.planId, setup: replay.setup, seed: replay.seed, rule: replay.rule, compared: null, error: "" });
+  restart(gameOf(kind));
+  openTab(kind);
 }
 
+/** The warehouse's plan, edited in its panel. */
 function applyPlan(form) {
-  const setup = readPlan(form, state.setup);
+  const sim = state.sims.entrepot;
+  const setup = readPlan(form, sim.setup);
   try {
-    createDay(setup, { blockages: [] });
-    Object.assign(state, { setup, error: "", compared: null, replay: null });
-    restart(ctx);
+    MODELS.entrepot.start(setup, 1);
+    Object.assign(sim, { setup, error: "", compared: null, replay: null });
+    restart(gameOf("entrepot"));
   } catch (error) {
-    state.error = `Plan refusé : ${error.message}`;
+    sim.error = `Plan refusé : ${error.message}`;
   }
 }
 
 const ACTIONS = {
-  play: () => play(ctx),
-  pause: () => stop(ctx),
-  step: () => step(ctx),
-  finish: () => finish(ctx),
-  restart: () => restart(ctx),
-  next: () => {
-    Object.assign(state, { seed: state.seed + 1, replay: null });
-    restart(ctx);
+  play: (game) => play(game),
+  pause: (game) => stop(game),
+  step: (game) => step(game),
+  finish: (game) => finish(game),
+  restart: (game) => restart(game),
+  next: (game) => {
+    Object.assign(game.sim, { seed: game.sim.seed + 1, replay: null });
+    restart(game);
   },
-  leaveReplay: () => {
-    state.replay = null;
-    restart(ctx);
+  leaveReplay: (game) => {
+    game.sim.replay = null;
+    restart(game);
   },
-  compare: () => compare(ctx),
-  compareSearch: () => compareWithSearch(ctx),
+  compare: (game) => compare(game),
+  compareSearch: (game) => compareWithSearch(game),
 };
 
-/** A setting changed: a plan, a day, a speed, a rule. */
-function setKnob(name, value) {
-  if (name !== "speed") state.replay = null;
-  if (name === "plan") Object.assign(state, { planId: value, setup: { ...PLANS[value] }, compared: null, error: "" });
-  else if (name === "seed") state.seed = Math.max(1, Number(value) || 1);
-  else if (name === "speed") state.speed = Number(value);
-  else state[name] = value;
+/** A setting of simulation `sim` changed: a plan, a day, a speed, a rule. */
+function setKnob(sim, name, value) {
+  if (name !== "speed") sim.replay = null;
+  if (name === "plan") Object.assign(sim, { planId: value, setup: { ...MODELS[sim.kind].plans[value] }, compared: null, error: "" });
+  else if (name === "seed") sim.seed = Math.max(1, Number(value) || 1);
+  else if (name === "speed") sim.speed = Number(value);
+  else sim[name] = value;
 }
 
 layout.addEventListener("change", (event) => {
   const knob = /** @type {HTMLInputElement} */ (event.target);
   const name = knob.dataset?.knob;
-  if (!name) return;
-  setKnob(name, knob.value);
-  if (name === "speed" && state.timer) play(ctx);
-  else restart(ctx);
+  if (name === "compareKind") state.compareKind = knob.value;
+  else if (name) {
+    const game = gameOf(knob.dataset.sim);
+    setKnob(game.sim, name, knob.value);
+    if (name === "speed" && game.sim.timer) play(game);
+    else restart(game);
+  }
   render();
 });
 layout.addEventListener("click", (event) => {
   if (replaysClick(ctx, /** @type {HTMLElement} */ (event.target))) return;
-  const action = /** @type {HTMLElement} */ (event.target).closest?.("[data-action]")?.getAttribute("data-action");
+  const button = /** @type {HTMLElement} */ (event.target).closest?.("[data-action]");
+  const action = button?.getAttribute("data-action");
   if (!ACTIONS[action]) return;
-  ACTIONS[action]();
+  ACTIONS[action](gameOf(button.getAttribute("data-sim") ?? "entrepot"));
   render();
 });
 layout.addEventListener("submit", (event) => {
@@ -142,5 +152,5 @@ fetch("../docs/changelog.json")
     if (state.tab === "stats") render();
   })
   .catch(() => {});
-restart(ctx);
+for (const kind of Object.keys(state.sims)) restart(gameOf(kind));
 render();

@@ -142,15 +142,15 @@ export function ordersOf(state) {
 }
 
 /**
- * The days of a comparison, by pairs (Sami, 26/10/2026, the stats tab): for each rule but the list order, the turns
- * its trucks waited less than under the list, day by day (`diffs`, above 0 a gain), with the day's number, and the
- * range they span (`low`, `high`, 0 always inside).
+ * The days of a comparison, by pairs (Sami, 26/10/2026, the stats tab): for each rule but the baseline (`base`, the list
+ * order by default), how much less of `measure` (the turns trucks waited, by default) than under the baseline, day by
+ * day (`diffs`, above 0 a gain), with the day's number, and the range they span (`low`, `high`, 0 always inside).
  */
-export function pairedDays(runs, firstSeed) {
-  const list = runs.list ?? [];
+export function pairedDays(runs, firstSeed, { base = "list", measure = "truckWait" } = {}) {
+  const baseline = runs[base] ?? [];
   const rows = Object.entries(runs)
-    .filter(([name]) => name !== "list")
-    .map(([name, measures]) => ({ name, diffs: measures.map((one, i) => ({ seed: firstSeed + i, gain: list[i].truckWait - one.truckWait })) }));
+    .filter(([name]) => name !== base)
+    .map(([name, measures]) => ({ name, diffs: measures.map((one, i) => ({ seed: firstSeed + i, gain: baseline[i][measure] - one[measure] })) }));
   const gains = rows.flatMap((row) => row.diffs.map((one) => one.gain));
   return { rows, low: Math.min(0, ...gains), high: Math.max(0, ...gains) };
 }

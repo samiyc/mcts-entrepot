@@ -1,34 +1,38 @@
-import { PLANS } from "../../src/plans.js";
-import { RULE_LABELS } from "../../src/rules.js";
 import { el } from "../dom.js";
 import { panelOf } from "../knobs.js";
+import { MODELS } from "../models.js";
 import { download, keptReplays } from "../replay-store.js";
 
 /**
- * The tab « Replays » (Sami, 26/10/2026, as in mcts-urgences): every day played to its end on the page is kept, in this
- * browser and in the project's replays/ folder through the page server; one opens again in its tab, move for move, or
- * downloads. `ctx`: the page's `state`, `render`, `openReplay`.
+ * The tab « Replays » (Sami, 26/10/2026, as in mcts-urgences): every day of the warehouse and every hour of the line
+ * played to its end on the page is kept, in this browser and in the project's replays/ folder through the page server;
+ * one opens again in its tab, move for move, or downloads. `ctx`: the page's `state`, `render`, `openReplay`.
  */
 export const replaysPanel = ({ state }) =>
   panelOf(
     "Les replays",
-    state,
+    state.sims.entrepot,
     [],
     el("p", { class: "hint" }, "Chaque journée jouée jusqu'au bout se garde ici, dans ce navigateur, et dans le dossier replays/ du projet quand la page passe par son serveur (npm run page). Rouverte, elle se rejoue coup pour coup, quelle que soit la règle qui l'avait jouée, la recherche comprise."),
   );
 
 const when = (replay) => replay.savedAt.slice(0, 16).replace("T", " ");
-const planLabel = (replay) => (PLANS[replay.planId] && replay.setup.label === PLANS[replay.planId].label ? PLANS[replay.planId].label : `${replay.setup.label ?? replay.planId}`);
-const finishText = (replay) => (replay.measures ? ` · fini au tour ${replay.measures.finish}, ${replay.measures.truckWait} tours à quai` : "");
+const modelOf = (replay) => MODELS[replay.kind ?? "entrepot"];
+const planLabel = (replay) => replay.setup.label ?? modelOf(replay).plans[replay.planId]?.label ?? replay.planId;
+function finishText({ kind, measures }) {
+  if (!measures) return "";
+  if (kind === "ligne") return ` · ${measures.produced} véhicules, ${measures.stopped} tours d'arrêt`;
+  return ` · fini au tour ${measures.finish}, ${measures.truckWait} tours à quai`;
+}
 
 function keptList() {
   const kept = keptReplays();
-  if (!kept.length) return el("p", { class: "hint" }, "Aucune journée gardée : jouez une journée jusqu'au bout, onglet Entrepôt.");
+  if (!kept.length) return el("p", { class: "hint" }, "Rien de gardé : jouez une journée jusqu'au bout (onglet Entrepôt), ou une heure de ligne (onglet Ligne cadencée).");
   const item = (replay, i) =>
     el(
       "li",
       {},
-      `${when(replay)} · ${planLabel(replay)} · journée ${replay.seed} · ${RULE_LABELS[replay.rule] ?? replay.rule}${finishText(replay)} `,
+      `${when(replay)} · ${planLabel(replay)} · ${replay.kind === "ligne" ? "heure" : "journée"} ${replay.seed} · ${modelOf(replay).labels[replay.rule] ?? replay.rule}${finishText(replay)} `,
       el("button", { type: "button", class: "quiet", "data-replay": String(i), "data-do": "open" }, "Rouvrir"),
       " ",
       el("button", { type: "button", class: "quiet", "data-replay": String(i), "data-do": "download" }, "Télécharger"),
@@ -57,7 +61,7 @@ function askServer(ctx) {
 
 export function replaysView(ctx) {
   askServer(ctx);
-  return [el("h2", {}, "Les journées gardées dans ce navigateur"), keptList(), el("h2", {}, "Le dossier replays/ du projet"), serverList(ctx.state.serverReplays)];
+  return [el("h2", {}, "Gardés dans ce navigateur"), keptList(), el("h2", {}, "Le dossier replays/ du projet"), serverList(ctx.state.serverReplays)];
 }
 
 /** A kept day opened again in its tab, or downloaded; true if the click was this tab's. */

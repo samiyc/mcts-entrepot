@@ -1,13 +1,16 @@
 import { svg } from "./dom.js";
 import { blockageOf, cellsOf, robotsOf } from "./view.js";
 
-/** The board of a day, drawn from view.js (app.js, split on 26/10/2026): the cells and their marks, the robots and their legs. */
-const CELL = 34;
-const SYMBOLS = Object.freeze({ charge: "⚡", truck: "🚚" });
-const centreX = (cell) => cell.x * CELL + CELL / 2;
-const centreY = (cell, dy = 0) => cell.y * CELL + CELL / 2 + dy;
+/**
+ * The board of a day, drawn from view.js (app.js, split on 26/10/2026): the cells and their marks, the robots and their
+ * legs. The assembly line's board (line-board.js) draws with the same pieces.
+ */
+export const CELL = 34;
+export const SYMBOLS = Object.freeze({ charge: "⚡", truck: "🚚" });
+export const centreX = (cell) => cell.x * CELL + CELL / 2;
+export const centreY = (cell, dy = 0) => cell.y * CELL + CELL / 2 + dy;
 
-function cellRect(cell, blockage) {
+export function cellRect(cell, blockage) {
   const seen = blockage.seen ? " seen" : "";
   const kind = cell.kind === "blockable" && blockage.now ? `blockable blocked${seen}` : cell.kind;
   const done = cell.kind === "block" && cell.pending === 0 ? " done" : "";
@@ -15,13 +18,13 @@ function cellRect(cell, blockage) {
 }
 
 /** A blocked `~`: a cross, faint while the robots do not know yet. */
-function crossOf(cell, blockage) {
+export function crossOf(cell, blockage) {
   const seen = blockage.seen ? " seen" : "";
   const title = blockage.seen ? "Allée bloquée : les robots le savent" : "Allée bloquée : aucun robot ne l'a encore vue";
   return [svg("text", { x: centreX(cell), y: centreY(cell, 6), class: `symbol cross${seen}` }, "❌"), svg("title", {}, title)];
 }
 
-function letterOf(cell) {
+export function letterOf(cell) {
   const text = cell.pending > 1 ? `${cell.letter}×${cell.pending}` : cell.letter;
   return [svg("text", { x: centreX(cell), y: centreY(cell, 5), class: "letter" }, text)];
 }
@@ -70,14 +73,14 @@ const MARKS = [
   (cell) => (cell.pallet ? palletMarks(cell) : []),
 ];
 
-function robotMark(robot) {
+export function robotMark(robot) {
   const group = svg("g", { class: `robot r${robot.id}`, transform: `translate(${centreX(robot)} ${centreY(robot)})` });
   group.append(svg("title", {}, robot.label), svg("circle", { r: CELL / 2 - 5 }), svg("text", { y: 4, class: "robot-id" }, String(robot.id)));
   if (robot.carrying) group.append(svg("rect", { x: 4, y: -CELL / 2 + 2, width: 10, height: 10, rx: 2, class: "parcel" }));
   return group;
 }
 
-const trailOf = (robot) => svg("polyline", { points: robot.ahead.map((step) => `${centreX(step)},${centreY(step)}`).join(" "), class: `trail r${robot.id}` });
+export const trailOf = (robot) => svg("polyline", { points: robot.ahead.map((step) => `${centreX(step)},${centreY(step)}`).join(" "), class: `trail r${robot.id}` });
 
 /** The board of `day`: its plan, then the robots' legs, then the robots. */
 export function board(day) {

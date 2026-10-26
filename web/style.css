@@ -132,3 +132,21 @@ main.layout.folded .sidebar { display: none; }
 .strip-dot:hover { fill-opacity: 1; r: 6; }
 .strip-mean { fill: var(--accent-2); }
 .replay-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* The assembly line (line-board.js, tabs/ligne.js): the stations, red while the line stands still for one; their line
+ * side; a reference short at the supermarket; each lane's bins, the one in use filled as far as it is full. */
+.cell.station { fill: var(--dock); }
+.cell.station.stopped { fill: var(--blocked); }
+.cell.slot { fill: color-mix(in srgb, var(--dock) 22%, var(--floor)); stroke: var(--dock); stroke-width: 1; }
+.cell.block.short { stroke: var(--blocked); stroke-width: 2.5; stroke-dasharray: 4 3; }
+.station-id { font-size: 11px; }
+.stations { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 0.86rem; }
+.stations > li { display: grid; grid-template-columns: 2.6em 1fr; gap: 6px; align-items: start; }
+.station-tag { font-weight: 700; color: var(--dock); }
+.lanes { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.lanes li { display: flex; align-items: center; gap: 6px; }
+.lanes li.empty strong { color: var(--blocked); }
+.bins { display: inline-flex; gap: 3px; }
+.bin { display: inline-block; width: 16px; height: 12px; border: 1px solid var(--ink-2); border-radius: 2px; background: linear-gradient(to top, #f2c14e var(--fill), transparent var(--fill)); }
+.bin.empty { border-color: var(--blocked); }
+.summary.line-stopped { border-color: var(--blocked); box-shadow: inset 4px 0 0 var(--blocked); }

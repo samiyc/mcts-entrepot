@@ -1,165 +1,163 @@
 import { recording, replayOf } from "../src/replay.js";
-import { RULES, summaryOf } from "../src/rules.js";
-import { beginTurn, choose, createDay, drawDay, endTurn, isOver, measuresOf, nextChoice, runDay, stepDay } from "../src/simulate.js";
+import { MODELS } from "./models.js";
 import { keepReplay } from "./replay-store.js";
 import { ask, stopWorkers } from "./workers.js";
 
 /**
- * The shown day of the warehouse, played (app.js, split on 26/10/2026 for the tabs): under a rule at once, under the
- * search choice by choice, each choice asked of a worker (search-worker.js) and the board drawn between two; and the
- * rules compared on the same days. Every choice is written down (`state.choices`): a day over is kept as a replay, and
- * a replay opened (`state.replay`) plays its own choices again. Functions of the page's context `{ state, render }`.
+ * A simulation's shown day, played (app.js, split on 26/10/2026 for the tabs; the warehouse and the assembly line
+ * alike, models.js): under a rule at once, under the search choice by choice, each choice asked of a worker
+ * (search-worker.js) and the board drawn between two; and the rules compared on the same days. Every choice is written
+ * down (`sim.choices`): a day over is kept as a replay, and a replay opened (`sim.replay`) plays its own choices again.
+ * Functions of `{ sim, render }`, `sim` the simulation's own state (models.js `simOf`).
  */
-export const COMPARED = 100;
-export const COMPARED_WITH_SEARCH = 12;
+const modelOf = (sim) => MODELS[sim.kind];
 
-export function stop({ state }) {
-  clearInterval(state.timer);
-  state.timer = null;
+export function stop({ sim }) {
+  clearInterval(sim.timer);
+  sim.timer = null;
 }
 
-export function restart(ctx) {
-  const { state } = ctx;
-  stop(ctx);
+export function restart(game) {
+  const { sim } = game;
+  stop(game);
   stopWorkers();
-  Object.assign(state, { run: state.run + 1, busy: "", choices: [], thinking: false, kept: Boolean(state.replay) });
-  state.day = createDay(state.setup, drawDay(state.seed, state.setup));
+  Object.assign(sim, { run: sim.run + 1, busy: "", choices: [], thinking: false, kept: Boolean(sim.replay) });
+  sim.day = modelOf(sim).start(sim.setup, sim.seed);
 }
 
 /** The day over, kept once (a replay played again is not kept a second time). */
-function keepIfOver({ state }) {
-  if (state.kept || !isOver(state.day)) return;
-  state.kept = true;
-  keepReplay(replayOf({ planId: state.planId, setup: state.setup, seed: state.seed, rule: state.rule, choices: state.choices, measures: measuresOf(state.day) }));
+function keepIfOver({ sim }) {
+  const model = modelOf(sim);
+  if (sim.kept || !model.isOver(sim.day)) return;
+  sim.kept = true;
+  keepReplay(replayOf({ kind: sim.kind, planId: sim.planId, setup: sim.setup, seed: sim.seed, rule: sim.rule, choices: sim.choices, measures: model.measuresOf(sim.day) }));
 }
 
-/** A turn of a replay: each choice as it was made. */
-function replayTurn({ state }) {
-  const day = state.day;
-  if (day.cursor === null) beginTurn(day);
-  for (let choice = nextChoice(day); choice; choice = nextChoice(day)) {
-    const id = state.replay.choices[state.choices.length] ?? null;
-    choose(day, choice, id);
-    state.choices.push(id);
+/** Each choice of this turn from `pick(choice)` (a replay's, or the worker's answer), then the turn played; false when a newer run started meanwhile. */
+async function turnOf(game, run, pick) {
+  const { sim } = game;
+  const model = modelOf(sim);
+  const day = sim.day;
+  if (day.cursor === null) model.beginTurn(day);
+  for (let choice = model.nextChoice(day); choice; choice = model.nextChoice(day)) {
+    const id = await pick(choice);
+    if (run !== sim.run) return false;
+    model.choose(day, choice, id);
+    sim.choices.push(id);
   }
-  endTurn(day);
-}
-
-/** A turn under a rule, its choices written down. */
-const ruleTurn = ({ state }) => stepDay(state.day, recording(RULES[state.rule], state.choices));
-
-/** Each robot's choice of this turn asked of the worker, then the turn played; false when a newer run started meanwhile. */
-async function searchTurn({ state, render }, run) {
-  const day = state.day;
-  if (day.cursor === null) beginTurn(day);
-  for (let choice = nextChoice(day); choice; choice = nextChoice(day)) {
-    state.busy = `La recherche réfléchit (tour ${day.t}, robot ${choice.robot.id})…`;
-    render();
-    const { id } = await ask(0, { kind: "choice", setup: state.setup, seed: state.seed, choices: state.choices });
-    if (run !== state.run) return false;
-    choose(day, choice, id);
-    state.choices.push(id);
-  }
-  endTurn(day);
-  state.busy = "";
+  model.endTurn(day);
+  sim.busy = "";
   return true;
 }
 
-/** One turn of the shown day: under a rule at once; under the search, choice by choice. False when a newer run started meanwhile. */
-async function playTurn(ctx, run) {
-  const { state } = ctx;
-  if (state.replay || state.rule !== "search") {
-    if (state.replay) replayTurn(ctx);
-    else ruleTurn(ctx);
-    keepIfOver(ctx);
-    return true;
-  }
-  state.thinking = true;
-  try {
-    const played = await searchTurn(ctx, run);
-    if (played) keepIfOver(ctx);
-    return played;
-  } finally {
-    state.thinking = false;
-  }
+/** The worker's answer for `choice`, while the page says where the search is. */
+async function searched(game, choice) {
+  const { sim, render } = game;
+  sim.busy = `La recherche réfléchit (tour ${sim.day.t}, robot ${choice.robot.id})…`;
+  render();
+  const { id } = await ask(0, { kind: "choice", sim: sim.kind, setup: sim.setup, seed: sim.seed, choices: sim.choices });
+  return id;
 }
 
-export async function finish(ctx) {
-  const { state, render } = ctx;
-  stop(ctx);
-  const run = ++state.run;
-  const quick = state.replay || state.rule !== "search";
-  while (!isOver(state.day)) {
-    if (!(await playTurn(ctx, run))) return;
+/** One turn of the shown day: a replay's own choices, a rule at once, or the search choice by choice. False when a newer run started meanwhile. */
+async function playTurn(game, run) {
+  const { sim } = game;
+  const model = modelOf(sim);
+  let played = true;
+  if (sim.replay) played = await turnOf(game, run, () => sim.replay.choices[sim.choices.length] ?? null);
+  else if (sim.rule !== "search") model.stepDay(sim.day, recording(model.rules[sim.rule], sim.choices));
+  else {
+    sim.thinking = true;
+    try {
+      played = await turnOf(game, run, (choice) => searched(game, choice));
+    } finally {
+      sim.thinking = false;
+    }
+  }
+  if (played) keepIfOver(game);
+  return played;
+}
+
+export async function finish(game) {
+  const { sim, render } = game;
+  const model = modelOf(sim);
+  stop(game);
+  const run = ++sim.run;
+  const quick = sim.replay || sim.rule !== "search";
+  while (!model.isOver(sim.day)) {
+    if (!(await playTurn(game, run))) return;
     if (!quick) render();
   }
-  state.busy = "";
+  sim.busy = "";
   render();
 }
 
-export function play(ctx) {
-  const { state, render } = ctx;
-  stop(ctx);
-  const run = state.run;
-  state.timer = setInterval(async () => {
-    if (state.thinking) return;
-    if (isOver(state.day)) {
-      stop(ctx);
+export function play(game) {
+  const { sim, render } = game;
+  stop(game);
+  const run = sim.run;
+  sim.timer = setInterval(async () => {
+    if (sim.thinking) return;
+    if (modelOf(sim).isOver(sim.day)) {
+      stop(game);
       render();
       return;
     }
-    if (await playTurn(ctx, run)) render();
-  }, 1000 / state.speed);
+    if (await playTurn(game, run)) render();
+  }, 1000 / sim.speed);
 }
 
 /** One turn, by the button. */
-export function step(ctx) {
-  const { state, render } = ctx;
-  stop(ctx);
-  if (!isOver(state.day) && !state.thinking) playTurn(ctx, state.run).then((played) => played && render());
+export function step(game) {
+  const { sim, render } = game;
+  stop(game);
+  if (!modelOf(sim).isOver(sim.day) && !sim.thinking) playTurn(game, sim.run).then((played) => played && render());
 }
 
 /** Each rule's measures on `days` days from the shown one. */
-function rulesOn(setup, seed, days) {
-  const runs = Object.fromEntries(Object.keys(RULES).map((name) => [name, []]));
-  for (let i = 0; i < days; i += 1) for (const [name, rule] of Object.entries(RULES)) runs[name].push(runDay(setup, seed + i, rule).measures);
+function rulesOn(sim, days) {
+  const model = modelOf(sim);
+  const runs = Object.fromEntries(Object.keys(model.rules).map((name) => [name, []]));
+  for (let i = 0; i < days; i += 1) for (const [name, rule] of Object.entries(model.rules)) runs[name].push(model.runDay(sim.setup, sim.seed + i, rule).measures);
   return runs;
 }
 
-/** The rules on the same `COMPARED` days (each day kept, for the stats). */
-export function compare({ state }) {
-  state.run += 1;
-  const runs = rulesOn(state.setup, state.seed, COMPARED);
-  Object.assign(state, { compared: { days: COMPARED, rows: summaryOf(runs), runs, seed: state.seed, planId: state.planId }, busy: "" });
+/** The rules on the same days (each day kept, for the stats). */
+export function compare({ sim }) {
+  sim.run += 1;
+  const days = modelOf(sim).compared.rules;
+  const runs = rulesOn(sim, days);
+  Object.assign(sim, { compared: { days, rows: modelOf(sim).summaryOf(runs), runs, seed: sim.seed, planId: sim.planId }, busy: "" });
 }
 
 /** The rules and the search on the same few days, the search's days in several workers at once. */
-export async function compareWithSearch(ctx) {
-  const { state, render } = ctx;
-  stop(ctx);
-  const run = ++state.run;
-  const runs = { ...rulesOn(state.setup, state.seed, COMPARED_WITH_SEARCH), search: [] };
-  const pool = Math.max(1, Math.min(COMPARED_WITH_SEARCH, (navigator.hardwareConcurrency || 4) - 2));
+export async function compareWithSearch(game) {
+  const { sim, render } = game;
+  stop(game);
+  const run = ++sim.run;
+  const days = modelOf(sim).compared.search;
+  const runs = { ...rulesOn(sim, days), search: [] };
+  const pool = Math.max(1, Math.min(days, (navigator.hardwareConcurrency || 4) - 2));
   const found = [];
   let next = 0;
   let done = 0;
-  state.busy = `Comparaison : la recherche joue ${COMPARED_WITH_SEARCH} journées, ${pool} à la fois…`;
+  sim.busy = `Comparaison : la recherche joue ${days} journées, ${pool} à la fois…`;
   render();
   // Worker 0 answers the shown day's choices; the days go to workers 1 to pool.
   const worker = async (w) => {
-    while (next < COMPARED_WITH_SEARCH) {
+    while (next < days) {
       const i = next++;
-      const { measures } = await ask(w + 1, { kind: "day", setup: state.setup, seed: state.seed + i });
-      if (run !== state.run) return;
+      const { measures } = await ask(w + 1, { kind: "day", sim: sim.kind, setup: sim.setup, seed: sim.seed + i });
+      if (run !== sim.run) return;
       found[i] = measures;
       done += 1;
-      state.busy = `Comparaison : ${done} journées de recherche sur ${COMPARED_WITH_SEARCH}`;
+      sim.busy = `Comparaison : ${done} journées de recherche sur ${days}`;
       render();
     }
   };
   await Promise.all(Array.from({ length: pool }, (_, w) => worker(w)));
-  if (run !== state.run) return;
+  if (run !== sim.run) return;
   runs.search = found;
-  Object.assign(state, { compared: { days: COMPARED_WITH_SEARCH, rows: summaryOf(runs), runs, seed: state.seed, planId: state.planId }, busy: "" });
+  Object.assign(sim, { compared: { days: days, rows: modelOf(sim).summaryOf(runs), runs, seed: sim.seed, planId: sim.planId }, busy: "" });
   render();
 }
