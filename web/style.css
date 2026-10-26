@@ -157,3 +157,6 @@ main.layout.folded .sidebar { display: none; }
 .model { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; color: #fff; background: var(--r2); }
 .model.hybride { background: var(--r3); }
 .model.current { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+/* Step 3: the driver at the keys, a square badge among the round robots. */
+.human rect:first-of-type { fill: var(--ink); stroke: #f2c14e; stroke-width: 2.5; }

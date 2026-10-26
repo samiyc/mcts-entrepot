@@ -2,6 +2,7 @@ import { closed, isHome } from "./day-basics.js";
 import { legToPickup, planLeg, standBy } from "./day-legs.js";
 import { arrive, discover, move, retry } from "./day-turn.js";
 import { createLine, drawLineDay, measuresOfLine, takt } from "./line-day.js";
+import { addHuman, humanTurn } from "./line-human.js";
 import { arriveAtShelf, finishActions, startDelivery } from "./line-tour.js";
 import { distancesFrom, nearestPickup } from "./warehouse.js";
 
@@ -68,8 +69,9 @@ export function beginTurn(state) {
   state.cursor = 0;
 }
 
-/** The end of a turn: every robot moves, those arrived start their work, and the takt comes when it is due. */
+/** The end of a turn: the driver acts (step 3), every robot moves, those arrived start their work, and the takt comes when it is due. */
 export function endTurn(state) {
+  humanTurn(state);
   move(state);
   arrive(state);
   arriveAtShelf(state);
@@ -111,6 +113,8 @@ export function cloneLine(state) {
     orders: state.orders.map((order) => ({ ...order })),
     lanes: state.lanes.map((lane) => ({ ...lane })),
     empties: [...state.empties],
+    // The driver's moves to come are unknown: in a world, it waits.
+    human: state.human ? { ...state.human, actions: [...state.human.actions], script: [...state.human.actions], next: null } : undefined,
     known: { ...state.known, short: { ...state.known.short } },
     stops: { ...state.stops },
     claims: new Map(),
@@ -120,10 +124,20 @@ export function cloneLine(state) {
   };
 }
 
-/** A whole day of `setup` from `seed` under `rule`: the final state and its measures. */
-export function runLine(setup, seed, rule) {
+/** The start of an hour: the line drawn and made, the driver on it when the setup has one (step 3). */
+export function startLine(setup, seed) {
   const state = createLine(setup, drawLineDay(seed, setup));
-  while (!isOver(state)) stepDay(state, rule);
+  if (setup.human) addHuman(state, setup.humanScript ?? null);
+  return state;
+}
+
+/** A whole hour of `setup` from `seed` under `rule` (and `driver`, the driver's action each turn): the final state and its measures. */
+export function runLine(setup, seed, rule, driver = null) {
+  const state = startLine(setup, seed);
+  while (!isOver(state)) {
+    if (driver && state.human) state.human.next = driver(state);
+    stepDay(state, rule);
+  }
   return { state, measures: measuresOfLine(state) };
 }
 

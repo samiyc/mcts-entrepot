@@ -84,20 +84,24 @@ const ACTIONS = {
   finish: (game) => finish(game),
   restart: (game) => restart(game),
   next: (game) => {
-    Object.assign(game.sim, { seed: game.sim.seed + 1, replay: null });
+    Object.assign(game.sim, { seed: game.sim.seed + 1, replay: null, setup: live(game.sim.setup) });
     restart(game);
   },
   leaveReplay: (game) => {
-    game.sim.replay = null;
+    Object.assign(game.sim, { replay: null, setup: live(game.sim.setup) });
     restart(game);
   },
   compare: (game) => compare(game),
   compareSearch: (game) => compareWithSearch(game),
 };
 
-/** A setting of simulation `sim` changed: a plan, a day, a speed, a rule. */
+/** A setup without a replay's driver script: the driver plays from the keys again. */
+const live = ({ humanScript: _script, ...setup }) => setup;
+
+/** A setting of simulation `sim` changed: a plan, a day, a speed, a rule, the driver at the keys. */
 function setKnob(sim, name, value) {
-  if (name !== "speed") sim.replay = null;
+  if (name !== "speed") Object.assign(sim, { replay: null, setup: live(sim.setup) });
+  if (name === "human") return Object.assign(sim, { setup: { ...sim.setup, human: value } });
   if (name === "plan") Object.assign(sim, { planId: value, setup: { ...MODELS[sim.kind].plans[value] }, compared: null, error: "" });
   else if (name === "seed") sim.seed = Math.max(1, Number(value) || 1);
   else if (name === "speed") sim.speed = Number(value);
@@ -110,7 +114,7 @@ layout.addEventListener("change", (event) => {
   if (name === "compareKind") state.compareKind = knob.value;
   else if (name) {
     const game = gameOf(knob.dataset.sim);
-    setKnob(game.sim, name, knob.value);
+    setKnob(game.sim, name, knob.type === "checkbox" ? knob.checked : knob.value);
     if (name === "speed" && game.sim.timer) play(game);
     else restart(game);
   }
@@ -152,5 +156,22 @@ fetch("../docs/changelog.json")
     if (state.tab === "stats") render();
   })
   .catch(() => {});
+// The driver's keys, in the line's tab (step 3); a key in a form field is the field's. Out of play, a key plays a turn.
+const KEYS = { z: "up", s: "down", q: "left", d: "right", arrowup: "up", arrowdown: "down", arrowleft: "left", arrowright: "right", e: "act" };
+/** The driver's action of a key, or null: not in the line's tab, no driver at the keys, a replay, a form field's key. */
+function driverAction(event) {
+  const sim = state.sims.ligne;
+  const field = /** @type {HTMLElement} */ (event.target).closest?.("input, textarea, select");
+  const playing = state.tab === "ligne" && sim.day?.human && !sim.replay && !field;
+  return playing ? (KEYS[event.key.toLowerCase()] ?? null) : null;
+}
+document.addEventListener("keydown", (event) => {
+  const sim = state.sims.ligne;
+  const action = driverAction(event);
+  if (!action) return;
+  event.preventDefault();
+  sim.day.human.next = action;
+  if (sim.timer === null) step(gameOf("ligne"));
+});
 for (const kind of Object.keys(state.sims)) restart(gameOf(kind));
 render();

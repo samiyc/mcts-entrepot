@@ -30,7 +30,7 @@ function keepIfOver({ sim }) {
   const model = modelOf(sim);
   if (sim.kept || !model.isOver(sim.day)) return;
   sim.kept = true;
-  keepReplay(replayOf({ kind: sim.kind, planId: sim.planId, setup: sim.setup, seed: sim.seed, rule: sim.rule, choices: sim.choices, measures: model.measuresOf(sim.day) }));
+  keepReplay(replayOf({ kind: sim.kind, planId: sim.planId, setup: sim.setup, seed: sim.seed, rule: sim.rule, choices: sim.choices, measures: model.measuresOf(sim.day), humanActions: sim.day.human?.actions ?? null }));
 }
 
 /** Each choice of this turn from `pick(choice)` (a replay's, or the worker's answer), then the turn played; false when a newer run started meanwhile. */
@@ -55,7 +55,9 @@ async function searched(game, choice) {
   const { sim, render } = game;
   sim.busy = `La recherche réfléchit (tour ${sim.day.t}, robot ${choice.robot.id})…`;
   render();
-  const { id } = await ask(0, { kind: "choice", sim: sim.kind, setup: sim.setup, seed: sim.seed, choices: sim.choices });
+  // The driver's actions so far go with the day, for the worker to make it again (line-human.js).
+  const setup = sim.day.human ? { ...sim.setup, humanScript: sim.day.human.actions } : sim.setup;
+  const { id } = await ask(0, { kind: "choice", sim: sim.kind, setup, seed: sim.seed, choices: sim.choices });
   return id;
 }
 

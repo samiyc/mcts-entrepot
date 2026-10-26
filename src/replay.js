@@ -1,4 +1,4 @@
-import { advance as advanceLine, choose as chooseLine, createLine, drawLineDay } from "./line.js";
+import { advance as advanceLine, choose as chooseLine, startLine } from "./line.js";
 import { advance, choose, createDay, drawDay } from "./simulate.js";
 
 /**
@@ -14,7 +14,7 @@ export const formatOf = (kind) => `${kind}/1`;
 /** What a replay plays, by kind: the day drawn and made, and its choices. */
 const MODELS = {
   entrepot: { start: (setup, seed) => createDay(setup, drawDay(seed, setup)), advance, choose },
-  ligne: { start: (setup, seed) => createLine(setup, drawLineDay(seed, setup)), advance: advanceLine, choose: chooseLine },
+  ligne: { start: startLine, advance: advanceLine, choose: chooseLine },
 };
 
 /** `rule`, whose every answer is written down in `choices` (the id, null when none). */
@@ -37,7 +37,8 @@ export function replayDay(setup, seed, choices, kind = "entrepot") {
   return { day, choice };
 }
 
-/** A replay to keep: what the day was, what chose, the choices, its measures, when. */
-export function replayOf({ kind = "entrepot", planId, setup, seed, rule, choices, measures }) {
-  return { format: formatOf(kind), kind, planId, setup, seed, rule, choices: [...choices], measures, savedAt: new Date().toISOString() };
+/** A replay to keep: what the day was, what chose, the choices, the driver's actions (written into its setup), its measures, when. */
+export function replayOf({ kind = "entrepot", planId, setup, seed, rule, choices, measures, humanActions = null }) {
+  const kept = humanActions ? { ...setup, humanScript: [...humanActions] } : setup;
+  return { format: formatOf(kind), kind, planId, setup: kept, seed, rule, choices: [...choices], measures, savedAt: new Date().toISOString() };
 }

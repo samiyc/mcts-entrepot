@@ -12,9 +12,16 @@ import { replayNote } from "./entrepot.js";
 const INTRO =
   "Une ligne d'assemblage automobile : un véhicule toutes les 55 s (le takt de Toyota à Georgetown). Chaque poste prend à chaque takt une pièce de chacune de ses références ; un bac vidé (12 pièces) appelle un robot, qui va chercher un bac plein au supermarché. S'il manque une pièce à un poste, toute la ligne s'arrête. Une référence peut manquer au supermarché : un robot ne le voit qu'en arrivant au bloc.";
 
+/** The driver at the keys (step 3): the box, and the keys when it is on. */
+function driverFields(sim) {
+  const box = el("label", { class: "check" }, el("input", { type: "checkbox", "data-knob": "human", "data-sim": "ligne", checked: Boolean(sim.setup.human) }), "Jouer le cariste");
+  const keys = el("p", { class: "hint" }, "Z Q S D ou les flèches pour marcher, E pour prendre un bac à côté d'un bloc (le plus ancien demandé) ou le poser devant son poste. Hors lecture, chaque touche joue un tour. Les robots s'écartent de vous.");
+  return sim.setup.human ? [box, keys] : [box];
+}
+
 export const lignePanel = ({ state }) => {
   const sim = state.sims.ligne;
-  return panelOf("L'heure de ligne", sim, ["plan", "rule", "seed", "speed"], ...playButtons(sim), el("p", { class: "hint" }, "Un tour = 5 s ; une heure = 720 tours. Les chiffres et leurs sources : docs/recherche/ligne-cadencee.md."));
+  return panelOf("L'heure de ligne", sim, ["plan", "rule", "seed", "speed"], ...playButtons(sim), ...driverFields(sim), el("p", { class: "hint" }, "Un tour = 5 s ; une heure = 720 tours. Les chiffres et leurs sources : docs/recherche/ligne-cadencee.md."));
 };
 
 /** A lane as a row: the reference, its bins (the one in use, how full; the full ones behind), the request out. */

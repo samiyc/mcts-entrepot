@@ -153,5 +153,6 @@ export function measuresOfLine(state) {
     returned: state.returned ?? 0,
     emptiesLeft: state.empties.reduce((sum, count) => sum + count, 0),
     blocked: state.day.blockages.length > 0,
+    humanDelivered: state.human?.delivered ?? 0,
   };
 }

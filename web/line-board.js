@@ -1,6 +1,6 @@
 import { CELL, SYMBOLS, cellRect, centreX, centreY, crossOf, letterOf, robotMark, trailOf } from "./board.js";
 import { svg } from "./dom.js";
-import { cellsOfLine, robotsOfLine } from "./line-view.js";
+import { cellsOfLine, humanOf, robotsOfLine } from "./line-view.js";
 import { blockageOf } from "./view.js";
 
 /**
@@ -35,7 +35,15 @@ function square(cell, blockage) {
   return rect;
 }
 
-/** The board of `state` (an hour of the line): its plan, then the robots' legs, then the robots. */
+/** The driver (step 3): a square badge, the bin it carries on its corner. */
+function humanMark(human) {
+  const group = svg("g", { class: "human", transform: `translate(${centreX(human)} ${centreY(human)})` });
+  group.append(svg("title", {}, human.label), svg("rect", { x: -CELL / 2 + 5, y: -CELL / 2 + 5, width: CELL - 10, height: CELL - 10, rx: 6 }), svg("text", { y: 4, class: "robot-id" }, "C"));
+  if (human.carrying) group.append(svg("rect", { x: 4, y: -CELL / 2 + 2, width: 10, height: 10, rx: 2, class: "parcel" }));
+  return group;
+}
+
+/** The board of `state` (an hour of the line): its plan, then the robots' legs, then the robots and the driver. */
 export function lineBoard(state) {
   const { drawn } = state;
   const blockage = blockageOf(state);
@@ -43,5 +51,7 @@ export function lineBoard(state) {
   for (const cell of cellsOfLine(state)) map.append(square(cell, blockage), ...MARKS.flatMap((marks) => marks(cell, blockage)));
   const robots = robotsOfLine(state);
   map.append(...robots.filter((robot) => robot.ahead.length > 1).map(trailOf), ...robots.map(robotMark));
+  const human = humanOf(state);
+  if (human) map.append(humanMark(human));
   return map;
 }

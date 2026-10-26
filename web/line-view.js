@@ -73,6 +73,15 @@ function robotView(state, robot) {
   };
 }
 
+/** The driver (step 3), or null: where it is, what it carries, in words. */
+export function humanOf(state) {
+  const human = state.human;
+  if (!human) return null;
+  const request = state.orders.find((order) => order.id === human.load);
+  const what = request ? `porte un bac ${request.block} pour le poste ${request.station + 1}` : "les mains libres";
+  return { x: human.x, y: human.y, carrying: request?.block ?? null, label: `Le cariste (vous) : ${what}, ${human.delivered} bac${plural(human.delivered)} posé${plural(human.delivered)}` };
+}
+
 /** The models known to come (a mix of models only): the vehicle being made first, `{ name, first }` each. */
 export const sequenceOf = (state) => knownModels(state).map((model, i) => ({ name: model.name, first: i === 0 }));
 
@@ -85,5 +94,7 @@ export function lineStatus(state) {
   const short = Object.keys(state.known.short);
   if (short.length) parts.push(`rupture vue : ${short.join(", ")}`);
   parts.push(state.t <= state.known.blockedUntil ? "allée bloquée" : "allées libres");
+  const human = humanOf(state);
+  if (human) parts.push(human.label);
   return parts.join(" · ");
 }

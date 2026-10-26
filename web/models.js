@@ -36,7 +36,7 @@ export const MODELS = {
     plans: LINE_PLANS,
     rules: LINE_RULES,
     labels: LINE_RULE_LABELS,
-    start: (setup, seed) => line.createLine(setup, line.drawLineDay(seed, setup)),
+    start: line.startLine,
     beginTurn: line.beginTurn,
     nextChoice: line.nextChoice,
     choose: line.choose,

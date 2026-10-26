@@ -43,7 +43,10 @@ export function readLine(text, refs) {
   if (groups.length !== stations.length) throw new Error(`${groups.length} groupes de références pour ${stations.length} postes (P)`);
   for (const slot of drawn.find("b")) stations.reduce((best, one) => (manhattan(one, slot) < manhattan(best, slot) ? one : best)).slots.push(slot);
   for (const station of stations) settle(warehouse, station);
-  Object.assign(warehouse, { docks: stations, dock: stations[0] });
+  // Each station stands as a dock at its first drop cell, a floor cell (26/10/2026: the stations themselves are not
+  // floor, so the spots measured from them found no aside cell, and robots could park in front of the line side).
+  const docks = stations.map((station) => ({ ...station.access[0], bay: [], zones: [] }));
+  Object.assign(warehouse, { docks, dock: docks[0] });
   return { warehouse, stations, drawn, returns: floorBeside(warehouse, drawn.find("r")) };
 }
 

@@ -120,3 +120,26 @@ describe("the line, step 2: rounds, empty bins, a mix of models", () => {
     assert.ok(usageOf(state, "E") < 1 && usageOf(state, "A") === 1);
   });
 });
+
+describe("the line, step 3: the driver at the keys (src/line-human.js)", () => {
+  it("helps, never shares a cell with a robot, and plays its hour again from its actions", async () => {
+    const { helpingDriver, randomDriver } = await import("../src/line-drivers.js");
+    const { replayDay } = await import("../src/replay.js");
+    const { recording } = await import("../src/replay.js");
+    const { measuresOfLine, startLine } = await import("../src/line.js");
+    const setup = { ...LINE_PLANS.seul, human: true };
+    for (const driver of [helpingDriver, randomDriver(3)]) {
+      const state = startLine(setup, 2);
+      const choices = [];
+      while (!isOver(state)) {
+        state.human.next = driver(state);
+        stepDay(state, recording(LINE_RULES.nearest, choices));
+        assert.ok(!state.robots.some((robot) => robot.x === state.human.x && robot.y === state.human.y), `tour ${state.t} : un robot sur la case du cariste`);
+      }
+      const { day } = replayDay({ ...setup, humanScript: state.human.actions }, 2, choices, "ligne");
+      assert.deepEqual(measuresOfLine(day), measuresOfLine(state));
+    }
+    const helped = runLine(setup, 2, LINE_RULES.nearest, helpingDriver).measures;
+    assert.ok(helped.humanDelivered > 0);
+  });
+});
