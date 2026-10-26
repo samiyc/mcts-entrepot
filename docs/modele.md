@@ -323,3 +323,7 @@ Les étapes communes aux trois dépôts sont dans la [feuille de route](https://
 4. **Une zone d'assemblage** (Sami, à préciser) : une commande de plusieurs colis, réunis sur une zone avant
    de partir au camion.
 5. **Des commandes qui arrivent pendant la journée**, avec des échéances.
+6. **Une variante « atelier »** (Sami, 26/10) : une chaîne de production où comptent l'ordonnancement et les
+   ressources rares, les rejets, les pannes. Les recherches, le glossaire des termes réels et sa feuille de route sont
+   dans [`docs/recherche/`](recherche/README.md) ; rien n'est codé avant la relecture de Sami. L'outillage du dépôt
+   (lint, types, empreintes, hook) est dans [`docs/outillage.md`](outillage.md).
