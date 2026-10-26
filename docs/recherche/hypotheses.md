@@ -45,6 +45,7 @@ Les statuts :
 | Un câblage au poste d'assemblage | 5 à 15 min, tiré uniformément | `WAREHOUSE.works.wiring` | estimée | Q19 |
 | Une mise en colis | 1 à 3 min | `WAREHOUSE.works.packing` | estimée | Q20 |
 | Poser une palette sur la navette de l'usine | 90 s, comme dans un camion | `WAREHOUSE.loadTurns` | estimée, sans doute trop long | Q21 |
+| Les chargeurs au quai | pas modélisés : le robot charge lui-même | — | à modéliser (Sami, 26/10) | Q22 |
 
 ## Le temps et l'espace
 
@@ -90,6 +91,27 @@ Pour un bac posé sur une étagère par un AMR, 5 s se défend. **Pour une palet
 trop court.** Sami (26/10) : prendre la valeur trouvée, avec un peu de marge, **90 s**, en attendant un référent. C'est
 fait (`WAREHOUSE.loadTurns`, `src/warehouse-hypotheses.js`) ; les journées ont été allongées pour que toutes les
 règles finissent ([../modele.md](../modele.md)).
+
+**Où passent ces 90 s** (recherches du 26/10, la nuit, pour trancher entre un robot qui charge et un chargeur humain) :
+- **lever ne prend que quelques secondes.** Un transpalette électrique lève de 31 à 56 mm/s
+  ([Stuermer EHW 12](https://www.stuermer-machines.com/product/workshop-and-lifting-technology-lift-trucks/ehw-12-6160112/),
+  [Olift TP15](https://b2brazil.com/hotsite/qingdaoolift/mini-walkie-electric-pallet-tp15)) : décoller une palette de
+  10 à 12 cm, c'est 2 à 4 s. Le mât d'un chariot lève de 0,26 à 0,69 m/s en charge (fiches de chariots,
+  [lectura-specs](https://www.lectura-specs.es/datasheet-downloads/FD_FG_15_18_en(65e).pdf)). Au quai, le plancher de la
+  remorque est à la hauteur du quai (le niveleur) : il n'y a presque rien à lever ;
+- **le temps est dans la manœuvre** : entrer dans la remorque, avancer jusqu'au fond, placer la palette contre les
+  autres, ressortir en marche arrière. Un chariot et son cariste chargent environ **70 palettes à l'heure**, un peu plus
+  de deux camions ([Duro Felguera](https://durofelguera.com/en/?p=8186)), soit 51 s par palette ; 30 à 35 min pour
+  26 à 33 palettes, 55 à 80 s ([Ancra](https://trends.directindustry.com/ancra-systems-bv/project-62834-1129877.html)) ;
+- **le chargement automatique en une fois** (un plancher mobile, Ancra, Joloda) charge une remorque de 33 palettes en
+  7 à 8 min, une dizaine de secondes par palette ; ce sont des chiffres de vendeurs ;
+- aucun temps publié pour qu'un AMR pose sa palette : la MiR1200 donne sa vitesse (1,5 m/s) et sa hauteur de levée,
+  pas de durée ([fiche](https://www.konicaminolta.com.au/wp-content/uploads/2025/06/MiR1200-Pallet-Jack-Specifications-2.101.pdf)).
+
+**Ce que ça dit pour le modèle** : 5 s pour qu'un robot pose sa palette sur la voie de préparation du quai se défend
+(baisser 10 cm, se dégager). Les 90 s sont celles d'un cariste qui entre dans la remorque. Un cariste en charge un
+peu plus de deux à l'heure : il sert les quais l'un après l'autre, et un grand entrepôt n'en met plusieurs que quand
+plusieurs camions chargent en même temps (Sami, 26/10). C'est la question Q22.
 
 ## La ligne
 
@@ -246,6 +268,12 @@ on peut les oublier ; sur un poste de 8 heures, non.
 
 À un logisticien d'usine :
 - **Q21** : combien de temps pour poser une palette, ou un chariot, sur un train de manutention ?
+
+À un chef de quai, ou à un cariste qui charge les camions :
+- **Q22** : combien de caristes chargent les camions, pour combien de quais ? Combien de temps par palette, de la voie de
+  préparation au fond de la remorque ? Combien de temps pour changer de quai, et pour qu'un camion parte et que le
+  suivant se mette à quai ? Charge-t-on dans l'ordre inverse des livraisons, quand le camion fait plusieurs arrêts ?
+  Combien de palettes tient la voie de préparation d'un quai ?
 
 ## Le journal des réponses
 
