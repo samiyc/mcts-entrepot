@@ -13,6 +13,7 @@ dans son ordre. Tout passe par une commande, `npm run check`, que le hook relanc
 | `npm run types` | tsc vérifie le JavaScript d'après ses commentaires JSDoc, sans rien compiler |
 | `npm test` (`test:coverage`) | les tests de `node --test`, dont les empreintes et la longueur des `.md` |
 | `npm run compare` | les règles (et `--search`, la recherche) sur les mêmes journées |
+| `npm run line` | les règles de la ligne cadencée (et `--search`) sur les mêmes heures |
 | `npm run bench` | `scripts/search-bench.js` : la recherche contre les règles, par paires |
 | `npm run changelog` | refait `web/changelog.html` à partir de `docs/changelog.json` |
 | `npm run page` | la page, sur le port 4802 (le serveur de mcts-commun) |
@@ -58,6 +59,9 @@ Ce qui l'a vérifié, en plus des empreintes :
 - **les variantes** : les réglages que les plans laissent par défaut. Ce sont les relais coupés, l'absence de zone
   automatique et d'autres taux de blocage ;
 - **la recherche** : une journée du petit entrepôt à 16 itérations.
+
+Un quatrième, **la ligne** (26/10), tient la ligne cadencée : chaque plan sous chaque règle sur deux heures, et une
+heure courte de sa recherche. Il a été posé avec la ligne ; les trois de l'entrepôt n'ont pas bougé.
 
 Elles ont été prises avant de toucher au code (commit `e5e3dcd`), et aucune n'a changé depuis.
 

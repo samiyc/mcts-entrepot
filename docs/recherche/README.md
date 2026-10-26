@@ -20,7 +20,7 @@ Ce dossier rassemble ce que disent les sources publiées, et ce que le simulateu
    Sami du 26/10).
 
 Un chiffre cité a sa source dans le fichier qui le donne. Beaucoup de sources sont des pages de vendeurs ou de
-conseil ; le texte le dit quand c'est le cas. Un chiffre sans source est écrit comme une hypothèse : rien n'est encore
-codé avant les choix de Sami ; la ligne cadencée l'est depuis.
+conseil ; le texte le dit quand c'est le cas. Un chiffre sans source est écrit comme une hypothèse ; pour la ligne
+cadencée, codée depuis (`docs/modele-ligne.md`), elles sont toutes dans `src/line-hypotheses.js`.
 
 L'outillage du dépôt, repris de lopin et de mcts-urgences le même jour, est dans [../outillage.md](../outillage.md).

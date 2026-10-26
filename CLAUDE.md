@@ -5,6 +5,8 @@ Guidance for Claude Code in this repository.
 ## Project
 
 Warehouse robots carrying parcels to a truck beside a human forklift driver: assignment by search at each event, paths by space-time A* with reservations.
+Beside it since 26/10/2026, an assembly line fed by the same robots (`src/line*.js`, `docs/modele-ligne.md`), its figures
+from published data (`docs/recherche/`); the page has a tab each.
 
 One of Sami's `mcts-*` repositories, created 22/10/2026, siblings in `E:\Dev\My projects\`:
 `mcts-commun` (the shared library), `mcts-urgences`, `mcts-entrepot`, `mcts-cuisine`, and `lopin` (the card game

@@ -54,6 +54,25 @@
   ],
   "versions": [
     {
+      "version": "0.16",
+      "title": "La ligne cadencée, la page en onglets",
+      "date": "26/10",
+      "items": [
+        "Une ligne d'assemblage automobile à côté de l'entrepôt : un véhicule toutes les 55 s (Toyota), deux bacs de 12 pièces par référence au bord de ligne, une pièce qui manque arrête toute la ligne ; les robots de l'entrepôt apportent les bacs, une rupture fournisseur ne se voit qu'au supermarché (docs/modele-ligne.md).",
+        "Quand un seul robot sert cinq postes, la plus proche d'abord arrête deux fois moins la ligne que le kanban ; la recherche fait mieux encore sur 20 heures, à confirmer par les mesures de nuit.",
+        "La page en onglets, comme lopin et mcts-urgences : Entrepôt, Ligne cadencée, Comparaisons, Replays, Stats.",
+        "Les replays, promis le 23/10 et jamais faits : chaque journée et chaque heure jouées jusqu'au bout se gardent et se rejouent coup pour coup.",
+        "Les vraies données de la ligne et leurs sources (docs/recherche/ligne-cadencee.md) ; la feuille de route récrite sur les choix de Sami."
+      ],
+      "commits": [
+        "b26b502",
+        "8cdca82",
+        "f8d57fa",
+        "3f3fe1e",
+        "b517a1f"
+      ]
+    },
+    {
       "version": "0.15",
       "title": "L'outillage de mcts-urgences",
       "date": "26/10",

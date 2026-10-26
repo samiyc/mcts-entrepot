@@ -31,7 +31,7 @@ for (const id of named) {
   const started = Date.now();
   const runs = lineRuns(setup, { days, rules });
   const summary = summaryOfLine(runs);
-  console.log(`\n${setup.label} : ${days} journées d'une heure, ${((Date.now() - started) / 1000).toFixed(0)} s`);
+  console.log(`\n${setup.label} : ${days} heures de ligne, ${((Date.now() - started) / 1000).toFixed(0)} s`);
   console.log("Règle                          | arrêt (tours) | arrêt (s) | véhicules | plus long arrêt | gagné sur le kanban (IC 95 %) | bacs au plus");
   for (const [name, row] of Object.entries(summary)) {
     const gain = name === "kanban" ? "—" : interval(row.gain);
