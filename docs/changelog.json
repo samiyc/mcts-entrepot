@@ -1,0 +1,232 @@
+{
+  "name": "Robots d'entrepôt",
+  "back": "l'entrepôt",
+  "intro": "Des robots vont chercher les commandes dans les rayons et les portent aux camions ; une recherche (ISMCTS) leur répartit les commandes en imaginant les allées qui vont se bloquer.",
+  "repo": "mcts-entrepot",
+  "gainsTitle": "Ce que gagne la recherche (ISMCTS)",
+  "gainsNote": "Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut). Moins, c'est mieux. Les mesures du 23/10 au soir, jouées par l'ordonnanceur commun (mcts-backlog, night.json).",
+  "gainsHead": [
+    "Plan",
+    "la plus proche",
+    "la liste",
+    "la plus lointaine",
+    "le camion d'abord",
+    "recherche",
+    "écart sur la meilleure règle"
+  ],
+  "gainsRows": [
+    [
+      "Petit entrepôt",
+      "54,4",
+      "81,4",
+      "71,6",
+      "54,4",
+      "<strong>50,3</strong>",
+      "−4,1"
+    ],
+    [
+      "Plan de Sami",
+      "121,2",
+      "146,1",
+      "136,7",
+      "121,2",
+      "<strong>95,2</strong>",
+      "−26,0"
+    ],
+    [
+      "Trois quais",
+      "125,7",
+      "123,4",
+      "148,3",
+      "149,0",
+      "<strong>109,2</strong>",
+      "−14,2"
+    ],
+    [
+      "Deux couloirs étroits",
+      "97,8",
+      "73,7",
+      "59,7",
+      "97,8",
+      "<strong>60,0</strong>",
+      "+0,3"
+    ]
+  ],
+  "versions": [
+    {
+      "version": "0.14",
+      "title": "L'allure bleu-gris, les replays rangés",
+      "date": "23/10, tard",
+      "items": [
+        "Les parties gardées par la page s'écrivent aussi dans replays/, hors de git, par le serveur de la page.",
+        "L'allure commune des projets (mcts-commun, web/theme.css) : un bandeau bleu-gris métallique, industriel, 📦 devant le titre, les réglages en carte, des sections pliables bien visibles (une barre, un chevron, « Ouvrir / Fermer »)."
+      ],
+      "commits": [
+        "4b502d2",
+        "45443d4"
+      ]
+    },
+    {
+      "version": "0.13",
+      "title": "Les relais",
+      "date": "23/10, soir",
+      "items": [
+        "Un robot chargé coincé devant un robot vide plus près du camion pose son colis sur une case libre à côté de lui, une zone d'attente d'un moment, et repart chercher ce que l'autre devait chercher ; l'autre porte le colis au camion (Sami).",
+        "Trois quais : le dernier colis au tour 119,1 au lieu de 126,3 (40 journées, la plus proche) ; ailleurs les chemins réservés évitaient déjà les face-à-face."
+      ],
+      "commits": [
+        "18d48c8",
+        "da503c0"
+      ]
+    },
+    {
+      "version": "0.12",
+      "title": "Les mesures de nuit",
+      "date": "23/10, soir",
+      "items": [
+        "night.json : la recherche contre les règles, 100 journées par plan, jouées par l'ordonnanceur commun de mcts-commun (mcts-backlog), côte à côte avec les autres projets."
+      ],
+      "commits": [
+        "d453959",
+        "0123673",
+        "fa3e2e6",
+        "8efb8e7"
+      ]
+    },
+    {
+      "version": "0.11",
+      "title": "Les réglages de Sami, des blocages qui reviennent",
+      "date": "23/10, soir",
+      "items": [
+        "L'allée se bloque encore et encore, une part du temps (« Allée bloquée (% du temps) ») ; par défaut 80 %, 8 tours à chaque fois, et la recherche dans la page.",
+        "Un robot à côté de l'allée la voit se rouvrir ; personne n'est enfermé, même allée bloquée.",
+        "Corrigés : un robot se croyait arrivé avant la fin de son trajet ; un robot sans cible gardait un trajet par l'allée bloquée."
+      ],
+      "commits": [
+        "68c29d6",
+        "209ad09"
+      ]
+    },
+    {
+      "version": "0.10",
+      "title": "Des zones d'attente faites au départ",
+      "date": "23/10",
+      "items": [
+        "Un camion sans zone en reçoit une : le sol jusqu'à trois pas de lui (à décocher dans l'éditeur). Dans les couloirs, les attentes des robots passent de 66 à 1.",
+        "Un robot ne traverse plus la case d'un camion pour aller ailleurs."
+      ],
+      "commits": [
+        "66e8f66"
+      ]
+    },
+    {
+      "version": "0.9",
+      "title": "Les zones de Sami, un chargeur par zone",
+      "date": "23/10",
+      "items": [
+        "Les nouveaux plans de Sami (bornes, obstacles, zones d'attente dans les coins) ; une croix ❌ sur l'allée bloquée.",
+        "Une palette se pose au plus près du camion ; un chargeur par zone ; plan de Sami : la recherche de 167 à 93 tours.",
+        "Une baie dans l'allée unique n'enferme plus personne."
+      ],
+      "commits": [
+        "c57bb0a",
+        "14aaad1",
+        "d07d643"
+      ]
+    },
+    {
+      "version": "0.8",
+      "title": "Le camion à une porte, la recherche douze fois plus vite",
+      "date": "23/10",
+      "items": [
+        "Un robot qui ne peut pas entrer dans le camion attend à l'écart ; deux robots nez à nez dans une allée : l'un s'écarte.",
+        "Corrigé dans mcts-commun : un robot qui replanifiait ne voyait pas un robot garé sur son ancien chemin.",
+        "Les chemins impossibles ne sont plus cherchés : une journée de recherche de 43 à 3,5 s."
+      ],
+      "commits": [
+        "ad420b1",
+        "6e21b29"
+      ]
+    },
+    {
+      "version": "0.7",
+      "title": "La recherche dans un worker",
+      "date": "23/10",
+      "items": [
+        "La page ne gèle plus pendant la recherche ; la comparaison joue ses journées en même temps ; les points de départ des robots sont dessinés."
+      ],
+      "commits": [
+        "35d32a9"
+      ]
+    },
+    {
+      "version": "0.6",
+      "title": "Une case, un robot",
+      "date": "23/10",
+      "items": [
+        "Plus aucune case partagée : le camion prend les robots un par un ; un seul chargeur ; un robot chargé ne traverse pas une palette."
+      ],
+      "commits": [
+        "23565e2"
+      ]
+    },
+    {
+      "version": "0.5",
+      "title": "Le chargement par un robot",
+      "date": "23/10",
+      "items": [
+        "La baie garde la palette ; un robot la monte dans le camion ; la mesure devient le temps passé à quai par les camions."
+      ],
+      "commits": [
+        "80b7311"
+      ]
+    },
+    {
+      "version": "0.4",
+      "title": "Les quais, les baies, les bornes",
+      "date": "23/10",
+      "items": [
+        "Le plan à trois quais de Sami : les robots partent de leur borne, les commandes se préparent sur la baie avant leur camion."
+      ],
+      "commits": [
+        "4a82f18",
+        "03e26bd"
+      ]
+    },
+    {
+      "version": "0.3",
+      "title": "La recherche",
+      "date": "22/10, soir",
+      "items": [
+        "La répartition par ISMCTS bat les trois règles sur les trois plans."
+      ],
+      "commits": [
+        "1f69b8e",
+        "706022b"
+      ]
+    },
+    {
+      "version": "0.2",
+      "title": "La journée d'entrepôt et sa page",
+      "date": "22/10",
+      "items": [
+        "Des plans en texte, des robots aux chemins réservés (A*), une allée qui se bloque sans prévenir."
+      ],
+      "commits": [
+        "7869241",
+        "6d2fe57"
+      ]
+    },
+    {
+      "version": "0.1",
+      "title": "Le dépôt",
+      "date": "22/10",
+      "items": [
+        "Le départ du projet, sur la bibliothèque commune mcts-commun."
+      ],
+      "commits": [
+        "b67b48b"
+      ]
+    }
+  ]
+}
