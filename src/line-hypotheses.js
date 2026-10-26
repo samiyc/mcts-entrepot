@@ -20,10 +20,11 @@ export const LINE = Object.freeze({
    */
   tourBins: 4,
   /**
-   * HYPOTHESIS: the mix of models (step 2): 60 % petrol, 40 % hybrid; the petrol car skips the hybrid's parts (I, J on
-   * Sami's line), the hybrid the petrol's (E, F). No mix is sourced.
+   * The mix of models (step 2): 20 % petrol, 80 % hybrid (Sami, 26/10/2026, until a line logistician answers): Toyota
+   * Motor Europe sold 77 % electrified vehicles in 2025, almost all hybrids where a hybrid is offered (sales, not one
+   * line's output). The petrol car skips the hybrid's parts (I, J on Sami's line), the hybrid the petrol's (E, F).
    */
-  mix: Object.freeze([Object.freeze({ name: "essence", share: 0.6, skip: "IJ" }), Object.freeze({ name: "hybride", share: 0.4, skip: "EF" })]),
+  mix: Object.freeze([Object.freeze({ name: "essence", share: 0.2, skip: "IJ" }), Object.freeze({ name: "hybride", share: 0.8, skip: "EF" })]),
   /** HYPOTHESIS: the robots know the next 20 vehicles of the sequence (about 18 minutes), not the ones after. */
   frozen: 20,
   /**
