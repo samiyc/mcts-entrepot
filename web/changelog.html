@@ -31,6 +31,17 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.15</span> L'outillage de mcts-urgences <span class="date">26/10</span></h3>
+        <ul>
+          <li>Les empreintes de l'entrepôt, prises avant toute refonte : chaque plan sous chaque règle, les réglages par défaut changés, une journée de la recherche ; aucune n'a changé depuis.</li>
+          <li>Le lint de lopin (40 lignes par fonction, 220 par fichier, complexité 8) : simulate.js découpé en dix modules, la page en cinq, mêmes chiffres et même vitesse.</li>
+          <li>Les types d'après les commentaires JSDoc (src/types.js), le hook avant chaque commit, la limite des .md vérifiée par un test.</li>
+          <li>Ce journal tiré de docs/changelog.json par npm run changelog, dans le dépôt (docs/outillage.md).</li>
+        </ul>
+        <p class="commits"><code>e5e3dcd</code> <code>c71e8aa</code> <code>ee05a0f</code> <code>ba190e5</code> <code>42cc9a2</code> <code>ec6c74d</code></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.14</span> L'allure bleu-gris, les replays rangés <span class="date">23/10, tard</span></h3>
         <ul>
           <li>Les parties gardées par la page s'écrivent aussi dans replays/, hors de git, par le serveur de la page.</li>

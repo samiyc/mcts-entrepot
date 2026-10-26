@@ -54,6 +54,25 @@
   ],
   "versions": [
     {
+      "version": "0.15",
+      "title": "L'outillage de mcts-urgences",
+      "date": "26/10",
+      "items": [
+        "Les empreintes de l'entrepôt, prises avant toute refonte : chaque plan sous chaque règle, les réglages par défaut changés, une journée de la recherche ; aucune n'a changé depuis.",
+        "Le lint de lopin (40 lignes par fonction, 220 par fichier, complexité 8) : simulate.js découpé en dix modules, la page en cinq, mêmes chiffres et même vitesse.",
+        "Les types d'après les commentaires JSDoc (src/types.js), le hook avant chaque commit, la limite des .md vérifiée par un test.",
+        "Ce journal tiré de docs/changelog.json par npm run changelog, dans le dépôt (docs/outillage.md)."
+      ],
+      "commits": [
+        "e5e3dcd",
+        "c71e8aa",
+        "ee05a0f",
+        "ba190e5",
+        "42cc9a2",
+        "ec6c74d"
+      ]
+    },
+    {
       "version": "0.14",
       "title": "L'allure bleu-gris, les replays rangés",
       "date": "23/10, tard",
