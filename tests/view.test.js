@@ -43,7 +43,7 @@ describe("what the page shows (web/view.js)", () => {
     assert.match(statusLine(day), /^Tour 1 \/ 420 · 0 \/ 12 commandes livrées · allées libres$/);
     while (!isOver(day)) stepDay(day, RULES.list);
     assert.match(statusLine(day, measuresOf(day)), /12 \/ 12 commandes livrées · allées libres · fini au tour \d+ · \d+ pas, \d+ attentes$/);
-    assert.ok(ordersOf(day).every((order) => /^livrée, robot \d au tour \d+$/.test(order.label)));
+    assert.ok(ordersOf(day).every((order) => /^livrée, robot \d, chargeur 1 au tour \d+$/.test(order.label)));
     assert.deepEqual(blockageOf(createDay(setup, { blockage: null })), { now: false, seen: false });
   });
 });

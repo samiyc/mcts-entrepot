@@ -98,8 +98,11 @@ export function legToPickup(state, robot, order, distances = distancesFrom(state
   return cells.slice(0, 3).some((cell) => planLeg(state, robot, cell));
 }
 
-/** The cells the other robots stand on or go to. */
-const takenBy = (state, robot) => new Set(state.robots.filter((other) => other !== robot).flatMap((other) => [keyOf(other), ...(other.target ? [keyOf(other.target)] : [])]));
+/** The cells `robot` may not wait on: the others' and their targets, and with a pallet on its back the pallets' (26/10/2026: one gave way onto a pallet set down for a relay). */
+const takenBy = (state, robot) => {
+  const others = state.robots.filter((other) => other !== robot).flatMap((other) => [keyOf(other), ...(other.target ? [keyOf(other.target)] : [])]);
+  return new Set([...others, ...(robot.phase === "toDrop" ? palletCells(state) : [])]);
+};
 
 /** `robot` to the free aside cell nearest `near` (a dock it waits for, or where it stands); false when none is reached. */
 export function goAside(state, robot, near) {

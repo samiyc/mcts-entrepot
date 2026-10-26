@@ -1,5 +1,5 @@
 import { SIDES } from "./warehouse.js";
-import { blockedNow, closed, isThere, orderOf, sameCell, truckOf } from "./day-basics.js";
+import { blockedNow, closed, humanLoads, isThere, orderOf, sameCell, truckOf } from "./day-basics.js";
 import { aroundPallet, giveWay, planLeg, replanOrHold } from "./day-legs.js";
 import { deliver, dropCellOf, release } from "./day-bays.js";
 import { callQueues, goDrop, leaveQueue } from "./day-queues.js";
@@ -56,11 +56,11 @@ function picked(state, robot, order) {
   goDrop(state, robot, dropCellOf(state, order, robot));
 }
 
-/** `robot` has dropped `order`: delivered in its truck, or staged on a bay. */
+/** `robot` has dropped `order`: delivered in its truck, or staged on a bay (or at the door, for the dock loaders). */
 function dropped(state, robot, order) {
   leaveQueue(state, robot, robot);
   const truck = truckOf(state, order);
-  if (isThere(state, truck) && sameCell(robot, truck.dock)) {
+  if (isThere(state, truck) && sameCell(robot, truck.dock) && !humanLoads(state, truck)) {
     deliver(state, order, state.t);
     state.log.push({ t: state.t, type: "delivered", robot: robot.id, order: order.id });
   } else {
@@ -83,10 +83,10 @@ export function finishActions(state) {
   }
 }
 
-/** A truck that has come takes the pallets left on its own cell (a dock without a bay). */
+/** A truck that has come takes the pallets left on its own cell (a dock without a bay; the dock loaders' trucks wait for them). */
 export function load(state) {
   for (const order of state.orders) {
-    if (order.status !== "staged" || order.cell || !isThere(state, truckOf(state, order))) continue;
+    if (order.status !== "staged" || order.cell || !isThere(state, truckOf(state, order)) || humanLoads(state, truckOf(state, order))) continue;
     deliver(state, order, state.t);
     state.log.push({ t: state.t, type: "loaded", order: order.id });
   }
@@ -147,12 +147,12 @@ const intoTruck = (state, robot) => {
   if (!order || robot.relay) return false;
   const truck = truckOf(state, order);
   // The line has no truck: its bins take a turn; a part set down at an assembly station too.
-  return Boolean(truck) && !truck.station && isThere(state, truck) && sameCell(robot, truck.dock);
+  return Boolean(truck) && !humanLoads(state, truck) && !truck.station && isThere(state, truck) && sameCell(robot, truck.dock);
 };
 
 /**
  * At its drop cell: `robot` drops, unless it only waited aside for a truck's turn. Into a truck it takes
- * `setup.loadTurns` (warehouse-hypotheses.js: 90 s), elsewhere a turn.
+ * `setup.loadTurns` (warehouse-hypotheses.js: 90 s), elsewhere a turn: always a turn when the dock loaders load.
  */
 function atDrop(state, robot) {
   if (robot.queued && !robot.relay) robot.target = null;

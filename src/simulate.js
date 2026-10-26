@@ -3,6 +3,7 @@ import { createRng } from "mcts-commun/random.js";
 import { arriveOrders, drawArrivals } from "./day-arrivals.js";
 import { choose, nextChoice } from "./day-choice.js";
 import { assemble, drawWorks, kitOrders, kitsOf, stationTrucks } from "./day-kits.js";
+import { loadTrucks, loadersOf } from "./day-loaders.js";
 import { measuresOf } from "./day-measures.js";
 import { homesOf } from "./day-spots.js";
 import { arrive, discover, finishActions, load, move, retry } from "./day-turn.js";
@@ -106,6 +107,8 @@ export function createDay(setup, day) {
     robots: homes.map((home, i) => ({ id: i + 1, x: home.x, y: home.y, home: { x: home.x, y: home.y }, phase: "idle", order: null, target: null, queued: null, resume: null, blockedFor: 0, path: null, until: null, moves: 0, waits: 0 })),
     orders: [...orders, ...kitOrders(setup, trucks, orders.length + 1)],
     kits: kitsOf(setup),
+    // The dock loaders (day-loaders.js): they take the pallets into the trucks.
+    loaders: loadersOf(setup, trucks),
     claims: new Map(),
     // One robot at a time goes into a truck's cell: the others wait their turn aside, in order.
     queues: new Map(),
@@ -127,6 +130,7 @@ export function beginTurn(state) {
   retry(state);
   load(state);
   finishActions(state);
+  loadTrucks(state);
   state.cursor = 0;
 }
 
@@ -175,6 +179,7 @@ export function cloneDay(state) {
     queues: new Map([...state.queues].map(([key, queue]) => [key, [...queue]])),
     known: { ...state.known },
     kits: state.kits?.map((kit) => ({ ...kit })) ?? null,
+    loaders: state.loaders?.map((loader) => ({ ...loader })) ?? [],
     reservations: state.reservations.clone(),
     log: [],
   };

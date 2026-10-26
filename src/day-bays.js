@@ -1,4 +1,4 @@
-import { closed, isFetching, isLoader, isThere, keyOf, loaderZone, sameCell, truckDone, truckOf, zoneOf } from "./day-basics.js";
+import { closed, humanLoads, isFetching, isLoader, isThere, keyOf, loaderZone, sameCell, truckDone, truckOf, zoneOf } from "./day-basics.js";
 import { shutsIn, wayOut } from "./day-ways.js";
 import { distancesFrom, nearestPickup } from "./warehouse.js";
 
@@ -33,10 +33,11 @@ const atDoor = (truck, cell) => Math.abs(cell.x - truck.dock.x) + Math.abs(cell.
 
 /**
  * The waiting cell `robot` would leave a pallet of `truck` on: the free one nearest the truck (Sami: as near as
- * can be), and, the truck there, for anyone but its loaders, never one at the truck's door (their way in).
+ * can be), and, the truck there, for anyone but its loaders, never one at the truck's door (their way in). The dock
+ * loaders' trucks (day-loaders.js): the free one nearest, the door too, no robot going in.
  */
 export function bayCellFor(state, truck, robot) {
-  if (!isThere(state, truck) || isLoader(state, truck, robot)) return freeBayCell(state, truck);
+  if (!isThere(state, truck) || isLoader(state, truck, robot) || humanLoads(state, truck)) return freeBayCell(state, truck);
   return truck.dock.bay.find((cell) => !atDoor(truck, cell) && bayFree(state, cell)) ?? null;
 }
 
@@ -109,7 +110,8 @@ function dropWithTruckThere(state, order, robot, truck) {
 export function dropCellOf(state, order, robot) {
   const truck = truckOf(state, order);
   if (truck.dock.bay.length === 0) return dropInto(state, order, truck);
-  if (isThere(state, truck)) return dropWithTruckThere(state, order, robot, truck);
+  // The dock loaders take the pallets in: a robot always sets its own on the bay, its truck there or not.
+  if (isThere(state, truck) && !humanLoads(state, truck)) return dropWithTruckThere(state, order, robot, truck);
   if (order.cell) return order.cell;
   const cell = freeBayCell(state, truck) ?? truck.dock.bay[0];
   claim(state, order, cell);

@@ -6,17 +6,19 @@ import { searchRule } from "../src/search.js";
 import { printComparison } from "./compare-table.js";
 
 /**
- * `npm run compare -- [--plan petit|sami|couloirs] [--days 100] [--from 1] [--search [budget]] [--out FILE]`: the
+ * `npm run compare -- [--plan petit|sami|couloirs] [--days 100] [--from 1] [--search [budget]] [--loaders N] [--out FILE]`: the
  * assignment rules on the same drawn days of a warehouse, a line each; every plan when none is named. `--search`
  * adds the search (src/search.js: ~1 to 3 s a day with loads of a turn, 10 minutes and more on Sami's plan with
  * loads of 90 s). `--from` is the first day's seed; `--out` (one plan) writes the days measured, again after each
- * one, for scripts/compare-merge.js to put the pieces of a long measure together (Sami, 26/10/2026).
+ * one, for scripts/compare-merge.js to put the pieces of a long measure together (Sami, 26/10/2026). `--loaders` the
+ * dock loaders (day-loaders.js; 0, the robots load the trucks themselves).
  */
 const args = process.argv.slice(2);
 const option = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
 const days = Number(option("--days", 100));
 const from = Number(option("--from", 1));
 const out = option("--out", null);
+const loaders = args.includes("--loaders") ? { dockLoaders: Number(option("--loaders")) } : {};
 const named = args.includes("--plan") ? [option("--plan")] : Object.keys(PLANS);
 const searching = args.includes("--search");
 const budget = searching && /^\d+$/.test(option("--search") ?? "") ? Number(option("--search")) : undefined;
@@ -36,7 +38,7 @@ function measured(id, setup) {
 
 if (out && named.length > 1) throw new Error("--out : un seul plan (--plan)");
 for (const id of named) {
-  const setup = PLANS[id];
+  const setup = PLANS[id] && { ...PLANS[id], ...loaders };
   if (!setup) throw new Error(`plan inconnu ; au choix : ${Object.keys(PLANS).join(", ")}`);
   printComparison(setup, days, out ? measured(id, setup) : compareRules(setup, { days, seed: from, rules }));
 }

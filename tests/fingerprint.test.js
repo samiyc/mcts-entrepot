@@ -17,12 +17,12 @@ import { runDay } from "../src/simulate.js";
  * hash here, and its commit says so, with the measures before and after. The assembly line (26/10/2026) has its own.
  */
 const EXPECTED = {
-  rules: "f4a389eee82ea253",
-  variants: "e66e41b1943c3d5b",
-  search: "40e575f0b2213329",
+  rules: "f4246396d157eb59",
+  variants: "f4a686a4a04ed798",
+  search: "5e85a8ef85c3bcc5",
   line: "85e28c2d2b6d0b86",
-  plant: "eb9655c978cfacec",
-  kits: "6d097c4d2e850835",
+  plant: "e05d63d3eb8ac964",
+  kits: "191d9cd342d57a27",
 };
 
 const digest = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex").slice(0, 16);

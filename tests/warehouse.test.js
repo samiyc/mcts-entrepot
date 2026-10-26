@@ -89,7 +89,8 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
   });
 
   it("starts robots at their charging points, prepares orders on the bays before their truck, and a robot loads each into it once there", () => {
-    const setup = { ...PLANS.quais, blocking: 0 };
+    // The robots loading the trucks themselves, as before the dock loaders (day-loaders.js, 26/10/2026).
+    const setup = { ...PLANS.quais, blocking: 0, dockLoaders: 0 };
     const state = createDay(setup, drawDay(1, setup));
     assert.deepEqual(state.robots.map((robot) => `${robot.x},${robot.y}`), state.warehouse.charges.map((cell) => `${cell.x},${cell.y}`));
     while (!isOver(state)) stepDay(state, RULES.list);
@@ -126,7 +127,7 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
   it("passes a stuck pallet to the robot nearer the truck through a waiting cell (Sami's relays, 23/10), and finishes sooner", () => {
     // Days with a relay (not every day has one: on days 3 and 8 nobody gets stuck), a pallet set into a truck in a turn:
     // at 90 s the truck's queue paces the robots and nobody gets stuck on these days (26/10/2026).
-    const setup = { ...PLANS.quais, loadTurns: 1, horizon: 240 };
+    const setup = { ...PLANS.quais, loadTurns: 1, dockLoaders: 0, horizon: 240 };
     for (const seed of [1, 2, 4, 5, 6, 7]) {
       const { state, measures } = runDay(setup, seed, RULES.nearest);
       const off = runDay({ ...setup, relay: false }, seed, RULES.nearest).measures;
@@ -189,10 +190,10 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
   });
 
   it("compares the rules by pairs on the same days", () => {
-    // A pallet into a truck in a turn, as when this was measured (at 90 s the truck's queue evens the rules out).
-    const result = compareRules({ ...PLANS.petit, autoZones: false, loadTurns: 1, horizon: 160 }, { days: 30 });
+    const result = compareRules(PLANS.petit, { days: 30 });
     assert.deepEqual(Object.keys(result), ["nearest", "list", "farthest", "truck"]);
-    assert.ok(result.farthest.finish < result.list.finish, "la plus lointaine d'abord finit avant la liste");
+    assert.ok(result.nearest.finish < result.list.finish, "la plus proche d'abord finit avant la liste");
+    assert.ok(result.nearest.gain.low > 0, "par paires, avec son intervalle");
     assert.equal(result.list.gain.mean, 0);
     assert.equal(result.nearest.gain.n, 30);
   });

@@ -6,7 +6,7 @@ import { blockageOf, cellsOf, robotsOf } from "./view.js";
  * legs. The assembly line's board (line-board.js) draws with the same pieces.
  */
 export const CELL = 34;
-export const SYMBOLS = Object.freeze({ charge: "⚡", truck: "🚚", specialist: "🧑‍🔧" });
+export const SYMBOLS = Object.freeze({ charge: "⚡", truck: "🚚", specialist: "🧑‍🔧", loader: "👷" });
 export const centreX = (cell) => cell.x * CELL + CELL / 2;
 export const centreY = (cell, dy = 0) => cell.y * CELL + CELL / 2 + dy;
 
@@ -29,11 +29,18 @@ export function letterOf(cell) {
   return [svg("text", { x: centreX(cell), y: centreY(cell, 5), class: "letter" }, text)];
 }
 
+/** What the dock loader there does (day-loaders.js), for the truck's title. */
+function loaderTitle(loader) {
+  if (!loader) return "";
+  if (loader.walking) return ` · le chargeur ${loader.id} arrive`;
+  return loader.block ? ` · le chargeur ${loader.id} charge la palette ${loader.block} (${loader.pallet} sur ${loader.pallets})` : ` · le chargeur ${loader.id} attend une palette`;
+}
+
 function truckTitle(truck, gone) {
-  if (gone) return `Camion ${truck.id} : chargé, parti`;
-  if (!truck.there) return `Camion ${truck.id} : attendu au tour ${truck.at}`;
+  if (gone) return `Camion ${truck.id} : chargé, parti${loaderTitle(truck.loader)}`;
+  if (!truck.there) return `Camion ${truck.id} : attendu au tour ${truck.at}${loaderTitle(truck.loader)}`;
   const plural = truck.left > 1 ? "s" : "";
-  return `Camion ${truck.id} : à quai, ${truck.left} commande${plural} à charger`;
+  return `Camion ${truck.id} : à quai, ${truck.left} commande${plural} à charger${loaderTitle(truck.loader)}`;
 }
 
 function dockText(truck, there, gone) {
@@ -41,13 +48,21 @@ function dockText(truck, there, gone) {
   return there ? SYMBOLS.truck : String(truck.at);
 }
 
+/** The dock loader, in the cell's corner: full while it loads, faint while it waits or walks there. */
+function loaderMark(cell, loader) {
+  const working = loader.block && !loader.walking ? " working" : "";
+  return svg("text", { x: cell.x * CELL + 9, y: cell.y * CELL + 13, class: `symbol loader${working}` }, SYMBOLS.loader);
+}
+
+/** A truck's loader, if one is there, and its title. */
+const truckExtras = (cell, truck, gone) => (truck ? [...(truck.loader ? [loaderMark(cell, truck.loader)] : []), svg("title", {}, truckTitle(truck, gone))] : []);
+
 function dockMarks(cell) {
   const { truck } = cell;
   const there = !truck || (truck.there && truck.left > 0);
   const gone = truck && truck.left === 0 && truck.there;
   const marks = [svg("text", { x: centreX(cell), y: centreY(cell, there ? 7 : 4), class: `letter dock-letter${there ? " truck" : " due"}` }, dockText(truck, there, gone))];
-  if (truck) marks.push(svg("title", {}, truckTitle(truck, gone)));
-  return marks;
+  return [...marks, ...truckExtras(cell, truck, gone)];
 }
 
 function homeMarks(cell) {

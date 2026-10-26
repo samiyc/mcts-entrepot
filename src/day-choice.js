@@ -1,4 +1,4 @@
-import { closed, isHome, isLoader, isThere, keyOf, loaderZone, sameCell, truckOf, zoneOf } from "./day-basics.js";
+import { closed, humanLoads, isHome, isLoader, isThere, keyOf, loaderZone, sameCell, truckOf, zoneOf } from "./day-basics.js";
 import { bayCellFor, canTake, claim, mayLoad } from "./day-bays.js";
 import { legToPickup, planLeg, standBy } from "./day-legs.js";
 import { clearToTruck } from "./day-ways.js";
@@ -9,10 +9,10 @@ import { distancesFrom, nearestPickup } from "./warehouse.js";
  * to fetch, and what follows once the rule has chosen.
  */
 
-/** The pallets on a bay whose truck is there that `robot` may load now. */
+/** The pallets on a bay whose truck is there that `robot` may load now (none of the dock loaders' trucks). */
 function loadsFor(state, robot, reach) {
   const loadable = (order) =>
-    order.status === "staged" && order.cell && isThere(state, truckOf(state, order)) && reach(order) < Infinity && mayLoad(state, truckOf(state, order), robot, order) && clearToTruck(state, order) && !state.robots.some((other) => other !== robot && sameCell(other, order.cell));
+    order.status === "staged" && order.cell && isThere(state, truckOf(state, order)) && !humanLoads(state, truckOf(state, order)) && reach(order) < Infinity && mayLoad(state, truckOf(state, order), robot, order) && clearToTruck(state, order) && !state.robots.some((other) => other !== robot && sameCell(other, order.cell));
   return state.orders.filter(loadable);
 }
 

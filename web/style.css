@@ -65,6 +65,8 @@
 .cell.assembly { fill: color-mix(in srgb, var(--r3) 35%, var(--floor)); stroke: var(--r3); stroke-width: 1.5; }
 .symbol.specialist { opacity: 0.6; }
 .symbol.specialist.working { opacity: 1; }
+.symbol.loader { font-size: 11px; opacity: 0.45; }
+.symbol.loader.working { opacity: 1; }
 .symbol { font: 16px system-ui, sans-serif; text-anchor: middle; pointer-events: none; }
 .dock-letter.truck { font-size: 20px; }
 .dock-letter.due { font-size: 11px; }

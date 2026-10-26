@@ -1,4 +1,5 @@
 import { SIDES } from "./warehouse.js";
+import { WAREHOUSE } from "./warehouse-hypotheses.js";
 
 /**
  * The small facts of a day that every part of it reads (simulate.js, split on 26/10/2026 under the lint budget):
@@ -36,9 +37,11 @@ export const orderById = (state, id) => state.orders.find((one) => one.id === id
 export const truckDone = (state, truck) => state.orders.every((order) => order.truck !== truck.id - 1 || order.status === "delivered");
 /** The zone of `truck` holding `cell` (its index), or -1. */
 export const zoneOf = (truck, cell) => truck.dock.zones.findIndex((zone) => zone.some((one) => sameCell(one, cell)));
-/** The zone `robot` loads for `truck` (its index), or null: none, or the truck gone. */
+/** Do the dock loaders (day-loaders.js) take `truck`'s pallets in, rather than the robots? Never an assembly station's. */
+export const humanLoads = (state, truck) => !truck.station && (state.setup.dockLoaders ?? WAREHOUSE.dockLoaders) > 0;
+/** The zone `robot` loads for `truck` (its index), or null: none, the truck gone, or loaded by the dock loaders. */
 export const loaderZone = (state, truck, robot) => {
-  if (truckDone(state, truck)) return null;
+  if (humanLoads(state, truck) || truckDone(state, truck)) return null;
   const found = Object.entries(truck.loaders).find(([, id]) => id === robot.id);
   return found ? Number(found[0]) : null;
 };

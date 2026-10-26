@@ -1,6 +1,7 @@
 import { arrivalMeasures } from "./day-arrivals.js";
 import { truckOf } from "./day-basics.js";
 import { kitMeasures } from "./day-kits.js";
+import { loaderMeasures } from "./day-loaders.js";
 
 /** A day's measures (simulate.js, split on 26/10/2026 for the lint budget). */
 
@@ -39,5 +40,6 @@ export function measuresOf(state) {
     seenAt: state.known.seenAt,
     ...arrivalMeasures(state),
     ...kitMeasures(state),
+    ...loaderMeasures(state),
   };
 }

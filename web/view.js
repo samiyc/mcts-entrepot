@@ -5,11 +5,25 @@ import { isBlock } from "../src/warehouse.js";
  * block's pending orders, the robots with what is left of their leg, the day in one line. The DOM layer
  * (app.js) only draws it.
  */
-export const STATUS_LABELS = Object.freeze({ open: "en attente", assigned: "attribuée", carried: "en route vers le quai", staged: "prête devant le quai", toTruck: "un robot vient la charger", delivered: "livrée", pending: "pas encore arrivée", kit: "en attente de son assemblage" });
+export const STATUS_LABELS = Object.freeze({ open: "en attente", assigned: "attribuée", carried: "en route vers le quai", staged: "prête devant le quai", toTruck: "un robot vient la charger", delivered: "livrée", pending: "pas encore arrivée", kit: "en attente de son assemblage", loading: "le chargeur la met dans le camion" });
 const PHASE_LABELS = Object.freeze({ idle: "libre", toPick: "va chercher", picking: "prend", toDrop: "rapporte", dropping: "dépose", home: "rentre", relay: "attend un relais" });
 
-/** The trucks: `{ id, x, y, at, there, left }`, `left` the orders not yet loaded. */
+/**
+ * The dock loaders (day-loaders.js): `{ id, truck, walking, block, pallet, pallets }`, the truck it loads or goes to
+ * (its number), the pallet it takes in (its block, and which of the truck's), or null at rest.
+ */
+export function loadersOf(state) {
+  return (state.loaders ?? []).map((loader) => {
+    const order = state.orders.find((one) => one.id === loader.order) ?? null;
+    const mine = state.orders.filter((one) => one.truck === loader.truck);
+    const done = mine.filter((one) => one.status === "delivered").length;
+    return { id: loader.id, truck: loader.truck + 1, walking: loader.walking, block: order?.block ?? null, pallet: order ? done + 1 : null, pallets: mine.length };
+  });
+}
+
+/** The trucks: `{ id, x, y, at, there, left, loader }`, `left` the orders not yet loaded, `loader` the loader there or on its way. */
 export function trucksOf(state) {
+  const loaders = loadersOf(state);
   // The assembly stations are docks for the robots, not trucks (day-kits.js).
   return state.trucks.filter((truck) => !truck.station).map((truck) => ({
     id: truck.id,
@@ -18,6 +32,7 @@ export function trucksOf(state) {
     at: truck.at,
     there: state.t >= truck.at,
     left: state.orders.filter((order) => order.truck === truck.id - 1 && order.status !== "delivered").length,
+    loader: loaders.find((loader) => loader.truck === truck.id) ?? null,
   }));
 }
 
@@ -121,6 +136,12 @@ function truckText(truck) {
   if (truck.left === 0) return `camion ${truck.id} parti`;
   return truck.there ? `camion ${truck.id} à quai` : `camion ${truck.id} au tour ${truck.at}`;
 }
+/** A loader at work, as the status line says it; null at rest. */
+function loaderText(loader, many) {
+  const who = many ? `chargeur ${loader.id}` : "chargeur";
+  if (loader.walking) return `${who} : vers le camion ${loader.truck}`;
+  return loader.block ? `${who} : camion ${loader.truck}, palette ${loader.pallet} / ${loader.pallets}` : null;
+}
 function measuresText(state, measures) {
   const docks = trucksOf(state).length > 1 ? [`${measures.truckWait} tours à quai pour les camions`] : [];
   return [`fini au tour ${measures.finish}`, ...docks, `${measures.moves} pas, ${measures.waits} attente${plural(measures.waits)}`];
@@ -133,6 +154,8 @@ export function statusLine(state, measures) {
   const staged = state.orders.filter((order) => order.status === "staged" || order.status === "toTruck").length;
   if (staged > 0) parts.push(`${staged} prête${plural(staged)} devant les quais`);
   if (state.trucks.some((truck) => truck.at > 0)) parts.push(trucksOf(state).map(truckText).join(", "));
+  const loaders = loadersOf(state);
+  parts.push(...loaders.map((loader) => loaderText(loader, loaders.length > 1)).filter(Boolean));
   parts.push(corridorText(state));
   if (measures) parts.push(...measuresText(state, measures));
   return parts.join(" · ");
@@ -166,7 +189,7 @@ export function ordersOf(state) {
     block: order.status === "pending" ? "?" : order.block,
     status: order.status,
     truck: trucksOf(state).length > 1 && !state.trucks[order.truck].station ? order.truck + 1 : null,
-    label: kitText(state, order) + STATUS_LABELS[order.status] + (order.robot ? `, robot ${order.robot}` : "") + (order.deliveredAt === null ? "" : ` au tour ${order.deliveredAt}`),
+    label: kitText(state, order) + STATUS_LABELS[order.status] + (order.robot ? `, robot ${order.robot}` : "") + (order.loader ? `, chargeur ${order.loader}` : "") + (order.deliveredAt === null ? "" : ` au tour ${order.deliveredAt}`),
   }));
 }
 
