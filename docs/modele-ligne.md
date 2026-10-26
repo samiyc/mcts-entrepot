@@ -336,3 +336,19 @@ départ de la navette, et le modèle compte 90 s pour y poser une palette, comme
   un tour au quai, perd maintenant 106 tours par heure avec un robot.
 - **Ce chiffre est à confirmer** : poser une palette sur un train de manutention prend sans doute moins de temps que la
   charger dans un camion ([recherche/hypotheses.md](recherche/hypotheses.md), Q21).
+
+**L'usine avec le chargeur au quai** (26/10, la nuit ; [modele.md](modele.md), « Le chargeur au quai »). Le robot pose
+sa palette au quai en un tour, et un chargeur la met sur la navette en 90 s. Mêmes mesures :
+
+| L'usine | 1 robot | 2 robots | 4 robots |
+|---|---|---|---|
+| navette à la demande (`usine`) | 0,0 / 0,0 / 0,1 / 0,0 / 0,0 | 0,6 / 1,1 / 0,5 / 0,7 / 0,0 | 1,3 / 1,6 / 0,8 / 1,6 / 1,1 |
+| navette à heure fixe (`train`) | 6,4 / 5,9 / 12,4 / 5,9 / 6,6 | 9,6 / 8,9 / 8,3 / 10,3 / 7,7 | 9,2 / 8,6 / 9,8 / 8,6 / 11,0 |
+
+- **Le quai n'est plus un goulot** : avec la navette à heure fixe et un robot, la ligne s'arrête 6,4 tours par heure
+  au lieu de 82,0.
+- **Les règles de l'entrepôt ne départagent plus la ligne** : les écarts tiennent dans leurs intervalles, sauf la plus
+  lointaine d'abord avec un robot (6,0 tours de plus, 1,3 à 10,7).
+- **Ce qui arrête encore la ligne, c'est la navette à heure fixe** : une palette prête attend le prochain départ. Plus
+  de robots n'y change rien.
+- Le chargeur met 90 s par palette sur la navette comme dans un camion : Q21 reste ouverte.

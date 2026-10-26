@@ -25,8 +25,8 @@ Les statuts :
 | Vitesse d'un robot | 1 case par tour, ≈ 1 m/s | toutes les simulations | ordre de grandeur | Q2 |
 | Ralentir près du cariste | moitié de la vitesse, cases voisines | `line-human.js`, `caution` | ordre de grandeur | Q3 |
 | Vitesse du cariste | 1 case par tour, ≈ 1 m/s | `line-human.js` | ordre de grandeur | Q4 |
-| Poser une palette dans le camion | **18 tours (90 s)**, depuis le 26/10 ; 1 tour avant | `WAREHOUSE.loadTurns` | appliquée, à confirmer | Q5 |
-| Prendre une charge, poser un bac ou une palette ailleurs | 1 tour (5 s) | `day-turn.js` | estimée | Q5 |
+| Mettre une palette dans le camion | **18 tours (90 s)**, depuis le 26/10 ; 1 tour avant ; le temps du chargeur depuis la nuit du 26/10 | `WAREHOUSE.loadTurns` | appliquée, à confirmer | Q5, Q22 |
+| Le robot prend ou pose une charge | 1 tour (5 s), au quai aussi depuis la nuit du 26/10 | `day-turn.js` | estimée (2 à 4 s pour lever une palette) | Q5 |
 | Pièces par bac | 12 | `LINE.binPieces` | ordre de grandeur (un exemple) | Q6 |
 | Bacs au bord de ligne | 2 par référence | `LINE.bins` | sourcée (le *two-bin*) | Q6 |
 | Bacs par tournée | 4 KLT d'environ 15 kg | `LINE.tourBins` | estimée | Q7 |
@@ -44,8 +44,8 @@ Les statuts :
 | Les batteries | pas modélisées | — | choix du modèle | Q18 |
 | Un câblage au poste d'assemblage | 5 à 15 min, tiré uniformément | `WAREHOUSE.works.wiring` | estimée | Q19 |
 | Une mise en colis | 1 à 3 min | `WAREHOUSE.works.packing` | estimée | Q20 |
-| Poser une palette sur la navette de l'usine | 90 s, comme dans un camion | `WAREHOUSE.loadTurns` | estimée, sans doute trop long | Q21 |
-| Les chargeurs au quai | pas modélisés : le robot charge lui-même | — | à modéliser (Sami, 26/10) | Q22 |
+| Mettre une palette sur la navette de l'usine | 90 s par le chargeur, comme dans un camion | `WAREHOUSE.loadTurns` | estimée, sans doute trop long | Q21 |
+| Les chargeurs au quai | **1**, réglable ; un camion à la fois, une case par tour d'un quai à l'autre | `WAREHOUSE.dockLoaders` | appliquée (Sami, 26/10), à confirmer | Q22 |
 
 ## Le temps et l'espace
 
@@ -112,6 +112,9 @@ règles finissent ([../modele.md](../modele.md)).
 (baisser 10 cm, se dégager). Les 90 s sont celles d'un cariste qui entre dans la remorque. Un cariste en charge un
 peu plus de deux à l'heure : il sert les quais l'un après l'autre, et un grand entrepôt n'en met plusieurs que quand
 plusieurs camions chargent en même temps (Sami, 26/10). C'est la question Q22.
+
+**Fait la nuit du 26/10** (`src/day-loaders.js`, [../modele.md](../modele.md), « Le chargeur au quai ») : le robot pose
+en 5 s sur la baie du quai, un chargeur charge à 90 s par palette, 1 par défaut.
 
 ## La ligne
 
@@ -284,5 +287,6 @@ dire dans le journal des versions (`docs/changelog.json`), avec les chiffres d'a
 | Date | Question | Réponse | Qui | Ce qui a changé |
 |---|---|---|---|---|
 | 26/10/2026 | Q5 | 90 s pour poser une palette dans un camion | Sami, la valeur trouvée en ligne et de la marge, en attendant un référent | `WAREHOUSE.loadTurns` : 1 → 18 tours ; journées allongées |
+| 26/10/2026, la nuit | Q5, Q22 | le robot pose en 5 s, un chargeur charge à 90 s, un camion après l'autre ; 2 ou 3 seulement si autant de camions chargent ensemble | Sami, après les recherches sur la levée | `src/day-loaders.js`, `WAREHOUSE.dockLoaders` : 1 |
 | 26/10/2026 | Q8 | 20 % essence, 80 % hybride | Sami, la valeur trouvée en ligne, en attendant un référent | `LINE.mix` : 60/40 → 20/80 |
 | 26/10/2026 | Q9 | la séquence prévue pour l'heure, quelques véhicules déplacés | Sami, idem | `LINE.resequence` ajouté |

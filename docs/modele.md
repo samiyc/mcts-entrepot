@@ -364,10 +364,77 @@ camion attendu d'abord) :
   compte plus que là où il y a plusieurs quais : sur les trois quais, la plus proche gagne 21 tours sur la liste.
 - **Les relais disparaissent** : la file au camion règle le pas des robots, et plus personne ne reste coincé sur les
   trois quais. Le test des relais se joue avec `loadTurns: 1`.
-- **Ce que la recherche gagne encore** : les mesures sont dans la file de la machine (`ent-*-chargement`). Les gains du
-  tableau de la page (les nuits du 23/10) ont été mesurés avec un tour.
+- **Ce que la recherche gagne encore** : aux trois quais, 39,9 tours sur la liste (37,5 à 42,2), 18,7 sur la plus
+  proche. Les autres plans n'ont pas fini : plus de 10 minutes par journée, et le modèle a changé avant (« Le chargeur
+  au quai », plus bas). Les gains du tableau de la page (les nuits du 23/10) ont été mesurés avec un tour.
 - Ce que ça ouvre : préparer les palettes sur la baie pendant que le chargeur charge, plusieurs chargeurs, ou un cariste
   qui charge pendant que les robots préparent.
+
+## Le chargeur au quai : le robot pose en 5 s (26/10, Sami, la nuit)
+
+Les recherches de la nuit ([recherche/hypotheses.md](recherche/hypotheses.md), Q5 et Q22) :
+- **lever une palette prend quelques secondes.** Un transpalette électrique lève de 31 à 56 mm/s, et au quai le
+  plancher de la remorque est à niveau ;
+- **les 90 s sont celles d'un cariste** qui entre dans la remorque, la traverse et ressort. Un cariste et son chariot
+  chargent environ 70 palettes à l'heure.
+
+Le robot qui restait 90 s dans le camion bloquait donc le quai pour un travail qui n'est pas le sien. Sami choisit
+l'option C : **le robot lève et pose en 5 s, un chargeur humain charge les camions**, l'un après l'autre. On ne met 2
+ou 3 chargeurs que dans un grand entrepôt, quand autant de camions chargent ensemble.
+
+**Le modèle** (`src/day-loaders.js`) :
+- **le robot pose sa palette en un tour**, sur la baie du quai, ou à la porte d'un quai sans baie. Il n'entre plus
+  jamais dans le camion ;
+- **une baie pleine arrête les commandes de son camion** : c'est la place sur la voie de préparation ;
+- **le chargeur** (`WAREHOUSE.dockLoaders`, 1 par défaut ; `dockLoaders` dans le plan) :
+  - il met chaque palette dans le camion en 18 tours (90 s), celle la plus proche du camion d'abord ;
+  - il reste à son camion tant qu'une palette l'y attend, puis passe au camion arrivé le premier qui a des palettes
+    en attente, et que personne d'autre ne charge ;
+  - il marche d'un quai à l'autre à une case par tour ;
+  - il n'y a jamais deux chargeurs dans le même camion ;
+- **il n'est pas sur la grille** : il ne gêne pas les robots. Le mettre sur la grille, au clavier, avec la prudence des
+  robots autour de lui, viendra ensuite ;
+- **`dockLoaders: 0` rend l'ancien modèle**, où le robot charge lui-même. Aux trois quais, il rejoue les journées de
+  90 s au tour près ;
+- **les mesures** : la part du temps où le chargeur charge (`loaderBusy`), ses tours de marche (`loaderWalk`), et le
+  plus de palettes en attente à un quai (`laneMax`) ;
+- **la page** : le chargeur 👷 dans le coin de son quai, plein quand il charge. Le titre du camion et la ligne d'état
+  disent ce qu'il charge (« chargeur : camion 2, palette 1 / 4 »).
+
+Ce que ça change (100 journées, tour de la dernière livraison ; la plus proche / la liste / la plus lointaine / le
+camion attendu d'abord) :
+
+| Plan | le robot charge en 90 s | un chargeur |
+|---|---|---|
+| petit entrepôt | 143,5 / 149,2 / 162,6 / 143,5 | 118,8 / 120,5 / 121,9 / 118,8 |
+| plan de Sami | 305,0 / 310,5 / 314,4 / 305,0 | 251,4 / 234,9 / 240,8 / 251,4 |
+| trois quais | 175,4 / 198,8 / 204,3 / 193,8 | 265,0 / 253,8 / 272,5 / 252,2 |
+| trois quais, 2 chargeurs | | 172,8 / 185,6 / 167,5 / 161,8 |
+| trois quais, 3 chargeurs | | 139,7 / 185,7 / 157,4 / 140,2 |
+| deux couloirs | 207,0 partout | 155,0 / 155,0 / 157,0 / 155,0 |
+| flux | 310,3 / 313,3 / 316,6 / 310,3 | 243,9 / 239,4 / 256,4 / 243,9 |
+| assemblage | 271,8 / 324,4 / 303,1 / 271,8 | 259,4 / 261,0 / 259,7 / 259,4 |
+
+- **Les journées raccourcissent de 50 à 70 tours** là où il n'y a qu'un camion. Le chargeur est occupé 80 à 90 % du
+  temps : c'est lui le goulot, et il est humain.
+- **Sur le plan de Sami, la liste devient la meilleure règle** : la plus proche finit 16,5 tours plus tard (10,3 à
+  22,8). Elle amène les palettes dans un ordre qui fait attendre le chargeur.
+- **Aux trois quais, un chargeur pour trois camions ne suffit pas** : les journées s'allongent de 55 à 90 tours. À
+  2 chargeurs, on retrouve à peu près les journées d'avant. À 3, elles raccourcissent : la plus proche et le camion
+  attendu d'abord finissent vers le tour 140. Leurs camions attendent 41 et 49 tours de moins que sous la liste. C'est
+  ce que disait Sami : plusieurs chargeurs quand plusieurs camions chargent ensemble.
+- **Le poste d'assemblage ne départage plus les règles** : le chargeur fixe le pas, et le spécialiste n'attend plus
+  ses pièces assez longtemps pour que ça se voie.
+- **Sur le flux, 3 journées sur 100 ne finissent pas sous la plus lointaine d'abord** : des robots se cèdent le
+  passage en boucle dans l'allée bloquée. C'est à reprendre.
+- **L'usine** ([modele-ligne.md](modele-ligne.md)) : le quai de la navette n'est plus un goulot.
+- **La recherche coûte moins cher** : une journée du plan de Sami passe de plus de 10 minutes à 57 s. Aux trois quais
+  avec un seul chargeur, c'est 292 s. Ses mesures sont dans la file de la machine.
+
+Deux défauts ressortis avec les poses plus rapides, corrigés :
+- **un robot sans borne de recharge part d'une case qui ne coupe aucune allée quand le `~` est fermé.** Sur le petit
+  entrepôt, un robot au repos chez lui tenait la seule entrée du bloc C, et l'autre lui cédait le passage jusqu'au soir ;
+- **un robot chargé ne se range jamais sur une palette**, même posée pour un relais.
 
 ## Le poste d'assemblage (26/10, Sami, le soir)
 
@@ -391,7 +458,7 @@ Le plan : celui de Sami, un poste sous la rangée du bas, 8 palettes et deux kit
 480 tours. Sur 100 journées (tour de la dernière livraison) : **la plus proche 271,8, la liste 324,4, la plus lointaine
 303,1, le camion attendu d'abord 271,8**. La liste va chercher les palettes du camion avant les pièces des kits : le
 spécialiste commence tard, et la journée finit 52,6 tours plus tard (44,9 à 60,3). Le camion attendu d'abord sert le
-poste en premier (il est « là » dès le départ). La recherche est dans la file de la machine (`ent-assemblage`).
+poste en premier (il est « là » dès le départ). Avec le chargeur au quai (plus haut), les règles se valent.
 
 Pas encore fait : les robots qui ralentissent près du spécialiste, un spécialiste pour plusieurs postes, le contrôle
 après assemblage (retouche, rebut), un colis qui part vers un autre poste plutôt qu'au camion.

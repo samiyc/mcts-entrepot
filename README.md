@@ -4,8 +4,8 @@ Des robots qui portent des charges sur une grille, une recherche (ISMCTS) qui le
 imaginant ce qui peut arriver, et une personne au milieu d'eux. Deux simulations, chacune dans un onglet de la page :
 
 - **L'entrepôt** : les robots vont chercher les commandes dans les rayons et les portent aux camions. Ils passent par
-  les quais, les zones d'attente, un chargeur par zone, et des relais entre robots. Une allée peut se bloquer sans
-  prévenir. Un poste d'assemblage, où un spécialiste câble ou met en colis les pièces que les robots lui apportent.
+  les quais et leurs zones d'attente, où un chargeur humain met les palettes dans les camions, et des relais entre
+  robots. Une allée peut se bloquer sans prévenir. Un poste d'assemblage, où un spécialiste câble ou met en colis les pièces que les robots lui apportent.
   La mesure : le temps à quai des camions ([`docs/modele.md`](docs/modele.md)).
 - **La ligne cadencée** (26/10/2026) : une ligne d'assemblage automobile au takt de Toyota (un véhicule toutes les
   55 s). Les robots apportent les bacs du supermarché au bord de ligne. S'il manque une pièce à un poste, toute la

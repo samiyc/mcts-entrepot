@@ -31,6 +31,21 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.23</span> Le chargeur au quai <span class="date">26/10</span></h3>
+        <ul>
+          <li>Lever une palette ne prend que quelques secondes ; les 90 s sont celles d'un cariste qui entre dans la remorque. Le robot pose maintenant sa palette en 5 s sur la baie du quai, et un chargeur humain la met dans le camion en 90 s, un camion après l'autre.</li>
+          <li>Les journées raccourcissent de 50 à 70 tours là où il n'y a qu'un camion ; c'est le chargeur qui fixe le pas. Sur le plan de Sami, l'ordre de la liste devient la meilleure règle.</li>
+          <li>Aux trois quais, un chargeur pour trois camions ne suffit pas ; à trois chargeurs, la plus proche et le camion attendu d'abord finissent vers le tour 140, contre 175 avant.</li>
+          <li>Une baie pleine arrête les commandes de son camion : la place devant le quai compte.</li>
+          <li>Dans l'usine, le quai de la navette n'est plus un goulot : 6 tours d'arrêt de la ligne par heure avec la navette à heure fixe, au lieu de 82.</li>
+          <li>Une journée de recherche sur le plan de Sami passe de plus de 10 minutes à moins d'une. Une longue mesure se découpe en morceaux, lancés en parallèle puis réunis.</li>
+          <li>La page montre le chargeur 👷 au quai où il travaille, et ce qu'il charge.</li>
+          <li>Corrigé : un robot au repos ne se gare plus sur le seul passage vers un bloc quand l'allée est fermée.</li>
+        </ul>
+        <p class="commits"><code>bad84ce</code> <code>afa8d14</code> <code>d24016c</code></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.22</span> Les chiffres réels appliqués, le poste d'assemblage <span class="date">26/10</span></h3>
         <ul>
           <li>Poser une palette dans un camion prend 90 s, plus 5 : la valeur trouvée en ligne, avec de la marge, en attendant un référent. Les journées de l'entrepôt s'allongent ; c'est le chargement qui les fait, et les règles se rapprochent, sauf aux trois quais.</li>

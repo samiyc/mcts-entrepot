@@ -136,6 +136,11 @@ Reste :
 - **les chiffres à confirmer sur le terrain** : [hypotheses.md](hypotheses.md), et ses questions. Trois valeurs
   trouvées en ligne sont appliquées depuis le 26/10 au soir (Sami), en attendant un référent : 90 s pour charger une
   palette, 80 % d'hybrides, la séquence prévue avec quelques véhicules déplacés ;
+- ~~le robot qui charge lui-même le camion~~ : **un chargeur au quai fait la nuit du 26/10** (`src/day-loaders.js`,
+  [../modele.md](../modele.md)) : le robot pose en 5 s, le chargeur charge à 90 s, un camion après l'autre. Il en reste :
+  le chargeur sur la grille et au clavier, la prudence des robots près de lui, l'ordre de chargement à l'envers d'une
+  tournée à plusieurs arrêts, le changement de camion à quai, et les robots qui se cèdent le passage en boucle (3
+  journées sur 100 du flux, sous la plus lointaine) ;
 - ~~la zone d'assemblage~~ : **un poste d'assemblage fait le 26/10** (`src/day-kits.js`, [../modele.md](../modele.md)) :
   un spécialiste, des pièces apportées par les robots, un travail de durée cachée, un colis qui part au camion. Il en
   reste : la prudence des robots près du spécialiste, un spécialiste pour plusieurs postes, le contrôle après
