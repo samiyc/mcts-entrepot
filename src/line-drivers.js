@@ -32,6 +32,16 @@ function towards(state, human, cells) {
 const pickupCells = (state, request) => state.warehouse.blocks.get(request.block);
 
 /**
+ * Nothing to do: back to its place, out of the robots' way (26/10/2026: a driver idle on a pickup cell held the cell a
+ * robot was heading for, and the line stood still).
+ */
+function rest(state, human) {
+  if (sameCell(human, human.home)) return "wait";
+  const action = towards(state, human, [human.home]);
+  return action === "act" ? "wait" : action;
+}
+
+/**
  * The helping driver: with a bin, to its station; without, to the open request whose lane is nearest to stopping the
  * line (the shortest cover), not one the robots know short.
  */
@@ -42,7 +52,7 @@ export function helpingDriver(state) {
     return towards(state, human, state.stations[request.station].access);
   }
   const open = state.orders.filter((order) => order.status === "open" && state.known.short[order.block] === undefined);
-  if (open.length === 0) return "wait";
+  if (open.length === 0) return rest(state, human);
   const urgent = open.reduce((best, order) => (coverOf(state, order) < coverOf(state, best) ? order : best));
   const cells = pickupCells(state, urgent);
   // Beside the block already: take it.

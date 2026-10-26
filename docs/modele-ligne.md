@@ -105,3 +105,42 @@ parenthèses, l'arrêt gagné sur le kanban, par paires, avec son intervalle à 
   qu'à la plus proche donne exactement les mêmes 17,2 tours d'arrêt sur 5 heures (le kanban seul : 14,6). Piste pour
   la suite : une ligne bien servie s'arrête surtout sur une rupture fournisseur, que personne ne peut prévoir ; la
   recherche n'a de prise que quand le robot manque.
+
+## Étape 2 : la ligne plus vraie (26/10, l'après-midi)
+
+Trois options du plan, chacune sans effet sur les plans de l'étape 1 : leur empreinte d'avant revient au coup près,
+sans les mesures et les plans nouveaux.
+- **Les tournées** (`capacity`, `src/line-tour.js`) : un robot qui vient de prendre un bac et peut en porter d'autres
+  reste au supermarché (`loading`) ; on lui propose une autre demande, tant qu'il en reste. Il livre au poste le plus
+  proche d'abord, un tour par dépôt. La capacité de 4 bacs est une hypothèse : 4 KLT d'une quinzaine de kilos, sous les
+  90 kg d'un Omron LD-90.
+- **Les bacs vides** (`returnEmpties`) : chaque bac vidé attend à son poste. Le robot qui y pose un bac reprend les vides
+  qui attendent, dans la limite de sa place, puis les pose sur l'étagère de retour `r` (un tour).
+- **Le mélange de modèles** (`models`, `src/line-models.js`) : chaque véhicule est essence (60 %) ou hybride (40 %), une
+  hypothèse ; l'essence ne prend pas les pièces I et J de l'hybride, l'hybride pas les E et F de l'essence. Les robots
+  connaissent les 20 véhicules à venir (hypothèse, environ 18 minutes) ; la recherche tire les suivants. La couverture
+  d'une référence se compte alors en véhicules qui la prennent, sur ceux qu'on connaît.
+
+**Les plans** : `retours` (la ligne de Sami, deux robots, les vides rapportés), `tournee` (un robot de 4 bacs, les vides
+rapportés), `melange` (un robot, essence et hybride).
+
+**Une correction en route** : les postes tenaient lieu de quais sur des cases qui ne sont pas du sol. Les cases
+d'attente de la ligne étaient donc vides : céder le passage n'y faisait rien, et un robot pouvait se garer devant le
+bord de ligne. Chaque poste a maintenant pour quai sa première case de dépôt. Sur 100 heures, les règles bougent de
+quelques tours au plus, et aucune conclusion ne change.
+
+## Étape 3 : le cariste au clavier (26/10, l'après-midi)
+
+Le cariste (`src/line-human.js`) est une personne sur la grille. Il fait une action par tour : un pas (Z Q S D ou les
+flèches) ou E. À côté d'un bloc, E prend le bac plein de la plus ancienne demande de cette référence ; devant le bord de
+ligne du poste, E le pose.
+- Il ne réserve pas de chemin, mais **il tient sa case** : les robots dont le chemin la traverse replanifient (`hold`
+  de l'entrepôt) ; lui ne marche jamais là où un robot est, ou arrive au tour suivant.
+- **Ses actions sont écrites** tour par tour : gardées dans le replay, envoyées au worker de la recherche ; l'heure se
+  rejoue coup pour coup.
+- **Une rupture qu'il voit** est signalée à tous tant qu'il reste au bloc ; parti, elle est levée et un robot ira voir.
+  Une première version la gardait pour toujours : plus personne n'allait chercher la référence, et la ligne restait
+  arrêtée jusqu'à la fin de l'heure (413 tours sur une heure de la petite ligne).
+
+Pour mesurer sans personne au clavier, deux caristes simulés (`src/line-drivers.js`, `scripts/line-drivers.js`) : **qui
+aide** (la demande dont la couverture est la plus courte, au plus court chemin), et **au hasard**.

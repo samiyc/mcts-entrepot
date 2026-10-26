@@ -23,7 +23,7 @@ export function addHuman(state, script = null) {
   const first = [...state.warehouse.blocks.values()][0][0];
   const from = distancesFrom(state.warehouse, first);
   const key = [...aside].filter((one) => !taken.has(one)).sort((a, b) => (from.get(a) ?? Infinity) - (from.get(b) ?? Infinity))[0];
-  state.human = { id: HUMAN, ...cellOfKey(key), load: null, next: null, actions: [], script, moves: 0, delivered: 0, watching: null };
+  state.human = { id: HUMAN, ...cellOfKey(key), home: cellOfKey(key), load: null, next: null, actions: [], script, moves: 0, delivered: 0, watching: null };
   hold(state, state.human);
   return state.human;
 }
