@@ -20,7 +20,7 @@ const EXPECTED = {
   rules: "f4a389eee82ea253",
   variants: "e66e41b1943c3d5b",
   search: "40e575f0b2213329",
-  line: "3c3a89e89ad8c04a",
+  line: "85e28c2d2b6d0b86",
   plant: "eb9655c978cfacec",
 };
 

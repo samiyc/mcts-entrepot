@@ -1,7 +1,7 @@
 import { createReservations } from "mcts-commun/grid.js";
 import { createRng } from "mcts-commun/random.js";
 import { homesOf } from "./day-spots.js";
-import { drawSequence, modelAt, uses, vehiclesOf } from "./line-models.js";
+import { drawSequence, modelAt, resequenced, uses, vehiclesOf } from "./line-models.js";
 import { readLine } from "./line-plan.js";
 import { drawLeads, pickersOf, stockOf } from "./line-supermarket.js";
 import { drawBlockages } from "./simulate.js";
@@ -45,6 +45,8 @@ export function drawLineDay(seed, setup) {
   const sequence = setup.models ? drawSequence(rng, setup, vehiclesOf(setup)) : null;
   // The warehouse's lead times for the supermarket (step 2, line-supermarket.js), drawn last too.
   const leads = setup.supermarket ? drawLeads(rng, setup) : null;
+  // The vehicles moved at the last minute (line-models.js), drawn after everything else.
+  if (sequence && setup.resequence) return { blockages, shortages, stock, sequence: resequenced(rng, setup.resequence, sequence), planned: sequence, leads };
   return { blockages, shortages, stock, sequence, leads };
 }
 

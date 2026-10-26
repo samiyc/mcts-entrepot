@@ -25,8 +25,15 @@ export const LINE = Object.freeze({
    * line's output). The petrol car skips the hybrid's parts (I, J on Sami's line), the hybrid the petrol's (E, F).
    */
   mix: Object.freeze([Object.freeze({ name: "essence", share: 0.2, skip: "IJ" }), Object.freeze({ name: "hybride", share: 0.8, skip: "EF" })]),
-  /** HYPOTHESIS: the robots know the next 20 vehicles of the sequence (about 18 minutes), not the ones after. */
+  /** The vehicles ahead the robots weigh their choices on: the next 20 (about 18 minutes). */
   frozen: 20,
+  /**
+   * HYPOTHESIS: the resequencing (Sami, 26/10/2026; docs/recherche/hypotheses.md, Q9): the sequence is planned days ahead
+   * and the robots know it for the whole hour, but a vehicle may change places at the last minute (a body late out of
+   * the paint shop): 5 % of the vehicles move 1 to 5 places later, seen only `notice` vehicles ahead (5, about 4.5
+   * minutes). The planned sequence is sourced (frozen days or weeks ahead); the share and the reach are not.
+   */
+  resequence: Object.freeze({ notice: 5, share: 0.05, reach: 5 }),
   /**
    * HYPOTHESIS: the supermarket fed from the warehouse (step 2): 3 full bins a reference (some 33 minutes of the line),
    * an order to the warehouse when one is left, back 10 to 40 minutes later (120 to 480 turns: picked, carried across).

@@ -39,8 +39,9 @@ function lineSide(state) {
 function sequence(state) {
   const known = sequenceOf(state);
   if (!known.length) return [];
-  const chips = known.map((one) => el("span", { class: `model ${one.name}${one.first ? " current" : ""}` }, one.name[0].toUpperCase()));
-  return [el("p", { class: "sequence hint" }, "La séquence connue : ", ...chips, " (puis inconnue)")];
+  const chips = known.map((one) => el("span", { class: `model ${one.name}${one.first ? " current" : ""}${one.planned ? " planned" : ""}`, title: one.planned ? "prévu, peut encore changer de place" : "sûr" }, one.name[0].toUpperCase()));
+  const after = known.some((one) => one.planned) ? " (en clair : prévus, un véhicule peut encore changer de place)" : " (puis inconnue)";
+  return [el("p", { class: "sequence hint" }, "La séquence connue : ", ...chips, after)];
 }
 
 export function ligneView({ state }) {

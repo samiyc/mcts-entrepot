@@ -88,8 +88,11 @@ export function humanOf(state) {
   return { x: human.x, y: human.y, carrying: request?.block ?? null, label: `Le cariste (vous) : ${what}, ${human.delivered} bac${plural(human.delivered)} posé${plural(human.delivered)}` };
 }
 
-/** The models known to come (a mix of models only): the vehicle being made first, `{ name, first }` each. */
-export const sequenceOf = (state) => knownModels(state).map((model, i) => ({ name: model.name, first: i === 0 }));
+/**
+ * The models known to come (a mix of models only): the vehicle being made first, `{ name, first, planned }` each;
+ * with resequencing, those beyond the notice are as planned, they may still move.
+ */
+export const sequenceOf = (state) => knownModels(state).map((model, i) => ({ name: model.name, first: i === 0, planned: Boolean(state.setup.resequence) && i > state.setup.resequence.notice }));
 
 /** The hour in one line. */
 export function lineStatus(state) {

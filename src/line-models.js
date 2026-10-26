@@ -24,8 +24,32 @@ export const modelAt = (state, k) => (state.setup.models ? state.setup.models[st
 /** Does `model` (null: no mix) take reference `ref`? */
 export const uses = (model, ref) => !model || !model.skip.includes(ref);
 
-/** The models the robots know: the vehicle being made and the `frozen` after it. */
-export const knownModels = (state) => (state.setup.models ? state.day.sequence.slice(state.produced, state.produced + (state.setup.frozen ?? 0) + 1).map((index) => state.setup.models[index]) : []);
+/**
+ * The planned sequence after a few vehicles moved at the last minute (`{ share, reach }`, Sami, 26/10/2026): each
+ * vehicle, at `share` odds, goes 1 to `reach` places later.
+ */
+export function resequenced(rng, { share, reach }, planned) {
+  const sequence = [...planned];
+  for (let k = 0; k < sequence.length; k += 1) {
+    if (rng.next() >= share) continue;
+    const [moved] = sequence.splice(k, 1);
+    sequence.splice(Math.min(sequence.length, k + 1 + rng.int(reach)), 0, moved);
+  }
+  return sequence;
+}
+
+/** The sequence as the robots see it: as it is up to `cut`, as planned after (as it is when nothing moves). */
+const seenSequence = (state, cut) => (state.day.planned ? [...state.day.sequence.slice(0, cut), ...state.day.planned.slice(cut)] : state.day.sequence);
+
+/** How many vehicles the robots see as they are: `notice` ahead with resequencing, `frozen` without. */
+const sureAhead = (setup) => (setup.resequence ? setup.resequence.notice : (setup.frozen ?? 0));
+
+/** The models the robots know: the vehicle being made and the `frozen` after it (the planned ones beyond `notice`). */
+export const knownModels = (state) => {
+  if (!state.setup.models) return [];
+  const cut = state.produced + sureAhead(state.setup) + 1;
+  return seenSequence(state, cut).slice(state.produced, state.produced + (state.setup.frozen ?? 0) + 1).map((index) => state.setup.models[index]);
+};
 
 /** The share of the known vehicles that take `ref` (1 without a mix; the vehicles to come keep the same share at the least). */
 export function usageOf(state, ref) {
@@ -34,9 +58,13 @@ export function usageOf(state, ref) {
   return Math.max(0.05, known.filter((model) => uses(model, ref)).length / Math.max(1, known.length));
 }
 
-/** A world's sequence: the vehicles made and those known as they are, the ones after drawn again. */
+/**
+ * A world's sequence: the vehicles made and those known as they are; the ones after drawn again, or, with resequencing,
+ * the planned ones with the last-minute moves drawn again.
+ */
 export function worldSequence(state, rng) {
   if (!state.setup.models) return state.day.sequence;
-  const known = state.day.sequence.slice(0, state.produced + (state.setup.frozen ?? 0) + 1);
+  const known = state.day.sequence.slice(0, state.produced + sureAhead(state.setup) + 1);
+  if (state.day.planned) return [...known, ...resequenced(rng, state.setup.resequence, state.day.planned.slice(known.length))];
   return [...known, ...drawSequence(rng, state.setup, Math.max(0, state.day.sequence.length - known.length))];
 }
