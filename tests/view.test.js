@@ -25,9 +25,11 @@ describe("what the page shows (web/view.js)", () => {
     assert.match(statusLine(day), /camion 1 au tour 20, camion 2 au tour 40, camion 3 au tour 60/);
     while (!day.orders.some((order) => order.status === "staged")) stepDay(day, RULES.list);
     assert.ok(cellsOf(day).some((cell) => cell.kind === "bay" && cell.pallet));
-    assert.ok(ordersOf(day).some((order) => order.status === "staged" && /^prête devant le quai/.test(order.label) && order.truck));
+    assert.ok(ordersOf(day).some((order) => order.status === "staged" && order.label.startsWith("prête devant le quai") && order.truck));
     while (!isOver(day)) stepDay(day, RULES.list);
-    assert.match(statusLine(day, measuresOf(day)), /camion 1 parti, camion 2 parti, camion 3 parti.*\d+ tours à quai pour les camions/);
+    const line = statusLine(day, measuresOf(day));
+    assert.match(line, /camion 1 parti, camion 2 parti, camion 3 parti/);
+    assert.match(line, /· \d+ tours à quai pour les camions/);
   });
 
   it("tells the robots, their legs, and the day as it goes", () => {

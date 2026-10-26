@@ -5,44 +5,56 @@ import { RULES, compareRules } from "../src/rules.js";
 import { createDay, drawDay, isOver, measuresOf, runDay, stepDay } from "../src/simulate.js";
 import { distancesFrom, readWarehouse } from "../src/warehouse.js";
 
+/** Into a truck with a bay, only its loader, unless the bay is full; and no bay holds more pallets than it has cells. */
+function checkTrucks(state, seed) {
+  for (const truck of state.trucks) {
+    const inside = state.robots.filter((robot) => robot.x === truck.dock.x && robot.y === truck.dock.y);
+    const full = (robot) => state.log.some((event) => event.type === "overflow" && event.robot === robot.id && event.truck === truck.id);
+    const allowed = (robot) => Object.values(truck.loaders).includes(robot.id) || full(robot) || robot.phase === "idle";
+    if (truck.dock.bay.length > 0 && state.t >= truck.at) for (const robot of inside) assert.ok(allowed(robot), `jour ${seed}, tour ${state.t} : le robot ${robot.id} entre dans le camion ${truck.id}, chargé par ${truck.loader}`);
+    const waiting = state.orders.filter((order) => order.truck === truck.id - 1 && order.cell);
+    assert.ok(state.t >= truck.at || waiting.length <= truck.dock.bay.length, `jour ${seed}, tour ${state.t} : trop de palettes pour le quai ${truck.id}`);
+  }
+}
+
+/** No cell is shared (Sami, 23/10): not a truck's, not a charging point; and a robot passes under a pallet waiting on a bay, never with one on its back. */
+function checkCells(state, seed) {
+  const cells = state.robots.map((robot) => `${robot.x},${robot.y}`);
+  assert.equal(new Set(cells).size, cells.length, `jour ${seed}, tour ${state.t} : deux robots dans la même case`);
+  const pallets = new Set(state.orders.filter((order) => order.cell && (order.status === "staged" || order.status === "toTruck")).map((order) => `${order.cell.x},${order.cell.y}`));
+  for (const robot of state.robots) assert.ok(robot.phase !== "toDrop" || !pallets.has(`${robot.x},${robot.y}`), `jour ${seed}, tour ${state.t} : le robot ${robot.id} passe avec sa palette sur une autre`);
+}
+
+/** Did robots `a` and `b` swap cells since `before`? */
+function swapped(a, b, before) {
+  const was = (robot) => before.find((one) => one.id === robot.id);
+  const crossed = a.x === was(b).x && a.y === was(b).y && b.x === was(a).x && b.y === was(a).y;
+  return a.id < b.id && crossed && (a.x !== b.x || a.y !== b.y);
+}
+
+/** No two robots swap cells; and, the aisle blocked, none walks into it (backing out along the stretch it was in is allowed). */
+function checkMoves(state, seed, before) {
+  const was = (robot) => before.find((one) => one.id === robot.id);
+  for (const a of state.robots) for (const b of state.robots) assert.ok(!swapped(a, b, before), `jour ${seed}, tour ${state.t} : les robots ${a.id} et ${b.id} se croisent`);
+  if (!state.day.blockages.some((blockage) => state.t >= blockage.from && state.t < blockage.to)) return;
+  for (const robot of state.robots) {
+    const walkedIn = state.warehouse.plan.at(robot.x, robot.y) === "~" && state.warehouse.plan.at(was(robot).x, was(robot).y) !== "~";
+    assert.ok(!walkedIn, `jour ${seed}, tour ${state.t} : le robot ${robot.id} entre dans une case bloquée`);
+  }
+}
+
 /**
- * Plays a day turn by turn, checking after each that no two robots share a cell (the truck and shared charging
- * points aside) or swap, and that no bay holds more pallets, waiting or promised, than it has cells.
+ * Plays a day turn by turn, checking after each that no two robots share a cell or swap, that no bay holds more
+ * pallets, waiting or promised, than it has cells, and that nobody walks into a blocked aisle.
  */
 function playChecked(setup, seed, rule) {
   const state = createDay(setup, drawDay(seed, setup));
   let before = state.robots.map((robot) => ({ ...robot }));
   while (!isOver(state)) {
     stepDay(state, rule);
-    // No cell is shared (Sami, 23/10): not a truck's, not a charging point.
-    const cells = state.robots.map((robot) => `${robot.x},${robot.y}`);
-    for (const truck of state.trucks) {
-      // Into a truck with a bay, only its loader, unless the bay is full.
-      const inside = state.robots.filter((robot) => robot.x === truck.dock.x && robot.y === truck.dock.y);
-      const full = (robot) => state.log.some((event) => event.type === "overflow" && event.robot === robot.id && event.truck === truck.id);
-      if (truck.dock.bay.length > 0 && state.t >= truck.at) for (const robot of inside) assert.ok(Object.values(truck.loaders).includes(robot.id) || full(robot) || robot.phase === "idle", `jour ${seed}, tour ${state.t} : le robot ${robot.id} entre dans le camion ${truck.id}, chargé par ${truck.loader}`);
-      const waiting = state.orders.filter((order) => order.truck === truck.id - 1 && order.cell);
-      assert.ok(state.t >= truck.at || waiting.length <= truck.dock.bay.length, `jour ${seed}, tour ${state.t} : trop de palettes pour le quai ${truck.id}`);
-    }
-    assert.equal(new Set(cells).size, cells.length, `jour ${seed}, tour ${state.t} : deux robots dans la même case`);
-    // A robot passes under a pallet waiting on a bay, never with one on its back.
-    const pallets = new Set(state.orders.filter((order) => order.cell && (order.status === "staged" || order.status === "toTruck")).map((order) => `${order.cell.x},${order.cell.y}`));
-    for (const robot of state.robots) assert.ok(robot.phase !== "toDrop" || !pallets.has(`${robot.x},${robot.y}`), `jour ${seed}, tour ${state.t} : le robot ${robot.id} passe avec sa palette sur une autre`);
-    for (const a of state.robots) {
-      for (const b of state.robots) {
-        const was = (robot) => before.find((one) => one.id === robot.id);
-        const swapped = a.id < b.id && a.x === was(b).x && a.y === was(b).y && b.x === was(a).x && b.y === was(a).y && (a.x !== b.x || a.y !== b.y);
-        assert.ok(!swapped, `jour ${seed}, tour ${state.t} : les robots ${a.id} et ${b.id} se croisent`);
-      }
-    }
-    if (state.day.blockages.some((blockage) => state.t >= blockage.from && state.t < blockage.to)) {
-      for (const robot of state.robots) {
-        const was = before.find((one) => one.id === robot.id);
-        // Backing out along the stretch it was in when the pallet went down is allowed; walking in is not.
-        const walkedIn = state.warehouse.plan.at(robot.x, robot.y) === "~" && state.warehouse.plan.at(was.x, was.y) !== "~";
-        assert.ok(!walkedIn, `jour ${seed}, tour ${state.t} : le robot ${robot.id} entre dans une case bloquée`);
-      }
-    }
+    checkTrucks(state, seed);
+    checkCells(state, seed);
+    checkMoves(state, seed, before);
     before = state.robots.map((robot) => ({ ...robot }));
   }
   return state;

@@ -27,6 +27,26 @@ export function blockageOf(state) {
   return { now, seen: now && state.known.seenAt !== null && state.t <= state.known.blockedUntil };
 }
 
+const found = (map, key) => map.get(key) ?? null;
+const plural = (count) => (count > 1 ? "s" : "");
+
+/** A cell that is neither a dock, a bay nor plain floor: a charging point, the `~` aisle, a block, a wall. */
+function otherCell(ctx, char, x, y) {
+  if (char === "c") return { x, y, kind: "charge" };
+  if (char === "~") return { x, y, kind: "blockable" };
+  if (isBlock(char)) return { x, y, kind: "block", letter: char, pending: ctx.pending.get(char) ?? 0 };
+  return { x, y, kind: "wall" };
+}
+
+function cellAt(ctx, x, y) {
+  const char = ctx.plan.at(x, y);
+  const key = `${x},${y}`;
+  if (char === "T") return { x, y, kind: "dock", truck: found(ctx.trucks, key) };
+  if (char === "w" || ctx.autoBay.has(key)) return { x, y, kind: "bay", pallet: found(ctx.pallets, key), auto: char !== "w" };
+  if (char === ".") return { x, y, kind: "floor", home: found(ctx.homes, key), pallet: found(ctx.pallets, key) };
+  return otherCell(ctx, char, x, y);
+}
+
 /**
  * Every cell to draw: `{ x, y, kind, letter, pending, pallet, truck }`, kind floor, block, dock, bay, charge,
  * blockable or wall; a bay cell with the block of the pallet waiting there, a dock with its truck; a floor cell
@@ -42,53 +62,71 @@ export function cellsOf(state) {
   const autoBay = new Set(state.warehouse.docks.filter((dock) => dock.auto).flatMap((dock) => dock.bay.map((cell) => `${cell.x},${cell.y}`)));
   // Where each robot starts and goes back to, when it is not a charging point.
   const homes = new Map(state.robots.filter((robot) => plan.at(robot.home.x, robot.home.y) !== "c").map((robot) => [`${robot.home.x},${robot.home.y}`, robot.id]));
-  const cells = [];
-  for (let y = 0; y < plan.height; y += 1) {
-    for (let x = 0; x < plan.width; x += 1) {
-      const char = plan.at(x, y);
-      if (char === "T") cells.push({ x, y, kind: "dock", truck: trucks.get(`${x},${y}`) ?? null });
-      else if (char === "w" || autoBay.has(`${x},${y}`)) cells.push({ x, y, kind: "bay", pallet: pallets.get(`${x},${y}`) ?? null, auto: char !== "w" });
-      else if (char === "c") cells.push({ x, y, kind: "charge" });
-      else if (char === "~") cells.push({ x, y, kind: "blockable" });
-      else if (char === ".") cells.push({ x, y, kind: "floor", home: homes.get(`${x},${y}`) ?? null, pallet: pallets.get(`${x},${y}`) ?? null });
-      else if (isBlock(char)) cells.push({ x, y, kind: "block", letter: char, pending: pending.get(char) ?? 0 });
-      else cells.push({ x, y, kind: "wall" });
-    }
-  }
-  return cells;
+  const ctx = { plan, pending, pallets, trucks, autoBay, homes };
+  const rows = Array.from({ length: plan.height }, (_, y) => y);
+  return rows.flatMap((y) => Array.from({ length: plan.width }, (__, x) => cellAt(ctx, x, y)));
+}
+
+/** The truck `robot` loads, while it has pallets left; or undefined. */
+const loadingOf = (state, robot) => state.trucks.find((truck) => Object.values(truck.loaders).includes(robot.id) && state.orders.some((one) => one.truck === truck.id - 1 && one.status !== "delivered"));
+/** The zone `robot` loads, when its truck has more than one. */
+function zoneText(loading, robot) {
+  if (loading.dock.zones.length <= 1) return "";
+  const zone = Number(Object.entries(loading.loaders).find(([, id]) => id === robot.id)[0]) + 1;
+  return `, zone ${zone}`;
+}
+function orderText(state, order) {
+  const truck = state.trucks.length > 1 ? `, camion ${order.truck + 1}` : "";
+  return ` (commande ${order.id}, bloc ${order.block}${truck})`;
+}
+function robotLabel(state, robot, order) {
+  const loading = loadingOf(state, robot);
+  const parts = [`Robot ${robot.id}`];
+  if (loading) parts.push(` (charge le camion ${loading.id}${zoneText(loading, robot)})`);
+  if (robot.queued) parts.push(", attend son tour au camion");
+  parts.push(` : ${PHASE_LABELS[robot.phase]}`);
+  if (order) parts.push(orderText(state, order));
+  return parts.join("");
 }
 
 /** The robots: where they are, what they carry, what they do, and the cells left on their leg. */
 export function robotsOf(state) {
   return state.robots.map((robot) => {
     const order = state.orders.find((one) => one.id === robot.order);
-    const loading = state.trucks.find((truck) => Object.values(truck.loaders).includes(robot.id) && state.orders.some((one) => one.truck === truck.id - 1 && one.status !== "delivered"));
-    const zone = loading && loading.dock.zones.length > 1 ? `, zone ${Number(Object.entries(loading.loaders).find(([, id]) => id === robot.id)[0]) + 1}` : "";
     return {
       id: robot.id,
       x: robot.x,
       y: robot.y,
       carrying: order?.status === "carried" ? order.block : null,
-      label: `Robot ${robot.id}${loading ? ` (charge le camion ${loading.id}${zone})` : ""}${robot.queued ? ", attend son tour au camion" : ""} : ${PHASE_LABELS[robot.phase]}${order ? ` (commande ${order.id}, bloc ${order.block}${state.trucks.length > 1 ? `, camion ${order.truck + 1}` : ""})` : ""}`,
+      label: robotLabel(state, robot, order),
       ahead: robot.target ? (robot.path ?? []).filter((step) => step.t >= state.t) : [],
     };
   });
 }
 
+function corridorText(state) {
+  const blockage = blockageOf(state);
+  if (!blockage.now) return "allées libres";
+  return blockage.seen ? `allée bloquée (vue au tour ${state.known.seenAt})` : "allée bloquée, pas encore vue";
+}
+function truckText(truck) {
+  if (truck.left === 0) return `camion ${truck.id} parti`;
+  return truck.there ? `camion ${truck.id} à quai` : `camion ${truck.id} au tour ${truck.at}`;
+}
+function measuresText(state, measures) {
+  const docks = state.trucks.length > 1 ? [`${measures.truckWait} tours à quai pour les camions`] : [];
+  return [`fini au tour ${measures.finish}`, ...docks, `${measures.moves} pas, ${measures.waits} attente${plural(measures.waits)}`];
+}
+
 /** The day in one line. */
 export function statusLine(state, measures) {
   const delivered = state.orders.filter((order) => order.status === "delivered").length;
-  const blockage = blockageOf(state);
-  const corridor = blockage.now ? `allée bloquée${blockage.seen ? ` (vue au tour ${state.known.seenAt})` : ", pas encore vue"}` : "allées libres";
   const parts = [`Tour ${state.t} / ${state.setup.horizon}`, `${delivered} / ${state.orders.length} commandes livrées`];
   const staged = state.orders.filter((order) => order.status === "staged" || order.status === "toTruck").length;
-  if (staged > 0) parts.push(`${staged} prête${staged > 1 ? "s" : ""} devant les quais`);
-  if (state.trucks.some((truck) => truck.at > 0)) {
-    const trucks = trucksOf(state).map((truck) => `camion ${truck.id} ${truck.left === 0 ? "parti" : truck.there ? "à quai" : `au tour ${truck.at}`}`);
-    parts.push(trucks.join(", "));
-  }
-  parts.push(corridor);
-  if (measures) parts.push(`fini au tour ${measures.finish}`, ...(state.trucks.length > 1 ? [`${measures.truckWait} tours à quai pour les camions`] : []), `${measures.moves} pas, ${measures.waits} attente${measures.waits > 1 ? "s" : ""}`);
+  if (staged > 0) parts.push(`${staged} prête${plural(staged)} devant les quais`);
+  if (state.trucks.some((truck) => truck.at > 0)) parts.push(trucksOf(state).map(truckText).join(", "));
+  parts.push(corridorText(state));
+  if (measures) parts.push(...measuresText(state, measures));
   return parts.join(" · ");
 }
 

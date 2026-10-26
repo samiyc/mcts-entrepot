@@ -23,6 +23,7 @@ export const RULES = Object.freeze({
 export const RULE_LABELS = Object.freeze({ nearest: "la plus proche", list: "dans l'ordre de la liste", farthest: "la plus lointaine d'abord", truck: "le camion attendu d'abord", search: "recherche (ISMCTS)" });
 
 const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
+const meanOf = (measures, key) => mean(measures.map((one) => one[key]));
 const MEASURES = ["delivered", "finish", "meanDelivery", "moves", "waits", "replans", "stuck", "truckWait", "early"];
 
 /**
@@ -39,14 +40,10 @@ export function compareRules(setup, { days = 100, seed = 1, rules = RULES } = {}
 /** Each rule's days (`{ name: measures[] }`, the same days for all) summed up as `compareRules` does. */
 export function summaryOf(runs) {
   const baseline = runs.list?.map((one) => one.truckWait);
-  return Object.fromEntries(
-    Object.entries(runs).map(([name, measures]) => [
-      name,
-      {
-        ...Object.fromEntries(MEASURES.map((key) => [key, mean(measures.map((one) => one[key]))])),
-        blockedDays: mean(measures.map((one) => (one.blocked ? 1 : 0))),
-        gain: baseline ? paired(baseline, measures.map((one) => one.truckWait)) : null,
-      },
-    ]),
-  );
+  const summed = (measures) => ({
+    ...Object.fromEntries(MEASURES.map((key) => [key, meanOf(measures, key)])),
+    blockedDays: mean(measures.map((one) => (one.blocked ? 1 : 0))),
+    gain: baseline ? paired(baseline, measures.map((one) => one.truckWait)) : null,
+  });
+  return Object.fromEntries(Object.entries(runs).map(([name, measures]) => [name, summed(measures)]));
 }
