@@ -17,10 +17,13 @@ Ce dossier rassemble ce que disent les sources publiées, et ce que le simulateu
 7. [autres-variantes.md](autres-variantes.md) : la réponse à « Autre variantes ? » ;
 8. [ligne-cadencee.md](ligne-cadencee.md) : les vraies données de la ligne (Toyota, les bacs, les AMR) ;
 9. [feuille-de-route.md](feuille-de-route.md) : la ligne cadencée d'abord, l'atelier d'usinage ensuite (les choix de
-   Sami du 26/10).
+   Sami du 26/10) ;
+10. [hypotheses.md](hypotheses.md) : chaque chiffre du modèle, sourcé ou estimé, l'écart au réel, et les questions à
+    poser au terrain ; le journal des réponses.
 
 Un chiffre cité a sa source dans le fichier qui le donne. Beaucoup de sources sont des pages de vendeurs ou de
 conseil ; le texte le dit quand c'est le cas. Un chiffre sans source est écrit comme une hypothèse ; pour la ligne
-cadencée, codée depuis (`docs/modele-ligne.md`), elles sont toutes dans `src/line-hypotheses.js`.
+cadencée, codée depuis (`docs/modele-ligne.md`), elles sont toutes dans `src/line-hypotheses.js`, et
+[hypotheses.md](hypotheses.md) les reprend toutes, avec ce que les recherches en ont trouvé.
 
 L'outillage du dépôt, repris de lopin et de mcts-urgences le même jour, est dans [../outillage.md](../outillage.md).

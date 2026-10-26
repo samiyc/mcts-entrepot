@@ -17,7 +17,8 @@ imaginant ce qui peut arriver, et une personne au milieu d'eux. Deux simulations
   l'entrepôt, dont les robots préparent la palette ; une navette la lui apporte (`src/plant.js`, `npm run plant`).
 
 Les données réelles, le glossaire des termes de l'industrie et la feuille de route sont dans
-[`docs/recherche/`](docs/recherche/README.md).
+[`docs/recherche/`](docs/recherche/README.md). Les chiffres que les sources ne donnent pas, et les questions à poser
+au terrain, sont dans [`docs/recherche/hypotheses.md`](docs/recherche/hypotheses.md).
 
 ## Lancer
 

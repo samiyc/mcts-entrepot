@@ -1,7 +1,7 @@
 /**
  * The figures of the line (Sami, 26/10/2026: real data first). The sourced ones and their sources are in
  * docs/recherche/ligne-cadencee.md; the others are written as hypotheses, here and nowhere else, and the page can change
- * them. A turn is 5 seconds; a cell about 5 m (a robot at 1 m/s, under the 1.35 m/s of an Omron LD-90).
+ * them; docs/recherche/hypotheses.md takes each one, what the sources say of it and what to ask. A turn is 5 seconds; a cell about 5 m (a robot at 1 m/s, under the 1.35 m/s of an Omron LD-90).
  */
 export const LINE = Object.freeze({
   /** Seconds a turn. */

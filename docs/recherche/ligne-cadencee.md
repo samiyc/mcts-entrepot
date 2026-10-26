@@ -56,7 +56,8 @@ fourchette du vendeur), une minute d'arrêt se lit aussi en coût ; ce coût n'e
 
 ## Les hypothèses (sans source, réglables)
 
-Elles sont dans `src/line-hypotheses.js` :
+Elles sont dans `src/line-hypotheses.js`, et toutes reprises, avec ce que les recherches en disent et les questions à
+poser, dans [hypotheses.md](hypotheses.md) :
 - **la rupture fournisseur** : une référence manque au supermarché, en moyenne une fois par heure, pendant 5 à
   15 minutes. Aucune donnée publique n'a été trouvée ;
 - **le temps de prise et de pose d'un bac** : un tour chacun, comme les palettes de l'entrepôt ;
