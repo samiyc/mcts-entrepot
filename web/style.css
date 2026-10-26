@@ -119,3 +119,16 @@ main.layout.folded .sidebar { display: none; }
   .sidebar { position: static; max-height: none; }
   .masthead .links { float: none; margin: 0 0 8px; }
 }
+
+/* The stats tab: the days of the last comparison, by pairs (charts.js). */
+.chart { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.chart figcaption { font-size: 0.85rem; color: var(--ink-2); margin-bottom: 6px; }
+.strip { width: 100%; height: auto; display: block; }
+.strip-label { font: 600 12px system-ui, sans-serif; text-anchor: end; fill: var(--ink); }
+.strip-axis { font: 11px system-ui, sans-serif; text-anchor: middle; fill: var(--ink-2); }
+.strip-zero { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
+.strip-interval { fill: color-mix(in srgb, var(--accent) 18%, transparent); }
+.strip-dot { fill: var(--accent); fill-opacity: 0.55; stroke: var(--panel); stroke-width: 1; }
+.strip-dot:hover { fill-opacity: 1; r: 6; }
+.strip-mean { fill: var(--accent-2); }
+.replay-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

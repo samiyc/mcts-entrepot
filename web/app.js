@@ -4,14 +4,16 @@ import { compare, compareWithSearch, finish, play, restart, step, stop } from ".
 import { readPlan } from "./panels.js";
 import { comparaisonsPanel, comparaisonsView } from "./tabs/comparaisons.js";
 import { entrepotPanel, entrepotView } from "./tabs/entrepot.js";
+import { replaysClick, replaysPanel, replaysView } from "./tabs/replays.js";
+import { statsPanel, statsView } from "./tabs/stats.js";
 
 /**
  * The page, in tabs (Sami, 26/10/2026, the layout of lopin and mcts-urgences): a tab per simulation, and the
- * comparisons; the settings of the tab open in the panel on the left, which folds. The settings shared by the tabs live
+ * comparisons, the replays, the stats; the settings of the tab open in the panel on the left, which folds. The settings shared by the tabs live
  * in `state`; the tabs are in tabs/, the playing in game.js, the drawing in board.js and view.js. This module only
  * keeps the page's state and listens (event delegation on the layout).
  */
-const TAB_NAMES = ["entrepot", "comparaisons"];
+const TAB_NAMES = ["entrepot", "comparaisons", "replays", "stats"];
 const STORE = "entrepot-onglet";
 const FOLDED = "entrepot-replie";
 const read = (key) => {
@@ -30,12 +32,12 @@ const write = (key, value) => {
 };
 const firstTab = () => [location.hash.slice(1), read(STORE)].find((name) => TAB_NAMES.includes(name)) ?? "entrepot";
 
-const state = { tab: firstTab(), planId: "sami", setup: { ...PLANS.sami }, rule: "search", seed: 1, speed: 4, day: null, choices: [], thinking: false, timer: null, compared: null, error: "", busy: "", run: 0 };
+const state = { tab: firstTab(), planId: "sami", setup: { ...PLANS.sami }, rule: "search", seed: 1, speed: 4, day: null, choices: [], thinking: false, timer: null, compared: null, error: "", busy: "", run: 0, replay: null, kept: false, gains: null, serverReplays: undefined };
 const layout = document.getElementById("layout");
 const sidebar = document.getElementById("sidebar");
 const app = document.getElementById("app");
-const ctx = { state, render: () => render() };
-const TABS = { entrepot: [entrepotPanel, entrepotView], comparaisons: [comparaisonsPanel, comparaisonsView] };
+const ctx = { state, render: () => render(), openReplay: (replay) => openReplay(replay) };
+const TABS = { entrepot: [entrepotPanel, entrepotView], comparaisons: [comparaisonsPanel, comparaisonsView], replays: [replaysPanel, replaysView], stats: [statsPanel, statsView] };
 
 function render() {
   for (const button of document.querySelectorAll(".tabs [role=tab]")) button.setAttribute("aria-selected", String(/** @type {HTMLElement} */ (button).dataset.tab === state.tab));
@@ -51,11 +53,18 @@ function openTab(name) {
   render();
 }
 
+/** A kept day, opened again in its tab: its plan, its day, its rule, its own choices. */
+function openReplay(replay) {
+  Object.assign(state, { replay, planId: replay.planId, setup: replay.setup, seed: replay.seed, rule: replay.rule, compared: null, error: "" });
+  restart(ctx);
+  openTab("entrepot");
+}
+
 function applyPlan(form) {
   const setup = readPlan(form, state.setup);
   try {
     createDay(setup, { blockages: [] });
-    Object.assign(state, { setup, error: "", compared: null });
+    Object.assign(state, { setup, error: "", compared: null, replay: null });
     restart(ctx);
   } catch (error) {
     state.error = `Plan refusé : ${error.message}`;
@@ -69,7 +78,11 @@ const ACTIONS = {
   finish: () => finish(ctx),
   restart: () => restart(ctx),
   next: () => {
-    state.seed += 1;
+    Object.assign(state, { seed: state.seed + 1, replay: null });
+    restart(ctx);
+  },
+  leaveReplay: () => {
+    state.replay = null;
     restart(ctx);
   },
   compare: () => compare(ctx),
@@ -78,6 +91,7 @@ const ACTIONS = {
 
 /** A setting changed: a plan, a day, a speed, a rule. */
 function setKnob(name, value) {
+  if (name !== "speed") state.replay = null;
   if (name === "plan") Object.assign(state, { planId: value, setup: { ...PLANS[value] }, compared: null, error: "" });
   else if (name === "seed") state.seed = Math.max(1, Number(value) || 1);
   else if (name === "speed") state.speed = Number(value);
@@ -94,6 +108,7 @@ layout.addEventListener("change", (event) => {
   render();
 });
 layout.addEventListener("click", (event) => {
+  if (replaysClick(ctx, /** @type {HTMLElement} */ (event.target))) return;
   const action = /** @type {HTMLElement} */ (event.target).closest?.("[data-action]")?.getAttribute("data-action");
   if (!ACTIONS[action]) return;
   ACTIONS[action]();
@@ -119,5 +134,13 @@ const setFolded = (folded) => {
 };
 fold.addEventListener("click", () => setFolded(!layout.classList.contains("folded")));
 setFolded(read(FOLDED) === "1");
+// The night measures, for the stats tab (served with the page).
+fetch("../docs/changelog.json")
+  .then((response) => (response.ok ? response.json() : null))
+  .then((gains) => {
+    state.gains = gains;
+    if (state.tab === "stats") render();
+  })
+  .catch(() => {});
 restart(ctx);
 render();

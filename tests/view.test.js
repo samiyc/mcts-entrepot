@@ -47,3 +47,14 @@ describe("what the page shows (web/view.js)", () => {
     assert.deepEqual(blockageOf(createDay(setup, { blockage: null })), { now: false, seen: false });
   });
 });
+
+describe("the days of a comparison by pairs (web/view.js)", () => {
+  it("gives each rule's gain on the list order, day by day, 0 inside the range", async () => {
+    const { pairedDays } = await import("../web/view.js");
+    const runs = { list: [{ truckWait: 10 }, { truckWait: 20 }], nearest: [{ truckWait: 12 }, { truckWait: 15 }] };
+    const paired = pairedDays(runs, 5);
+    assert.deepEqual(paired.rows, [{ name: "nearest", diffs: [{ seed: 5, gain: -2 }, { seed: 6, gain: 5 }] }]);
+    assert.equal(paired.low, -2);
+    assert.equal(paired.high, 5);
+  });
+});

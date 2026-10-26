@@ -306,7 +306,7 @@ Deux robots coincés face à face : celui qui porte un colis ne passe pas, l'aut
 
 ## La page (23/10, tard)
 
-**Les replays rangés seuls** (Sami, 23/10 au soir) : chaque partie gardée par la page est aussi envoyée au serveur de la page (`POST /api/replays` de mcts-commun), qui l'écrit dans `replays/`, hors de git (comme `replays/` dans Lopin). Un serveur lancé avant cette version répond 404 : il faut relancer `npm run page`.
+**Les replays rangés seuls** (Sami, 23/10 au soir) : le commit de ce soir-là n'avait ajouté que la ligne `replays/` au `.gitignore` ; la page ne gardait rien. C'est fait le 26/10 (`src/replay.js`, l'onglet Replays) : chaque journée jouée jusqu'au bout se garde, avec son plan, sa graine et ses choix, dans le navigateur et par le serveur de la page (`POST /api/replays` de mcts-commun) dans `replays/`, hors de git ; rouverte, elle se rejoue coup pour coup, la recherche comprise (testé sur chaque plan et chaque règle).
 
 **L'allure** (Sami, 23/10, tard) : la page prend l'allure commune des projets (`mcts-commun/web/theme.css`, dans l'esprit de Lopin) : un bandeau dans la couleur de l'application, les réglages en carte, les sections pliables bien visibles (une barre, un chevron qui tourne, « Ouvrir / Fermer »), les tableaux et le thème sombre. Ici, un bleu-gris métallique, industriel, avec de fines rayures, et 📦 devant le titre.
 

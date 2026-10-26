@@ -140,3 +140,17 @@ export function ordersOf(state) {
     label: STATUS_LABELS[order.status] + (order.robot ? `, robot ${order.robot}` : "") + (order.deliveredAt === null ? "" : ` au tour ${order.deliveredAt}`),
   }));
 }
+
+/**
+ * The days of a comparison, by pairs (Sami, 26/10/2026, the stats tab): for each rule but the list order, the turns
+ * its trucks waited less than under the list, day by day (`diffs`, above 0 a gain), with the day's number, and the
+ * range they span (`low`, `high`, 0 always inside).
+ */
+export function pairedDays(runs, firstSeed) {
+  const list = runs.list ?? [];
+  const rows = Object.entries(runs)
+    .filter(([name]) => name !== "list")
+    .map(([name, measures]) => ({ name, diffs: measures.map((one, i) => ({ seed: firstSeed + i, gain: list[i].truckWait - one.truckWait })) }));
+  const gains = rows.flatMap((row) => row.diffs.map((one) => one.gain));
+  return { rows, low: Math.min(0, ...gains), high: Math.max(0, ...gains) };
+}

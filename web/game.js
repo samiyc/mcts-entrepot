@@ -1,11 +1,14 @@
-import { RULES, compareRules, summaryOf } from "../src/rules.js";
-import { beginTurn, choose, createDay, drawDay, endTurn, isOver, nextChoice, runDay, stepDay } from "../src/simulate.js";
+import { recording, replayOf } from "../src/replay.js";
+import { RULES, summaryOf } from "../src/rules.js";
+import { beginTurn, choose, createDay, drawDay, endTurn, isOver, measuresOf, nextChoice, runDay, stepDay } from "../src/simulate.js";
+import { keepReplay } from "./replay-store.js";
 import { ask, stopWorkers } from "./workers.js";
 
 /**
  * The shown day of the warehouse, played (app.js, split on 26/10/2026 for the tabs): under a rule at once, under the
  * search choice by choice, each choice asked of a worker (search-worker.js) and the board drawn between two; and the
- * rules compared on the same days. Functions of the page's context `{ state, render }`.
+ * rules compared on the same days. Every choice is written down (`state.choices`): a day over is kept as a replay, and
+ * a replay opened (`state.replay`) plays its own choices again. Functions of the page's context `{ state, render }`.
  */
 export const COMPARED = 100;
 export const COMPARED_WITH_SEARCH = 12;
@@ -19,9 +22,31 @@ export function restart(ctx) {
   const { state } = ctx;
   stop(ctx);
   stopWorkers();
-  Object.assign(state, { run: state.run + 1, busy: "", choices: [], thinking: false });
+  Object.assign(state, { run: state.run + 1, busy: "", choices: [], thinking: false, kept: Boolean(state.replay) });
   state.day = createDay(state.setup, drawDay(state.seed, state.setup));
 }
+
+/** The day over, kept once (a replay played again is not kept a second time). */
+function keepIfOver({ state }) {
+  if (state.kept || !isOver(state.day)) return;
+  state.kept = true;
+  keepReplay(replayOf({ planId: state.planId, setup: state.setup, seed: state.seed, rule: state.rule, choices: state.choices, measures: measuresOf(state.day) }));
+}
+
+/** A turn of a replay: each choice as it was made. */
+function replayTurn({ state }) {
+  const day = state.day;
+  if (day.cursor === null) beginTurn(day);
+  for (let choice = nextChoice(day); choice; choice = nextChoice(day)) {
+    const id = state.replay.choices[state.choices.length] ?? null;
+    choose(day, choice, id);
+    state.choices.push(id);
+  }
+  endTurn(day);
+}
+
+/** A turn under a rule, its choices written down. */
+const ruleTurn = ({ state }) => stepDay(state.day, recording(RULES[state.rule], state.choices));
 
 /** Each robot's choice of this turn asked of the worker, then the turn played; false when a newer run started meanwhile. */
 async function searchTurn({ state, render }, run) {
@@ -43,13 +68,17 @@ async function searchTurn({ state, render }, run) {
 /** One turn of the shown day: under a rule at once; under the search, choice by choice. False when a newer run started meanwhile. */
 async function playTurn(ctx, run) {
   const { state } = ctx;
-  if (state.rule !== "search") {
-    stepDay(state.day, RULES[state.rule]);
+  if (state.replay || state.rule !== "search") {
+    if (state.replay) replayTurn(ctx);
+    else ruleTurn(ctx);
+    keepIfOver(ctx);
     return true;
   }
   state.thinking = true;
   try {
-    return await searchTurn(ctx, run);
+    const played = await searchTurn(ctx, run);
+    if (played) keepIfOver(ctx);
+    return played;
   } finally {
     state.thinking = false;
   }
@@ -59,13 +88,10 @@ export async function finish(ctx) {
   const { state, render } = ctx;
   stop(ctx);
   const run = ++state.run;
-  if (state.rule !== "search") {
-    while (!isOver(state.day)) stepDay(state.day, RULES[state.rule]);
-  } else {
-    while (!isOver(state.day)) {
-      if (!(await playTurn(ctx, run))) return;
-      render();
-    }
+  const quick = state.replay || state.rule !== "search";
+  while (!isOver(state.day)) {
+    if (!(await playTurn(ctx, run))) return;
+    if (!quick) render();
   }
   state.busy = "";
   render();
@@ -93,10 +119,18 @@ export function step(ctx) {
   if (!isOver(state.day) && !state.thinking) playTurn(ctx, state.run).then((played) => played && render());
 }
 
-/** The rules on the same `COMPARED` days. */
+/** Each rule's measures on `days` days from the shown one. */
+function rulesOn(setup, seed, days) {
+  const runs = Object.fromEntries(Object.keys(RULES).map((name) => [name, []]));
+  for (let i = 0; i < days; i += 1) for (const [name, rule] of Object.entries(RULES)) runs[name].push(runDay(setup, seed + i, rule).measures);
+  return runs;
+}
+
+/** The rules on the same `COMPARED` days (each day kept, for the stats). */
 export function compare({ state }) {
   state.run += 1;
-  Object.assign(state, { compared: { days: COMPARED, rows: compareRules(state.setup, { days: COMPARED }) }, busy: "" });
+  const runs = rulesOn(state.setup, state.seed, COMPARED);
+  Object.assign(state, { compared: { days: COMPARED, rows: summaryOf(runs), runs, seed: state.seed, planId: state.planId }, busy: "" });
 }
 
 /** The rules and the search on the same few days, the search's days in several workers at once. */
@@ -104,8 +138,7 @@ export async function compareWithSearch(ctx) {
   const { state, render } = ctx;
   stop(ctx);
   const run = ++state.run;
-  const runs = { ...Object.fromEntries(Object.keys(RULES).map((name) => [name, []])), search: [] };
-  for (let i = 0; i < COMPARED_WITH_SEARCH; i += 1) for (const [name, rule] of Object.entries(RULES)) runs[name].push(runDay(state.setup, state.seed + i, rule).measures);
+  const runs = { ...rulesOn(state.setup, state.seed, COMPARED_WITH_SEARCH), search: [] };
   const pool = Math.max(1, Math.min(COMPARED_WITH_SEARCH, (navigator.hardwareConcurrency || 4) - 2));
   const found = [];
   let next = 0;
@@ -127,6 +160,6 @@ export async function compareWithSearch(ctx) {
   await Promise.all(Array.from({ length: pool }, (_, w) => worker(w)));
   if (run !== state.run) return;
   runs.search = found;
-  Object.assign(state, { compared: { days: COMPARED_WITH_SEARCH, rows: summaryOf(runs) }, busy: "" });
+  Object.assign(state, { compared: { days: COMPARED_WITH_SEARCH, rows: summaryOf(runs), runs, seed: state.seed, planId: state.planId }, busy: "" });
   render();
 }

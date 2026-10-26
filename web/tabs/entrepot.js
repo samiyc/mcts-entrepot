@@ -22,9 +22,16 @@ export function entrepotPanel({ state }) {
   ];
 }
 
+/** A replay opened: when it was played, under which rule; a button to leave it. */
+function replayNote({ replay }) {
+  if (!replay) return [];
+  const text = `Replay du ${replay.savedAt.slice(0, 16).replace("T", " ")} : la journée se rejoue avec ses propres choix, coup pour coup. `;
+  return [el("p", { class: "summary replay-note" }, text, el("button", { type: "button", class: "quiet", "data-action": "leaveReplay" }, "Quitter le replay"))];
+}
+
 export function entrepotView({ state }) {
   const over = isOver(state.day);
   const summary = el("p", { class: "summary", "aria-live": "polite" }, state.busy || statusLine(state.day, over ? measuresOf(state.day) : null));
   const layout = el("div", { class: "board-layout" }, el("div", { class: "board-wrap" }, board(state.day)), el("aside", { class: "orders-card" }, el("h2", {}, "Les commandes"), orders(state.day)));
-  return [el("p", { class: "hint" }, INTRO), summary, layout];
+  return [el("p", { class: "hint" }, INTRO), ...replayNote(state), summary, layout];
 }
