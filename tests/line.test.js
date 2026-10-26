@@ -202,3 +202,35 @@ describe("the supermarket fed from the warehouse (src/line-supermarket.js)", () 
     assert.equal(createLine(LINE_PLANS.sami, drawLineDay(1, LINE_PLANS.sami)).stock, null);
   });
 });
+
+describe("the reorder point as a decision", () => {
+  it("orders by the cover when the stock no longer lasts the mean lead time, sooner for a reference two stations take", async () => {
+    const { needsOrder } = await import("../src/line-supermarket.js");
+    const setup = { ...LINE_PLANS.supermarche, supermarket: { ...LINE_PLANS.supermarche.supermarket, policy: "cover" } };
+    const state = createLine(setup, drawLineDay(1, setup));
+    // One station takes A: 2 bins of 12 pieces last 24 takts, 264 turns, less than the mean lead (300): order.
+    state.stock.A = 2;
+    assert.equal(needsOrder(state, "A"), true);
+    state.stock.A = 3;
+    assert.equal(needsOrder(state, "A"), false);
+    // The fixed point orders at `reorder` bins, whatever the pace.
+    const fixed = createLine(LINE_PLANS.supermarche, drawLineDay(1, LINE_PLANS.supermarche));
+    fixed.stock.A = 2;
+    assert.equal(needsOrder(fixed, "A"), false);
+    fixed.stock.A = 1;
+    assert.equal(needsOrder(fixed, "A"), true);
+  });
+});
+
+describe("the warehouse as a queue of pickers", () => {
+  it("starts an order at the first free picker, so that orders placed together come back later", async () => {
+    const setup = LINE_PLANS.file;
+    const { state } = runLine({ ...setup, supermarket: { ...setup.supermarket, warehouse: { pickers: 1, transport: 60 } } }, 2, LINE_RULES.kanban);
+    const starts = state.log.filter((event) => event.type === "ordered").length;
+    assert.ok(starts > 1);
+    // One picker: the orders under way at the end never overlap in their work.
+    const work = state.restocks.map((one) => one.start).sort((a, b) => a - b);
+    for (let i = 1; i < work.length; i += 1) assert.ok(work[i] > work[i - 1], "deux commandes préparées en même temps par un seul préparateur");
+    assert.equal(state.pickersFree.length, 1);
+  });
+});

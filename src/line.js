@@ -123,6 +123,7 @@ export function cloneLine(state) {
     stoppedAt: [...state.stoppedAt],
     stock: state.stock ? { ...state.stock } : null,
     restocks: [...state.restocks],
+    pickersFree: state.pickersFree ? [...state.pickersFree] : null,
     claims: new Map(),
     queues: new Map(),
     reservations: state.reservations.clone(),

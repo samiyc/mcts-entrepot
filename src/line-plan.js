@@ -61,7 +61,7 @@ function settle(warehouse, station) {
  * The lines to start with (docs/recherche/feuille-de-route.md, step 1), at the figures of line-hypotheses.js: a takt of
  * 11 turns (55 s), an hour of the line (720 turns), two bins of 12 pieces a reference on the line side.
  */
-const { supermarket: SUPERMARKET, ...FIGURES } = LINE;
+const { supermarket: SUPERMARKET, pickedSupermarket: PICKED, ...FIGURES } = LINE;
 const BASE = { ...FIGURES, blocking: 0.15, duration: 8, relay: false };
 const SAMI_LINE = {
   text: ["c.AA.BB.CC.DD.EE.FF.......", "c.......~~~~~.............", "c.GG.HH.II.JJ.KK.LL.......", "c.........................", "..bb...bb...bb...bb...bb..", "###P####P####P####P####P##"].join("\n"),
@@ -86,6 +86,7 @@ export const LINE_PLANS = Object.freeze({
   // Step 2: two models, petrol and hybrid, each skipping the other's parts; the next 20 vehicles known.
   // Step 2: the supermarket fed from the warehouse, its stock seen, the orders' lead unknown; no supplier shortage, to see the stock alone.
   supermarche: Object.freeze({ ...BASE, ...SAMI_LINE, label: "Ligne de Sami, le supermarché réapprovisionné par l'entrepôt (2 robots)", robots: 2, supermarket: SUPERMARKET, shortagesPerHour: 0 }),
+  file: Object.freeze({ ...BASE, ...SAMI_LINE, label: "Ligne de Sami, le supermarché servi par 3 préparateurs de l'entrepôt, commandé au plus juste (2 robots)", robots: 2, supermarket: PICKED, shortagesPerHour: 0 }),
   melange: Object.freeze({ ...BASE, ...SAMI_LINE, label: "Ligne de Sami, essence et hybride mêlés (un robot)", robots: 1, models: LINE.mix }),
   etroite: Object.freeze({
     ...BASE,

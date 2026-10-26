@@ -19,7 +19,7 @@ const EXPECTED = {
   rules: "e1e6da092158c43c",
   variants: "b6f4f8a298e5ce56",
   search: "b6be81de0070fcb0",
-  line: "dd8e96b03c9befb7",
+  line: "4e67f60a34375533",
 };
 
 const digest = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex").slice(0, 16);

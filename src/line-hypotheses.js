@@ -32,6 +32,11 @@ export const LINE = Object.freeze({
    * With 4 bins and 5 to 20 minutes the line never stopped; this is the tight case.
    */
   supermarket: Object.freeze({ bins: 3, reorder: 1, lead: Object.freeze([120, 480]) }),
+  /**
+   * HYPOTHESIS: the warehouse as a queue (step 2): 3 pickers, 2 to 6 minutes to prepare an order (24 to 72 turns), 5
+   * minutes to bring it across (60 turns); the supermarket orders by the cover, just in time.
+   */
+  pickedSupermarket: Object.freeze({ bins: 3, reorder: 1, policy: "cover", lead: Object.freeze([24, 72]), warehouse: Object.freeze({ pickers: 3, transport: 60 }) }),
   /** HYPOTHESIS: a supplier shortage, a reference missing at the supermarket, once an hour on average. */
   shortagesPerHour: 1,
   /** HYPOTHESIS: a shortage lasts 5 to 15 minutes (60 to 180 turns). */

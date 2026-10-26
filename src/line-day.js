@@ -3,7 +3,7 @@ import { createRng } from "mcts-commun/random.js";
 import { homesOf } from "./day-spots.js";
 import { drawSequence, modelAt, uses, vehiclesOf } from "./line-models.js";
 import { readLine } from "./line-plan.js";
-import { drawLeads, stockOf } from "./line-supermarket.js";
+import { drawLeads, pickersOf, stockOf } from "./line-supermarket.js";
 import { drawBlockages } from "./simulate.js";
 
 /**
@@ -91,6 +91,7 @@ export function createLine(setup, day) {
     stock: stockOf(setup),
     restocks: [],
     ordered: 0,
+    pickersFree: pickersOf(setup),
   };
 }
 
@@ -142,7 +143,7 @@ export function bringBin(state, i) {
  * the robots' moves and waits.
  */
 /** What only an hour with a driver (step 3) or a supermarket fed from the warehouse (step 2) measures: kept out of the other hours, whose measures stay as they were. */
-const driverMeasures = (state) => ({ ...(state.human ? { cautions: state.cautions ?? 0 } : {}), ...(state.stock ? { ordered: state.ordered } : {}) });
+const driverMeasures = (state) => ({ ...(state.human ? { cautions: state.cautions ?? 0 } : {}), ...(state.stock ? { ordered: state.ordered, meanStock: (state.stockHeld ?? 0) / Math.max(1, state.t) } : {}) });
 
 export function measuresOfLine(state) {
   const served = state.orders.filter((order) => order.status === "delivered");
