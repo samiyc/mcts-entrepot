@@ -15,11 +15,12 @@ Ce dossier rassemble ce que disent les sources publiées, et ce que le simulateu
 5. [homme-robot.md](homme-robot.md) : les normes, les accidents, les engorgements, et le personnage au clavier ;
 6. [indicateurs.md](indicateurs.md) : ce que l'on mesure, et les maxima à ajouter ;
 7. [autres-variantes.md](autres-variantes.md) : la réponse à « Autre variantes ? » ;
-8. [feuille-de-route.md](feuille-de-route.md) : les étapes de la variante « atelier », et les choix qui reviennent à
-   Sami.
+8. [ligne-cadencee.md](ligne-cadencee.md) : les vraies données de la ligne (Toyota, les bacs, les AMR) ;
+9. [feuille-de-route.md](feuille-de-route.md) : la ligne cadencée d'abord, l'atelier d'usinage ensuite (les choix de
+   Sami du 26/10).
 
 Un chiffre cité a sa source dans le fichier qui le donne. Beaucoup de sources sont des pages de vendeurs ou de
 conseil ; le texte le dit quand c'est le cas. Un chiffre sans source est écrit comme une hypothèse : rien n'est encore
-codé (la feuille de route attend la relecture de Sami).
+codé avant les choix de Sami ; la ligne cadencée l'est depuis.
 
 L'outillage du dépôt, repris de lopin et de mcts-urgences le même jour, est dans [../outillage.md](../outillage.md).
