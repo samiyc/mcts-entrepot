@@ -28,6 +28,7 @@ au terrain, sont dans [`docs/recherche/hypotheses.md`](docs/recherche/hypotheses
 |---|---|
 | `npm run page` | la page, http://127.0.0.1:4802/web/ : Entrepôt, Ligne cadencée, Usine, Comparaisons, Replays, Stats |
 | `npm run compare -- [--plan sami] [--search]` | les règles de l'entrepôt, et la recherche, sur les mêmes journées |
+| `node scripts/compare-merge.js FICHIER…` | une longue mesure faite en morceaux (`compare -- --from N --out FICHIER`), réunie et comparée par paires |
 | `npm run line -- [--plan tournee] [--search]` | les règles de la ligne, et la recherche, sur les mêmes heures |
 | `node scripts/line-drivers.js` | ce que le cariste apporte à la ligne, ou ce qu'il coûte |
 | `npm run check` | le lint, les types et les tests ; le hook le relance avant chaque commit |

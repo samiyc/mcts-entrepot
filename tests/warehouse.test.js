@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { PLANS } from "../src/plans.js";
-import { RULES, compareRules } from "../src/rules.js";
+import { RULES, compareRules, runsOf, summaryOf } from "../src/rules.js";
 import { createDay, drawDay, isOver, measuresOf, runDay, stepDay } from "../src/simulate.js";
 import { distancesFrom, readWarehouse } from "../src/warehouse.js";
 
@@ -195,6 +195,13 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     assert.ok(result.farthest.finish < result.list.finish, "la plus lointaine d'abord finit avant la liste");
     assert.equal(result.list.gain.mean, 0);
     assert.equal(result.nearest.gain.n, 30);
+  });
+
+  it("compares days measured in pieces as it compares them together", () => {
+    const setup = { ...PLANS.petit, loadTurns: 1, horizon: 160 };
+    const [early, late] = [runsOf(setup, { days: 3, seed: 1 }), runsOf(setup, { days: 2, seed: 4 })];
+    const joined = Object.fromEntries(Object.keys(early).map((name) => [name, [...early[name], ...late[name]]]));
+    assert.deepEqual(summaryOf(joined), compareRules(setup, { days: 5 }));
   });
 });
 

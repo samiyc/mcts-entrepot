@@ -36,9 +36,18 @@ const MEASURES = ["delivered", "finish", "meanDelivery", "moves", "waits", "repl
  * @returns {Record<string, Summary>}
  */
 export function compareRules(setup, { days = 100, seed = 1, rules = RULES } = {}) {
+  return summaryOf(runsOf(setup, { days, seed, rules }));
+}
+
+/**
+ * Each rule's measures on the same `days` days of `setup` (seeds `seed`, `seed + 1`, …), day by day: what
+ * `compareRules` sums up, kept so that days measured apart can be put together (scripts/compare-merge.js).
+ * @returns {Record<string, object[]>}
+ */
+export function runsOf(setup, { days = 100, seed = 1, rules = RULES } = {}) {
   const runs = Object.fromEntries(Object.keys(rules).map((name) => [name, []]));
   for (let i = 0; i < days; i += 1) for (const [name, rule] of Object.entries(rules)) runs[name].push(runDay(setup, seed + i, rule).measures);
-  return summaryOf(runs);
+  return runs;
 }
 
 /**
