@@ -101,3 +101,7 @@ parenthèses, l'arrêt gagné sur le kanban, par paires, avec son intervalle à 
 - **Sur le bord étroit, elle bat la meilleure règle**, de peu mais nettement.
 - **Sur la ligne à un seul robot, elle est devant** (−18 % d'arrêt sur la plus proche), mais l'intervalle contient
   encore 0 sur 20 heures : les mesures de nuit (`night.json`, 100 heures par plan) diront si l'écart tient.
+- **Ce n'est pas la règle de jeu qui la retient** sur la ligne de Sami à deux robots : jouer ses mondes au kanban plutôt
+  qu'à la plus proche donne exactement les mêmes 17,2 tours d'arrêt sur 5 heures (le kanban seul : 14,6). Piste pour
+  la suite : une ligne bien servie s'arrête surtout sur une rupture fournisseur, que personne ne peut prévoir ; la
+  recherche n'a de prise que quand le robot manque.
