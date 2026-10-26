@@ -1,5 +1,6 @@
 import { createReservations } from "mcts-commun/grid.js";
 import { createRng } from "mcts-commun/random.js";
+import { arrivalMeasures, arriveOrders, drawArrivals } from "./day-arrivals.js";
 import { truckOf } from "./day-basics.js";
 import { choose, nextChoice } from "./day-choice.js";
 import { homesOf } from "./day-spots.js";
@@ -57,7 +58,11 @@ export { choose, nextChoice };
  * random so that it is blocked `blocking` of the time on average (1: always).
  */
 export function drawDay(seed, setup) {
-  return { blockages: drawBlockages(createRng(seed), setup, 1) };
+  const rng = createRng(seed);
+  const blockages = drawBlockages(rng, setup, 1);
+  if (!setup.arrivals) return { blockages };
+  // The orders' arrivals (day-arrivals.js), drawn after the blockages: a day without them draws as before.
+  return { blockages, arrivals: drawArrivals(rng, setup, setup.orders.replaceAll("/", "").length) };
 }
 
 /** The blockages from turn `start` to the day's end, for `drawDay` and for the search's worlds. */
@@ -85,7 +90,7 @@ export function createDay(setup, day) {
   for (const block of new Set(setup.orders.replaceAll("/", ""))) if (!warehouse.blocks.get(block)?.length) throw new Error(`commande ${block} : pas de bloc ${block} accessible sur le plan`);
   const homes = homesOf(warehouse, setup.robots);
   // Older callers give one `blockage` (or none): read as a list.
-  day = { blockages: day.blockages ?? (day.blockage ? [day.blockage] : []) };
+  day = { ...(day.arrivals ? { arrivals: day.arrivals } : {}), blockages: day.blockages ?? (day.blockage ? [day.blockage] : []) };
   // Every robot holds its starting cell: nobody plans through a robot standing still.
   const reservations = createReservations();
   homes.forEach((home, i) => reservations.reserve(i + 1, [{ x: home.x, y: home.y, t: 0 }], { stay: true }));
@@ -96,7 +101,7 @@ export function createDay(setup, day) {
     t: 0,
     trucks,
     robots: homes.map((home, i) => ({ id: i + 1, x: home.x, y: home.y, home: { x: home.x, y: home.y }, phase: "idle", order: null, target: null, queued: null, resume: null, blockedFor: 0, path: null, until: null, moves: 0, waits: 0 })),
-    orders: trucks.flatMap((truck) => [...truck.blocks].map((block) => ({ block, truck: truck.id - 1 }))).map(({ block, truck }, i) => ({ id: i + 1, block, truck, status: "open", robot: null, deliveredAt: null, stagedAt: null, cell: null })),
+    orders: trucks.flatMap((truck) => [...truck.blocks].map((block) => ({ block, truck: truck.id - 1 }))).map(({ block, truck }, i) => ({ id: i + 1, block, truck, status: day.arrivals?.[i] > 0 ? "pending" : "open", robot: null, deliveredAt: null, stagedAt: null, cell: null })),
     claims: new Map(),
     // One robot at a time goes into a truck's cell: the others wait their turn aside, in order.
     queues: new Map(),
@@ -112,6 +117,7 @@ export function createDay(setup, day) {
 
 /** The start of a turn, up to the robots' choices: blockages seen, legs retried, picks and drops ended. */
 export function beginTurn(state) {
+  arriveOrders(state);
   discover(state);
   retry(state);
   load(state);
@@ -200,6 +206,7 @@ export function measuresOf(state) {
     blocked: state.day.blockages.length > 0,
     blockages: state.day.blockages.filter((blockage) => blockage.from <= state.t).length,
     seenAt: state.known.seenAt,
+    ...arrivalMeasures(state),
   };
 }
 

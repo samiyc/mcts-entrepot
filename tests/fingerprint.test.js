@@ -16,7 +16,7 @@ import { runDay } from "../src/simulate.js";
  * hash here, and its commit says so, with the measures before and after. The assembly line (26/10/2026) has its own.
  */
 const EXPECTED = {
-  rules: "e1e6da092158c43c",
+  rules: "2ed15a3e4c125ff3",
   variants: "b6f4f8a298e5ce56",
   search: "b6be81de0070fcb0",
   line: "4e67f60a34375533",

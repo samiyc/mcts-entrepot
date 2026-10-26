@@ -53,4 +53,16 @@ export const PLANS = Object.freeze({
     duration: 8,
     horizon: 120,
   }),
+  // Orders that arrive during the day (26/10/2026, day-arrivals.js): Sami's plan, 4 orders known at the start, then one
+  // every 15 turns on average (a hypothesis), hidden until it comes; none after turn 200, the cut-off.
+  flux: Object.freeze({
+    label: "Le plan de Sami, les commandes au fil de la journée (4 au départ, puis une tous les 15 tours environ)",
+    text: ["c........www#", "AA.BB.CC.DDw#", "c.~~~~......#", "EE.FF.GG.HH.T", "c...........#", "II.JJ.KK.LLw#", "c........www#"].join("\n"),
+    robots: 4,
+    orders: "ABCDEFGHIJKL",
+    arrivals: Object.freeze({ known: 4, every: 15, until: 200 }),
+    blocking: 0.8,
+    duration: 8,
+    horizon: 300,
+  }),
 });

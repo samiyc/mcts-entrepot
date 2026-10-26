@@ -5,7 +5,7 @@ import { isBlock } from "../src/warehouse.js";
  * block's pending orders, the robots with what is left of their leg, the day in one line. The DOM layer
  * (app.js) only draws it.
  */
-export const STATUS_LABELS = Object.freeze({ open: "en attente", assigned: "attribuée", carried: "en route vers le quai", staged: "prête devant le quai", toTruck: "un robot vient la charger", delivered: "livrée" });
+export const STATUS_LABELS = Object.freeze({ open: "en attente", assigned: "attribuée", carried: "en route vers le quai", staged: "prête devant le quai", toTruck: "un robot vient la charger", delivered: "livrée", pending: "pas encore arrivée" });
 const PHASE_LABELS = Object.freeze({ idle: "libre", toPick: "va chercher", picking: "prend", toDrop: "rapporte", dropping: "dépose", home: "rentre", relay: "attend un relais" });
 
 /** The trucks: `{ id, x, y, at, there, left }`, `left` the orders not yet loaded. */
@@ -55,7 +55,7 @@ function cellAt(ctx, x, y) {
 export function cellsOf(state) {
   const { plan } = state.warehouse;
   const pending = new Map();
-  for (const order of state.orders) if (order.status !== "delivered") pending.set(order.block, (pending.get(order.block) ?? 0) + 1);
+  for (const order of state.orders) if (order.status !== "delivered" && order.status !== "pending") pending.set(order.block, (pending.get(order.block) ?? 0) + 1);
   const pallets = new Map(state.orders.filter((order) => (order.status === "staged" || order.status === "toTruck") && order.cell).map((order) => [`${order.cell.x},${order.cell.y}`, order.block]));
   const trucks = new Map(trucksOf(state).map((truck) => [`${truck.x},${truck.y}`, truck]));
   // Waiting zones made at the start for trucks the plan gave none.
@@ -130,11 +130,11 @@ export function statusLine(state, measures) {
   return parts.join(" · ");
 }
 
-/** The orders, in their order, with their state. */
+/** The orders, in their order, with their state; an order not arrived yet keeps its block to itself (`?`). */
 export function ordersOf(state) {
   return state.orders.map((order) => ({
     id: order.id,
-    block: order.block,
+    block: order.status === "pending" ? "?" : order.block,
     status: order.status,
     truck: state.trucks.length > 1 ? order.truck + 1 : null,
     label: STATUS_LABELS[order.status] + (order.robot ? `, robot ${order.robot}` : "") + (order.deliveredAt === null ? "" : ` au tour ${order.deliveredAt}`),

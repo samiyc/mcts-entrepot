@@ -192,3 +192,37 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     assert.equal(result.nearest.gain.n, 30);
   });
 });
+
+describe("orders that arrive during the day (src/day-arrivals.js)", () => {
+  it("hides an order until it arrives, opens it at its drawn turn, and plays the day to the end", () => {
+    const setup = PLANS.flux;
+    const state = createDay(setup, drawDay(1, setup));
+    const arrivals = state.day.arrivals;
+    assert.equal(arrivals.filter((t) => t === 0).length, setup.arrivals.known);
+    assert.equal(state.orders.filter((order) => order.status === "pending").length, setup.orders.length - setup.arrivals.known);
+    while (!isOver(state)) {
+      stepDay(state, RULES.nearest);
+      for (const order of state.orders) if (order.status === "pending") assert.ok(arrivals[order.id - 1] > state.t - 1, `commande ${order.id} encore cachée au tour ${state.t}`);
+    }
+    const measures = measuresOf(state);
+    assert.equal(measures.delivered, measures.orders);
+    assert.ok(measures.meanResponse > 0 && measures.meanResponse < measures.meanDelivery);
+    assert.ok(state.log.some((event) => event.type === "arrived"));
+  });
+
+  it("draws the orders to come again in the search's worlds, not the true ones", async () => {
+    const { createRng } = await import("mcts-commun/random.js");
+    const { drawWorld } = await import("../src/search.js");
+    const { advance, beginTurn } = await import("../src/simulate.js");
+    const setup = PLANS.flux;
+    const day = createDay(setup, drawDay(1, setup));
+    beginTurn(day);
+    advance(day);
+    const worlds = Array.from({ length: 30 }, (_, i) => drawWorld(day, createRng(i + 1)));
+    const pendingIds = day.orders.filter((order) => order.status === "pending").map((order) => order.id);
+    // The true day untouched; the worlds' arrivals all after now, and different from one world to the next.
+    assert.deepEqual(day.day.arrivals, drawDay(1, setup).arrivals);
+    assert.ok(worlds.every((world) => pendingIds.every((id) => world.day.arrivals[id - 1] >= day.t)));
+    assert.ok(new Set(worlds.map((world) => JSON.stringify(world.orders.filter((order) => order.status === "pending").map((order) => order.block)))).size > 1);
+  });
+});
