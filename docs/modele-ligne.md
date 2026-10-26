@@ -238,3 +238,32 @@ pour de bon. Ce que ça montre (20 heures) :
 des mondes tirés pour sa référence, la recherche rend le choix de la règle sans construire d'arbre. Sur 10 heures par
 plan, rien de perdu, et un peu de temps gagné (la ligne à un robot de 18 à 12 s par heure, les tournées de 16 à 13). Elle
 reste coupée par défaut tant que la campagne sur la règle de jeu tourne : les deux se décideront ensemble.
+
+## L'usine : la ligne et l'entrepôt joués ensemble (26/10, la nuit)
+
+`src/plant.js`, `npm run plant`, l'onglet **Usine** de la page. La ligne et l'entrepôt avancent sur une seule horloge
+(un tour, 5 s, dans les deux).
+- **Quand le supermarché commande une référence** (`supermarket.source: "warehouse"`), la commande arrive dans
+  l'entrepôt en cours de journée (les commandes au fil de la journée, `docs/modele.md`), pour le bloc de la même lettre.
+- **Les robots de l'entrepôt la préparent** comme une autre, et la posent à son quai. Le quai tient lieu de départ de la
+  navette, qui met 5 minutes (une hypothèse) à rejoindre le supermarché. La référence est alors pleine.
+- **Chacun garde ses robots et sa règle.** Une règle de l'entrepôt peut **regarder la ligne** : « la plus urgente pour la
+  ligne » sert d'abord la commande dont le supermarché tient le moins de bacs.
+- Les plans : `usine` (la ligne de Sami, son supermarché juste, l'entrepôt de Sami et ses 4 robots), `vite` (le
+  supermarché commandé à 2 bacs).
+
+Ce que ça donne (la ligne au kanban ; tours d'arrêt de la ligne par heure ; délai moyen de la commande du supermarché à
+son stock plein) :
+
+| L'entrepôt | dans l'ordre | la plus proche | la plus lointaine | la plus urgente pour la ligne |
+|---|---|---|---|---|
+| 1 robot, 100 heures | 0 ; 118 tours | 0 ; 102 | **122,9** ; 159 | 0 ; 102 |
+| 2 robots, 100 heures | 0 ; 95 | 0 ; 92 | 0 ; 104 | 0 ; 92 |
+| 1 robot, supermarché à 2 bacs, 20 heures | 0 ; 145 | **84,8** ; 120 | **271,4** ; 167 | 0 ; 129 |
+
+- **Un entrepôt de 2 robots suffit à la ligne de Sami** : la navette comprise, un bac revient en 8 minutes environ.
+- **Avec un seul robot, la règle de l'entrepôt fait l'arrêt de la ligne** : la plus lointaine d'abord laisse attendre
+  les blocs proches, et la ligne perd 10 minutes par heure ; sur un supermarché plus juste, la plus proche affame à son
+  tour les blocs lointains. **L'ordre des commandes et la règle qui regarde la ligne ne laissent aucun arrêt.**
+- Première version : des règles seulement. La recherche, les replays de l'usine et une recherche d'entrepôt qui
+  connaîtrait l'état de la ligne restent à faire.

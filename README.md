@@ -14,6 +14,9 @@ imaginant ce qui peut arriver, et une personne au milieu d'eux. Deux simulations
   - des ruptures fournisseur, et un supermarché réapprovisionné par l'entrepôt ;
   - un cariste au clavier ([`docs/modele-ligne.md`](docs/modele-ligne.md)).
 
+- **L'usine** (26/10/2026) : les deux ensemble, sur une seule horloge. Le supermarché de la ligne commande à
+  l'entrepôt, dont les robots préparent la palette ; une navette la lui apporte (`src/plant.js`, `npm run plant`).
+
 Les données réelles, le glossaire des termes de l'industrie et la feuille de route sont dans
 [`docs/recherche/`](docs/recherche/README.md).
 
@@ -21,7 +24,7 @@ Les données réelles, le glossaire des termes de l'industrie et la feuille de r
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `npm run page` | la page, http://127.0.0.1:4802/web/ : Entrepôt, Ligne cadencée, Comparaisons, Replays, Stats |
+| `npm run page` | la page, http://127.0.0.1:4802/web/ : Entrepôt, Ligne cadencée, Usine, Comparaisons, Replays, Stats |
 | `npm run compare -- [--plan sami] [--search]` | les règles de l'entrepôt, et la recherche, sur les mêmes journées |
 | `npm run line -- [--plan tournee] [--search]` | les règles de la ligne, et la recherche, sur les mêmes heures |
 | `node scripts/line-drivers.js` | ce que le cariste apporte à la ligne, ou ce qu'il coûte |

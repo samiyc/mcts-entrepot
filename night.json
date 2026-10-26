@@ -70,6 +70,11 @@
       "id": "ent-flux",
       "command": "npm run compare -- --plan flux --days 100 --search",
       "estimate": "30 min"
+    },
+    {
+      "id": "usine",
+      "command": "npm run plant -- --days 100",
+      "estimate": "15 min"
     }
   ]
 }

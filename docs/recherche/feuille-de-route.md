@@ -128,9 +128,9 @@ Les chiffres sont dans [../modele-ligne.md](../modele-ligne.md).
 Reste :
 - **la règle de jeu de la recherche** : la couverture plutôt que la plus proche (campagne `night-rollout.json` en
   cours), décidée avec l'option `calm` ;
-- **relier l'entrepôt au supermarché** : ses commandes arrivent maintenant pendant la journée (fait le 26/10,
-  `arrivals`, [../modele.md](../modele.md)). Il reste à faire des commandes de réapprovisionnement de la ligne les
-  commandes de l'entrepôt, les deux simulations jouées ensemble.
+- ~~relier l'entrepôt au supermarché~~ : **fait le 26/10**, l'usine (`src/plant.js`, onglet Usine,
+  [../modele-ligne.md](../modele-ligne.md)). Il en reste : la recherche dans l'usine (pour la ligne et pour l'entrepôt),
+  les replays de l'usine, une recherche d'entrepôt qui connaîtrait l'état de la ligne.
 
 ## À faire : l'atelier d'usinage (job shop)
 

@@ -54,6 +54,20 @@
   ],
   "versions": [
     {
+      "version": "0.20",
+      "title": "L'usine : la ligne et l'entrepôt ensemble",
+      "date": "26/10",
+      "items": [
+        "La ligne et l'entrepôt jouent ensemble, sur une seule horloge : quand le supermarché commande une référence, les robots de l'entrepôt en préparent la palette, et une navette la lui apporte en 5 minutes.",
+        "Une règle d'entrepôt qui regarde la ligne : elle sert d'abord la référence dont le supermarché tient le moins de bacs.",
+        "Avec un seul robot d'entrepôt, la plus lointaine d'abord fait perdre 10 minutes par heure à la ligne. L'ordre des commandes, ou la règle qui regarde la ligne, n'en fait perdre aucune.",
+        "L'onglet Usine : la ligne en haut, l'entrepôt en bas, ce qui passe entre eux. Pas encore de recherche ni de replay dans l'usine."
+      ],
+      "commits": [
+        "5e71bd4"
+      ]
+    },
+    {
       "version": "0.19",
       "title": "Les commandes au fil de la journée",
       "date": "26/10",

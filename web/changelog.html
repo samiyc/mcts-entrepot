@@ -31,6 +31,17 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.20</span> L'usine : la ligne et l'entrepôt ensemble <span class="date">26/10</span></h3>
+        <ul>
+          <li>La ligne et l'entrepôt jouent ensemble, sur une seule horloge : quand le supermarché commande une référence, les robots de l'entrepôt en préparent la palette, et une navette la lui apporte en 5 minutes.</li>
+          <li>Une règle d'entrepôt qui regarde la ligne : elle sert d'abord la référence dont le supermarché tient le moins de bacs.</li>
+          <li>Avec un seul robot d'entrepôt, la plus lointaine d'abord fait perdre 10 minutes par heure à la ligne. L'ordre des commandes, ou la règle qui regarde la ligne, n'en fait perdre aucune.</li>
+          <li>L'onglet Usine : la ligne en haut, l'entrepôt en bas, ce qui passe entre eux. Pas encore de recherche ni de replay dans l'usine.</li>
+        </ul>
+        <p class="commits"><code>5e71bd4</code></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.19</span> Les commandes au fil de la journée <span class="date">26/10</span></h3>
         <ul>
           <li>Dans l'entrepôt, les commandes arrivent pendant la journée : quelques-unes au départ, puis une tous les 15 tours environ, jusqu'à une heure limite. Une commande pas encore arrivée est cachée aux robots.</li>
