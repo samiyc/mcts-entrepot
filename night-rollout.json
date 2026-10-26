@@ -1,0 +1,47 @@
+{
+  "about": "La règle de jeu de la recherche de la ligne (Sami, 26/10/2026) : jouée par la plus proche ou par la couverture, sur les mêmes 100 heures par plan, et ce qu'en disent les 30 premières (scripts/line-rollout.js). Un travail par plan : mcts-backlog --add-file mcts-entrepot/night-rollout.json, puis mcts-backlog.",
+  "jobs": [
+    {
+      "id": "ligne-jeu-petite",
+      "command": "node scripts/line-rollout.js --plan petite --days 100 --short 30",
+      "estimate": "5 min",
+      "limit": 30
+    },
+    {
+      "id": "ligne-jeu-etroite",
+      "command": "node scripts/line-rollout.js --plan etroite --days 100 --short 30",
+      "estimate": "5 min",
+      "limit": 30
+    },
+    {
+      "id": "ligne-jeu-seul",
+      "command": "node scripts/line-rollout.js --plan seul --days 100 --short 30",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "ligne-jeu-melange",
+      "command": "node scripts/line-rollout.js --plan melange --days 100 --short 30",
+      "estimate": "45 min",
+      "limit": 120
+    },
+    {
+      "id": "ligne-jeu-tournee",
+      "command": "node scripts/line-rollout.js --plan tournee --days 100 --short 30",
+      "estimate": "50 min",
+      "limit": 150
+    },
+    {
+      "id": "ligne-jeu-sami",
+      "command": "node scripts/line-rollout.js --plan sami --days 100 --short 30",
+      "estimate": "2 h 30",
+      "limit": 300
+    },
+    {
+      "id": "ligne-jeu-retours",
+      "command": "node scripts/line-rollout.js --plan retours --days 100 --short 30",
+      "estimate": "2 h 30",
+      "limit": 300
+    }
+  ]
+}

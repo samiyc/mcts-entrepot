@@ -144,3 +144,26 @@ ligne du poste, E le pose.
 
 Pour mesurer sans personne au clavier, deux caristes simulés (`src/line-drivers.js`, `scripts/line-drivers.js`) : **qui
 aide** (la demande dont la couverture est la plus courte, au plus court chemin), et **au hasard**.
+
+**Ce que le cariste apporte** (`node scripts/line-drivers.js`, 100 heures par plan, la plus proche pour les robots ;
+tours d'arrêt par heure, entre parenthèses l'arrêt gagné sur les robots seuls, par paires) :
+
+| Plan | les robots seuls | le cariste qui aide | le cariste au hasard |
+|---|---|---|---|
+| petite | 4,7 | **1,0** (+3,7 : 1,0 à 6,5), 8,8 bacs | 6,1 (−1,3 : −3,7 à 1,0) |
+| sami | 4,4 | 3,1 (+1,3 : −0,3 à 2,9) | 14,3 (−9,9) |
+| seul | 77,1 | **45,1** (+32,0 : 20,3 à 43,8), 14,8 bacs | 105,9 (−28,8) |
+| retours | 132,8 | **11,0** (+121,8 : 113,3 à 130,2), 16,3 bacs | 171,9 (−39,1) |
+| tournee | 164,7 | **37,1** (+127,6 : 115,6 à 139,7), 18,2 bacs | 193,8 (−29,0) |
+| melange | 44,2 | **24,3** (+19,9 : 7,3 à 32,5), 13,3 bacs | 63,4 (−19,1) |
+| etroite | 140,0 | 166,1 (**−26,1** : −31,4 à −20,8), 0,1 bac | 156,6 (−16,6) |
+
+- **Un cariste qui aide sauve la ligne quand le robot manque** : avec les vides à rapporter, il ramène l'arrêt de 133
+  à 11 tours par heure, en portant 16 bacs ; sur les tournées, de 165 à 37.
+- **Sur le bord étroit, il gêne** : les deux robots prennent chaque demande avant lui, il n'en porte aucune, et ses
+  allées et venues les font replanifier.
+- **Un cariste qui ne fait pas attention coûte partout**, de 1 à 39 tours par heure : il tient des cases dont les robots
+  ont besoin.
+- Deux erreurs du cariste simulé, corrigées en route : il gardait pour toujours une rupture vue puis quittée (la ligne
+  s'arrêtait jusqu'à la fin de l'heure), et, sans rien à faire, il restait planté sur la case de ramassage que visait le
+  seul robot occupé. Il retourne maintenant à sa place.
