@@ -34,7 +34,7 @@ Les statuts :
 | Le supermarché | 3 bacs, commande à 1 | `LINE.supermarket` | estimée | Q10 |
 | Délai de l'entrepôt | 10 à 40 min | `LINE.supermarket.lead` | estimée | Q11 |
 | Les préparateurs | 3, 2 à 6 min par commande | `LINE.pickedSupermarket` | ordre de grandeur | Q12 |
-| La navette | 5 min, à la demande | `LINE.shuttle` | estimée, sans doute trop rapide | Q13 |
+| La navette | 5 min, à la demande ; ou un départ toutes les 20 min (plan `train`) | `LINE.shuttle`, `LINE.shuttleEvery` | ordre de grandeur (un exemple de vendeur) | Q13 |
 | Les ruptures fournisseur | 1 par heure, 5 à 15 min | `LINE.shortagesPerHour`, `shortageTurns` | estimée | Q14 |
 | Le coût d'un arrêt | 10 000 à 50 000 $ la minute | `LINE.stopCostPerMinute` | ordre de grandeur | — |
 | L'allée bloquée | 80 % du temps, 8 tours | `PLANS.*.blocking`, `duration` | réglage de test de Sami | Q15 |
@@ -148,7 +148,9 @@ trouvé aucun temps par bac.
   ([Fabrico](https://www.fabrico.io/blog/tugger-train-vs-forklift-material-transport/), un exemple, pas une mesure).
 
 **La vraie navette part sans doute à heure fixe** : une palette prête attend le prochain départ, 10 à 15 minutes en
-moyenne. Le modèle est donc optimiste sur ce trajet.
+moyenne. Le modèle était donc optimiste sur ce trajet. Depuis le 26/10 au soir, l'usine a la navette à heure fixe
+(`setup.shuttleEvery`, plan `train`, un départ toutes les 20 minutes, `LINE.shuttleEvery`) ; le délai moyen passe
+d'environ 8 à 17 minutes ([../modele-ligne.md](../modele-ligne.md)).
 
 ## Les aléas
 

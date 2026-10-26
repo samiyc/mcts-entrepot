@@ -129,8 +129,11 @@ Reste :
 - **la règle de jeu de la recherche** : la couverture plutôt que la plus proche (campagne `night-rollout.json` en
   cours), décidée avec l'option `calm` ;
 - ~~relier l'entrepôt au supermarché~~ : **fait le 26/10**, l'usine (`src/plant.js`, onglet Usine,
-  [../modele-ligne.md](../modele-ligne.md)). Il en reste : la recherche dans l'usine (pour la ligne et pour l'entrepôt),
-  les replays de l'usine, une recherche d'entrepôt qui connaîtrait l'état de la ligne.
+  [../modele-ligne.md](../modele-ligne.md)). Il en reste les replays de l'usine ;
+- ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la
+  navette à heure fixe (plan `train`). Elle joue exactement l'ordre des commandes : un seul choix d'entrepôt ne déplace
+  pas l'arrêt de la ligne ([../modele-ligne.md](../modele-ligne.md)). Les 100 heures sont dans la file ;
+- **les chiffres à confirmer sur le terrain** : [hypotheses.md](hypotheses.md), et ses questions.
 
 ## À faire : l'atelier d'usinage (job shop)
 

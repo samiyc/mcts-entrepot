@@ -54,6 +54,22 @@
   ],
   "versions": [
     {
+      "version": "0.21",
+      "title": "Les chiffres à confirmer, la navette à heure fixe",
+      "date": "26/10",
+      "items": [
+        "Chaque chiffre du modèle est repris dans docs/recherche/hypotheses.md : sa valeur, ce que les recherches en ligne en disent, l'écart au réel, et la question à poser au terrain. Un journal attend les réponses.",
+        "Ce qui ressort : poser une palette dans un camion prend 43 à 86 s, pas 5 ; Toyota Europe vend 77 % d'hybrides ; la séquence des véhicules est figée des jours à l'avance, pas 18 minutes ; la navette part sans doute à heure fixe.",
+        "Dans l'usine, la navette peut partir à heure fixe, toutes les 20 minutes. Le délai du supermarché passe de 8 à 17 minutes environ, et même 4 robots d'entrepôt n'évitent plus tout arrêt.",
+        "Une règle d'entrepôt qui sert d'abord ce que la ligne manquera en premier : elle fait perdre 58 tours par heure avec un seul robot. Courir après la référence la plus en retard met les autres en retard.",
+        "Une recherche d'entrepôt qui juge sur l'arrêt de la ligne : elle joue exactement l'ordre des commandes. Un seul choix ne déplace pas l'arrêt, c'est la règle tenue sur l'heure qui compte."
+      ],
+      "commits": [
+        "5f870fa",
+        "7105c9d"
+      ]
+    },
+    {
       "version": "0.20",
       "title": "L'usine : la ligne et l'entrepôt ensemble",
       "date": "26/10",

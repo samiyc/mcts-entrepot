@@ -267,3 +267,36 @@ son stock plein) :
   tour les blocs lointains. **L'ordre des commandes et la règle qui regarde la ligne ne laissent aucun arrêt.**
 - Première version : des règles seulement. La recherche, les replays de l'usine et une recherche d'entrepôt qui
   connaîtrait l'état de la ligne restent à faire.
+
+## La navette à heure fixe, et une recherche d'entrepôt qui regarde la ligne (26/10, la nuit)
+
+Les recherches du soir ([recherche/hypotheses.md](recherche/hypotheses.md), Q13) disent qu'un train de manutention
+part plutôt à heure fixe, toutes les 15 à 60 minutes, qu'à la demande.
+- **La navette à heure fixe** (`setup.shuttleEvery`, plan `train`) : une palette posée au quai attend le prochain
+  départ, toutes les 20 minutes (une hypothèse), puis roule 5 minutes. Le délai moyen, de la commande du supermarché à
+  son stock plein, passe d'environ 8 à 17 minutes.
+- **Une règle de plus** : « la couverture de la ligne » (`lineCover`) sert d'abord la référence pour laquelle la ligne
+  s'arrêtera la première, en comptant son bord de ligne et son stock.
+- **La recherche dans l'usine** (`src/plant-search.js`) : elle choisit la commande que prend un robot de l'entrepôt.
+  Chaque monde est l'usine entière : l'allée de l'entrepôt et ce que la ligne cache sont retirés au sort, les commandes
+  en route gardées. Il est joué 30 minutes, la ligne au kanban, l'entrepôt dans l'ordre des commandes au-delà de
+  l'arbre. Elle est jugée sur l'arrêt de la ligne.
+
+Ce que ça donne, plan `train`, 100 heures (tours d'arrêt de la ligne par heure ; dans l'ordre / la plus proche / la
+plus lointaine / la plus urgente / la couverture de la ligne) :
+
+| L'entrepôt | arrêt |
+|---|---|
+| 1 robot | 3,3 / 3,2 / **123,6** / 3,2 / **61,1** |
+| 2 robots | 1,8 / 1,5 / 5,6 / 1,5 / 2,7 |
+| 4 robots | 1,2 / 1,2 / 2,1 / 1,2 / 3,3 |
+
+- **La navette elle-même arrête un peu la ligne** : même avec 4 robots, la ligne attend le prochain départ.
+- **Servir d'abord ce qui manquera le premier est une mauvaise règle quand l'entrepôt est en retard** : avec un robot,
+  la couverture de la ligne perd 58 tours par heure sur l'ordre des commandes. Elle court après la référence déjà
+  perdue, et les autres se mettent en retard à leur tour (comme la règle EDD face à une file surchargée).
+- **La recherche joue exactement l'ordre des commandes** (6 heures du plan `train`, et 8 heures avec une navette de 25
+  minutes et 2 bacs au supermarché : ni gain ni perte). Ce n'est pas un défaut des mondes : chaque commande change bien
+  les livraisons, mais l'arrêt de la ligne ne bouge pas. C'est la référence la plus en retard qui le fixe, et un seul
+  choix d'entrepôt ne la déplace presque jamais. Ce qui compte, c'est la règle tenue sur toute l'heure (la plus
+  lointaine, la couverture), pas une décision. La mesure sur 100 heures est dans la file (`usine-train-recherche`).

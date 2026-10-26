@@ -14,7 +14,8 @@ imaginant ce qui peut arriver, et une personne au milieu d'eux. Deux simulations
   - des ruptures fournisseur, et un supermarché réapprovisionné par l'entrepôt ;
   - un cariste au clavier ([`docs/modele-ligne.md`](docs/modele-ligne.md)).
 - **L'usine** (26/10/2026) : les deux ensemble, sur une seule horloge. Le supermarché de la ligne commande à
-  l'entrepôt, dont les robots préparent la palette ; une navette la lui apporte (`src/plant.js`, `npm run plant`).
+  l'entrepôt, dont les robots préparent la palette ; une navette la lui apporte, à la demande ou à heure fixe
+  (`src/plant.js`, `npm run plant`).
 
 Les données réelles, le glossaire des termes de l'industrie et la feuille de route sont dans
 [`docs/recherche/`](docs/recherche/README.md). Les chiffres que les sources ne donnent pas, et les questions à poser
