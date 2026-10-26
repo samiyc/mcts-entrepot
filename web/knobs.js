@@ -10,10 +10,13 @@ export function select(name, options, current, kind) {
   return el("select", { "data-knob": name, "data-sim": kind }, ...options.map(([value, label]) => el("option", { value, selected: value === current }, label)));
 }
 
+/** What a simulation's plan and day are called: the warehouse's days, the line's and the plant's hours. */
+const WORDS = { entrepot: { plan: "Entrepôt", day: "Journée" }, ligne: { plan: "Ligne", day: "Heure" }, usine: { plan: "Usine", day: "Heure" } };
+
 const FIELDS = {
-  plan: (sim) => el("label", {}, sim.kind === "ligne" ? "Ligne" : "Entrepôt", select("plan", Object.entries(MODELS[sim.kind].plans).map(([id, plan]) => [id, plan.label]), sim.planId, sim.kind)),
+  plan: (sim) => el("label", {}, WORDS[sim.kind].plan, select("plan", Object.entries(MODELS[sim.kind].plans).map(([id, plan]) => [id, plan.label]), sim.planId, sim.kind)),
   rule: (sim) => el("label", {}, "Règle", select("rule", Object.entries(MODELS[sim.kind].labels), sim.rule, sim.kind)),
-  seed: (sim) => el("label", {}, sim.kind === "ligne" ? "Heure n°" : "Journée n°", el("input", { type: "number", min: "1", value: String(sim.seed), "data-knob": "seed", "data-sim": sim.kind, inputmode: "numeric" })),
+  seed: (sim) => el("label", {}, `${WORDS[sim.kind].day} n°`, el("input", { type: "number", min: "1", value: String(sim.seed), "data-knob": "seed", "data-sim": sim.kind, inputmode: "numeric" })),
   speed: (sim) => el("label", {}, "Vitesse", select("speed", [["2", "lente"], ["4", "normale"], ["10", "rapide"]], String(sim.speed), sim.kind)),
 };
 
@@ -28,5 +31,5 @@ export const buttons = (kind, ...specs) => el("div", { class: "row-buttons" }, .
 /** The play buttons of a simulation's tab. */
 export function playButtons(sim) {
   const play = sim.timer !== null ? ["pause", "Pause"] : ["play", "Jouer"];
-  return [buttons(sim.kind, play, ["step", "Un tour", true], ["finish", "Jusqu'au bout", true]), buttons(sim.kind, ["restart", "Recommencer", true], ["next", sim.kind === "ligne" ? "Heure suivante" : "Journée suivante", true])];
+  return [buttons(sim.kind, play, ["step", "Un tour", true], ["finish", "Jusqu'au bout", true]), buttons(sim.kind, ["restart", "Recommencer", true], ["next", `${WORDS[sim.kind].day} suivante`, true])];
 }

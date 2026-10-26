@@ -28,7 +28,7 @@ export function restart(game) {
 /** The day over, kept once (a replay played again is not kept a second time). */
 function keepIfOver({ sim }) {
   const model = modelOf(sim);
-  if (sim.kept || !model.isOver(sim.day)) return;
+  if (sim.kept || model.noReplay || !model.isOver(sim.day)) return;
   sim.kept = true;
   keepReplay(replayOf({ kind: sim.kind, planId: sim.planId, setup: sim.setup, seed: sim.seed, rule: sim.rule, choices: sim.choices, measures: model.measuresOf(sim.day), humanActions: sim.day.human?.actions ?? null }));
 }

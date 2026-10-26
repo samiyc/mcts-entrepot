@@ -92,6 +92,8 @@ export function createLine(setup, day) {
     restocks: [],
     ordered: 0,
     pickersFree: pickersOf(setup),
+    // The orders for the warehouse played beside the line (the plant, plant.js): taken from here each turn.
+    outbox: [],
   };
 }
 

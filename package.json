@@ -16,6 +16,7 @@
     "check": "npm run lint && npm run types && npm test",
     "compare": "node scripts/compare.js",
     "line": "node scripts/line-compare.js",
+    "plant": "node scripts/plant-compare.js",
     "bench": "node scripts/search-bench.js",
     "page": "node node_modules/mcts-commun/bin/serve.js 4802",
     "prepare": "git config core.hooksPath .githooks",

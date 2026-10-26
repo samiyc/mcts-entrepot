@@ -4,6 +4,7 @@ import { readPlan } from "./panels.js";
 import { comparaisonsPanel, comparaisonsView } from "./tabs/comparaisons.js";
 import { entrepotPanel, entrepotView } from "./tabs/entrepot.js";
 import { lignePanel, ligneView } from "./tabs/ligne.js";
+import { usinePanel, usineView } from "./tabs/usine.js";
 import { replaysClick, replaysPanel, replaysView } from "./tabs/replays.js";
 import { statsPanel, statsView } from "./tabs/stats.js";
 
@@ -14,7 +15,7 @@ import { statsPanel, statsView } from "./tabs/stats.js";
  * the drawing in board.js, line-board.js and their views. This module only keeps the page's state and listens (event
  * delegation on the layout).
  */
-const TAB_NAMES = ["entrepot", "ligne", "comparaisons", "replays", "stats"];
+const TAB_NAMES = ["entrepot", "ligne", "usine", "comparaisons", "replays", "stats"];
 const STORE = "entrepot-onglet";
 const FOLDED = "entrepot-replie";
 const read = (key) => {
@@ -33,12 +34,12 @@ const write = (key, value) => {
 };
 const firstTab = () => [location.hash.slice(1), read(STORE)].find((name) => TAB_NAMES.includes(name)) ?? "entrepot";
 
-const state = { tab: firstTab(), sims: { entrepot: simOf("entrepot", "sami"), ligne: simOf("ligne", "sami") }, compareKind: "entrepot", gains: null, serverReplays: undefined };
+const state = { tab: firstTab(), sims: { entrepot: simOf("entrepot", "sami"), ligne: simOf("ligne", "sami"), usine: simOf("usine", "usine") }, compareKind: "entrepot", gains: null, serverReplays: undefined };
 const layout = document.getElementById("layout");
 const sidebar = document.getElementById("sidebar");
 const app = document.getElementById("app");
 const ctx = { state, render: () => render(), openReplay: (replay) => openReplay(replay) };
-const TABS = { entrepot: [entrepotPanel, entrepotView], ligne: [lignePanel, ligneView], comparaisons: [comparaisonsPanel, comparaisonsView], replays: [replaysPanel, replaysView], stats: [statsPanel, statsView] };
+const TABS = { entrepot: [entrepotPanel, entrepotView], ligne: [lignePanel, ligneView], usine: [usinePanel, usineView], comparaisons: [comparaisonsPanel, comparaisonsView], replays: [replaysPanel, replaysView], stats: [statsPanel, statsView] };
 /** The game of simulation `kind`: its own state, and the page's render. */
 const gameOf = (kind) => ({ sim: state.sims[kind], render });
 
@@ -98,10 +99,17 @@ const ACTIONS = {
 /** A setup without a replay's driver script: the driver plays from the keys again. */
 const live = ({ humanScript: _script, ...setup }) => setup;
 
+/** The settings that live in a simulation's setup: the driver at the keys (the line), the warehouse's rule and robots (the plant). */
+const SETUP_KNOBS = {
+  human: (setup, value) => ({ ...setup, human: value }),
+  warehouseRule: (setup, value) => ({ ...setup, warehouseRule: value }),
+  warehouseRobots: (setup, value) => ({ ...setup, warehouse: { ...setup.warehouse, robots: Number(value) } }),
+};
+
 /** A setting of simulation `sim` changed: a plan, a day, a speed, a rule, the driver at the keys. */
 function setKnob(sim, name, value) {
   if (name !== "speed") Object.assign(sim, { replay: null, setup: live(sim.setup) });
-  if (name === "human") return Object.assign(sim, { setup: { ...sim.setup, human: value } });
+  if (SETUP_KNOBS[name]) return Object.assign(sim, { setup: SETUP_KNOBS[name](sim.setup, value) });
   if (name === "plan") Object.assign(sim, { planId: value, setup: { ...MODELS[sim.kind].plans[value] }, compared: null, error: "" });
   else if (name === "seed") sim.seed = Math.max(1, Number(value) || 1);
   else if (name === "speed") sim.speed = Number(value);

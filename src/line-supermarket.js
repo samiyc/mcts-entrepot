@@ -23,8 +23,13 @@ export function drawLeads(rng, setup, count = 400) {
 /** The turns each picker of the warehouse is free from (all now), or null without a queue of pickers. */
 export const pickersOf = (setup) => (setup.supermarket?.warehouse ? Array.from({ length: setup.supermarket.warehouse.pickers }, () => 0) : null);
 
-/** When an order placed now with `prep` turns of work starts and comes back: at once without a queue, else at the first free picker. */
+/**
+ * When an order placed now with `prep` turns of work starts and comes back: at once without a queue, else at the first
+ * free picker. With `source: "warehouse"` (the plant, plant.js), the order goes to the warehouse played beside the line
+ * (`state.outbox`) and comes back when its pallet has been brought: its return is set then.
+ */
 function schedule(state, prep) {
+  if (state.setup.supermarket.source === "warehouse") return { start: state.t, at: Infinity };
   const warehouse = state.setup.supermarket.warehouse;
   if (!warehouse) return { start: state.t, at: state.t + prep };
   const i = state.pickersFree.indexOf(Math.min(...state.pickersFree));
@@ -79,7 +84,9 @@ export function takeFromStock(state, block) {
   if (!needsOrder(state, block) || state.restocks.some((one) => one.block === block)) return;
   const k = state.ordered;
   state.ordered += 1;
-  state.restocks.push({ block, orderedAt: state.t, ...schedule(state, state.day.leads[k % state.day.leads.length]) });
+  const order = { block, orderedAt: state.t, ...schedule(state, state.day.leads[k % state.day.leads.length]) };
+  state.restocks.push(order);
+  if (state.setup.supermarket.source === "warehouse") state.outbox.push(order);
   state.log.push({ t: state.t, type: "ordered", block });
 }
 

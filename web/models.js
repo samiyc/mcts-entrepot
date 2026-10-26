@@ -2,6 +2,7 @@ import { LINE_PLANS } from "../src/line-plan.js";
 import { LINE_RULES, LINE_RULE_LABELS, summaryOfLine } from "../src/line-rules.js";
 import * as line from "../src/line.js";
 import { PLANS } from "../src/plans.js";
+import * as plant from "../src/plant.js";
 import { RULES, RULE_LABELS, summaryOf } from "../src/rules.js";
 import * as warehouse from "../src/simulate.js";
 
@@ -53,12 +54,32 @@ export const MODELS = {
   },
 };
 
+/** The plant (26/10/2026): the line under its rule, the warehouse under its own (`setup.warehouseRule`); rules only, no replay yet. */
+const PLANT_LABELS = Object.fromEntries(Object.entries(LINE_RULE_LABELS).filter(([name]) => name !== "search"));
+MODELS.usine = {
+  kind: "usine",
+  plans: plant.PLANT_PLANS,
+  rules: LINE_RULES,
+  labels: PLANT_LABELS,
+  start: plant.startPlant,
+  isOver: plant.isPlantOver,
+  stepDay: plant.stepPlant,
+  measuresOf: plant.measuresOfPlant,
+  runDay: plant.runPlant,
+  summaryOf: summaryOfLine,
+  base: "kanban",
+  measure: "stopped",
+  compared: Object.freeze({ rules: 20, search: 0 }),
+  defaultRule: "kanban",
+  noReplay: true,
+};
+
 /** A simulation's own state on the page: its plan, rule, day, the choices made, what it compared, a replay opened. */
 export const simOf = (kind, planId) => ({
   kind,
   planId,
   setup: { ...MODELS[kind].plans[planId] },
-  rule: "search",
+  rule: MODELS[kind].defaultRule ?? "search",
   seed: 1,
   speed: 4,
   day: null,

@@ -37,6 +37,8 @@ export const LINE = Object.freeze({
    * minutes to bring it across (60 turns); the supermarket orders by the cover, just in time.
    */
   pickedSupermarket: Object.freeze({ bins: 3, reorder: 1, policy: "cover", lead: Object.freeze([24, 72]), warehouse: Object.freeze({ pickers: 3, transport: 60 }) }),
+  /** HYPOTHESIS: the shuttle from the warehouse to the supermarket, in the plant (plant.js): 5 minutes, 60 turns. */
+  shuttle: 60,
   /** HYPOTHESIS: a supplier shortage, a reference missing at the supermarket, once an hour on average. */
   shortagesPerHour: 1,
   /** HYPOTHESIS: a shortage lasts 5 to 15 minutes (60 to 180 turns). */
