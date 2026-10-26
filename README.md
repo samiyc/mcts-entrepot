@@ -13,7 +13,6 @@ imaginant ce qui peut arriver, et une personne au milieu d'eux. Deux simulations
   - deux modèles de véhicules mêlés, essence et hybride ;
   - des ruptures fournisseur, et un supermarché réapprovisionné par l'entrepôt ;
   - un cariste au clavier ([`docs/modele-ligne.md`](docs/modele-ligne.md)).
-
 - **L'usine** (26/10/2026) : les deux ensemble, sur une seule horloge. Le supermarché de la ligne commande à
   l'entrepôt, dont les robots préparent la palette ; une navette la lui apporte (`src/plant.js`, `npm run plant`).
 
