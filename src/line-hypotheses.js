@@ -39,6 +39,12 @@ export const LINE = Object.freeze({
   pickedSupermarket: Object.freeze({ bins: 3, reorder: 1, policy: "cover", lead: Object.freeze([24, 72]), warehouse: Object.freeze({ pickers: 3, transport: 60 }) }),
   /** HYPOTHESIS: the shuttle from the warehouse to the supermarket, in the plant (plant.js): 5 minutes, 60 turns. */
   shuttle: 60,
+  /**
+   * HYPOTHESIS: the shuttle on a timetable (docs/recherche/hypotheses.md, Q13): a departure every 20 minutes (240 turns),
+   * a pallet brought to the dock waits for the next one. A vendor's worked example has a 20-minute loop and a train every
+   * 20 or 30 minutes; loops of 15 to 60 minutes are said to be usual. Not measured.
+   */
+  shuttleEvery: 240,
   /** HYPOTHESIS: a supplier shortage, a reference missing at the supermarket, once an hour on average. */
   shortagesPerHour: 1,
   /** HYPOTHESIS: a shortage lasts 5 to 15 minutes (60 to 180 turns). */

@@ -75,6 +75,17 @@
       "id": "usine",
       "command": "npm run plant -- --days 100",
       "estimate": "15 min"
+    },
+    {
+      "id": "usine-train",
+      "command": "npm run plant -- --plan train --days 100",
+      "estimate": "10 min"
+    },
+    {
+      "id": "usine-train-recherche",
+      "command": "npm run plant -- --plan train --days 100 --robots 1 --search",
+      "estimate": "45 min",
+      "limit": 120
     }
   ]
 }

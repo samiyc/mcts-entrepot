@@ -25,16 +25,25 @@ function worldShortages(state, rng) {
   return [...seen, ...drawShortages(rng, state.setup, state.t + 1)];
 }
 
-/** A world consistent with what the robots know at this choice, played up to `limit`. */
-export function drawLineWorld(state, rng, limit = state.setup.horizon) {
+/**
+ * The line as a world may be: what the robots have not seen drawn again. With `restocks: false` (the plant, where the
+ * warehouse is played beside the line), the orders under way are copied as they are, the warehouse will bring them.
+ */
+export function redrawLine(state, rng, { restocks: redraw = true } = {}) {
   const world = cloneLine(state);
   const { known } = state;
   const now = state.t <= known.blockedUntil ? [{ from: known.seenAt, to: known.blockedUntil + 1 }] : [];
   const blockages = [...now, ...drawBlockages(rng, state.setup, Math.max(state.t, known.blockedUntil) + 1)];
-  const { restocks, leads, pickersFree } = worldRestocks(state, rng);
+  const { restocks, leads, pickersFree } = redraw ? worldRestocks(state, rng) : { restocks: state.restocks.map((one) => ({ ...one })), leads: state.day.leads, pickersFree: world.pickersFree };
   world.day = { ...state.day, blockages, shortages: worldShortages(state, rng), sequence: worldSequence(state, rng), leads };
   world.restocks = restocks;
   world.pickersFree = pickersFree;
+  return world;
+}
+
+/** A world consistent with what the robots know at this choice, played up to `limit`. */
+export function drawLineWorld(state, rng, limit = state.setup.horizon) {
+  const world = redrawLine(state, rng);
   world.limit = limit;
   world.choice = nextChoice(world);
   return world;

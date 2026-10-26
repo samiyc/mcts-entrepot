@@ -39,7 +39,7 @@
  * }} Day
  */
 
-/** What a rule is told at a choice: the turn, the floor distance to an order, and the day (only the search reads it). @typedef {{ t?: number, reach?: (order: Order) => number, state?: Day }} RuleContext */
+/** What a rule is told at a choice: the turn, the floor distance to an order, the day (only the search reads it), and the plant when the warehouse plays beside the line (plant.js). @typedef {{ t?: number, reach?: (order: Order) => number, state?: Day, plant?: object }} RuleContext */
 
 /** A rule: which of the open orders the robot takes (rules.js, search.js). @typedef {(robot: { id: number, x: number, y: number }, open: Order[], context?: RuleContext) => Order} Rule */
 

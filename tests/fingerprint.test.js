@@ -6,6 +6,7 @@ import { LINE_RULES } from "../src/line-rules.js";
 import { lineSearchRule } from "../src/line-search.js";
 import { runLine } from "../src/line.js";
 import { PLANS } from "../src/plans.js";
+import { PLANT_PLANS, runPlant } from "../src/plant.js";
 import { RULES } from "../src/rules.js";
 import { searchRule } from "../src/search.js";
 import { runDay } from "../src/simulate.js";
@@ -20,6 +21,7 @@ const EXPECTED = {
   variants: "b6f4f8a298e5ce56",
   search: "b6be81de0070fcb0",
   line: "4e67f60a34375533",
+  plant: "3bed57a10f4d9853",
 };
 
 const digest = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex").slice(0, 16);
@@ -33,6 +35,11 @@ const played = (setup, seed, rule) => {
 const lineDay = (setup, seed, rule) => {
   const { state, measures } = runLine(setup, seed, rule);
   return { log: state.log, measures, lanes: state.lanes, robots: state.robots.map((robot) => [robot.x, robot.y, robot.moves, robot.waits]) };
+};
+
+const plantHour = (setup, seed) => {
+  const { state, measures } = runPlant(setup, seed, LINE_RULES.kanban);
+  return { line: state.line.log, warehouse: state.warehouse.log, measures, sent: [...state.sent.values()].map((order) => order.at) };
 };
 
 const FINGERPRINTS = {
@@ -54,6 +61,13 @@ const FINGERPRINTS = {
     ...Object.values(LINE_PLANS).flatMap((setup) => [1, 2].flatMap((seed) => Object.values(LINE_RULES).map((rule) => lineDay(setup, seed, rule)))),
     lineDay({ ...LINE_PLANS.seul, horizon: 240 }, 1, lineSearchRule({ budget: 12 })),
   ],
+  // The plant (26/10/2026): each plan, one warehouse robot, half an hour under each warehouse rule, and a one-bin supermarket.
+  plant: () =>
+    [PLANT_PLANS.usine, PLANT_PLANS.vite].flatMap((plan) =>
+      [plan, { ...plan, line: { ...plan.line, supermarket: { ...plan.line.supermarket, bins: 1 } } }].flatMap((one) =>
+        ["list", "nearest", "farthest", "truck", "urgent"].map((warehouseRule) => plantHour({ ...one, line: { ...one.line, horizon: 360 }, warehouse: { ...one.warehouse, robots: 1 }, warehouseRule }, 1)),
+      ),
+    ),
 };
 
 describe("the fingerprints of the warehouse (a refactor changes none)", () => {
