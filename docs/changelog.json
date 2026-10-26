@@ -54,6 +54,28 @@
   ],
   "versions": [
     {
+      "version": "0.17",
+      "title": "La ligne plus vraie, le cariste au clavier",
+      "date": "26/10",
+      "items": [
+        "Les tournées : un robot porte jusqu'à 4 bacs, livrés au poste le plus proche d'abord ; la recherche y arrête la ligne 59 tours de moins par heure que la meilleure règle (36 % d'arrêt en moins, sur 100 heures).",
+        "Les bacs vides rapportés à une étagère de retour ; le mélange de modèles, essence et hybride, avec les 20 véhicules à venir connus ; le supermarché réapprovisionné par l'entrepôt, son stock vu de tous et le délai inconnu.",
+        "Le cariste au clavier (Z Q S D et E), dans l'onglet Ligne cadencée : il prend et pose des bacs, les robots replanifient autour de lui et ralentissent à côté de lui. Ses actions sont gardées dans le replay.",
+        "Mesuré sur 100 heures : le cariste qui aide ramène l'arrêt de 133 à 11 tours par heure quand les vides sont à rapporter. Sur une ligne bien servie, il gêne.",
+        "L'analyse d'une heure jouée avec le cariste (onglet Replays) : la même heure sans lui, minute par minute.",
+        "Trois défauts corrigés : les cases d'attente de la ligne étaient vides ; une rupture vue par le cariste restait signalée pour toujours ; le cariste inactif bouchait la case qu'un robot visait."
+      ],
+      "commits": [
+        "4a6decb",
+        "af5b90a",
+        "17e259a",
+        "2af36e6",
+        "0bfbfdb",
+        "c444c9c",
+        "505841a"
+      ]
+    },
+    {
       "version": "0.16",
       "title": "La ligne cadencée, la page en onglets",
       "date": "26/10",

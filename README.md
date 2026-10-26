@@ -1,50 +1,55 @@
 # mcts-entrepot
 
-Des robots d'entrepôt qui portent des colis du stock au camion, avec un cariste humain qui prend ses
-propres commandes. Les robots ne le commandent pas : ils devinent ce qu'il va faire et replanifient à
-chaque événement.
+Des robots qui portent des charges sur une grille, une recherche (ISMCTS) qui leur répartit le travail en
+imaginant ce qui peut arriver, et une personne au milieu d'eux. Deux simulations, chacune dans un onglet de la page :
 
-Statut (22/10/2026) : le simulateur d'une journée sur trois plans, deux règles d'affectation comparées par
-paires (`npm run compare`), et la page (`npm run page`, http://127.0.0.1:4802/web/) où l'on regarde les
-robots tour par tour et où l'on dessine son propre entrepôt. Depuis le soir du 22/10, l'affectation par la
-recherche (`src/search.js`, `npm run compare -- --search`) : elle finit la journée avant les trois règles
-(voir `docs/modele.md`). Le 23/10, le plan de Sami à trois quais : des bornes de charge (`c`) d'où partent les
-robots, des baies (`w`) où les commandes se préparent avant l'arrivée de leur camion, et l'attente des
-camions comme mesure. Le soir, un robot par case (le camion aussi : on y entre un par un), un seul chargeur
-par camion, et des palettes qu'un robot chargé ne traverse pas. C'est l'étape 3 de la
-[feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md),
-avant la cuisine, qui reprendra le même moteur de grille.
+- **L'entrepôt** : les robots vont chercher les commandes dans les rayons et les portent aux camions. Ils passent par
+  les quais, les zones d'attente, un chargeur par zone, et des relais entre robots. Une allée peut se bloquer sans
+  prévenir. La mesure : le temps à quai des camions ([`docs/modele.md`](docs/modele.md)).
+- **La ligne cadencée** (26/10/2026) : une ligne d'assemblage automobile au takt de Toyota (un véhicule toutes les
+  55 s). Les robots apportent les bacs du supermarché au bord de ligne. S'il manque une pièce à un poste, toute la
+  ligne s'arrête ; la mesure, c'est l'arrêt de la ligne. La ligne a aussi :
+  - des tournées de plusieurs bacs, et le retour des bacs vides ;
+  - deux modèles de véhicules mêlés, essence et hybride ;
+  - des ruptures fournisseur, et un supermarché réapprovisionné par l'entrepôt ;
+  - un cariste au clavier ([`docs/modele-ligne.md`](docs/modele-ligne.md)).
+
+Les données réelles, le glossaire des termes de l'industrie et la feuille de route sont dans
+[`docs/recherche/`](docs/recherche/README.md).
+
+## Lancer
+
+| Commande | Ce qu'elle fait |
+|---|---|
+| `npm run page` | la page, http://127.0.0.1:4802/web/ : Entrepôt, Ligne cadencée, Comparaisons, Replays, Stats |
+| `npm run compare -- [--plan sami] [--search]` | les règles de l'entrepôt, et la recherche, sur les mêmes journées |
+| `npm run line -- [--plan tournee] [--search]` | les règles de la ligne, et la recherche, sur les mêmes heures |
+| `node scripts/line-drivers.js` | ce que le cariste apporte à la ligne, ou ce qu'il coûte |
+| `npm run check` | le lint, les types et les tests ; le hook le relance avant chaque commit |
+
+Les mesures longues passent par la file de la machine (`mcts-backlog --add-file mcts-entrepot/night.json`).
+L'outillage est décrit dans [`docs/outillage.md`](docs/outillage.md), le journal des versions dans la page.
 
 ## Deux étages
 
-- **L'affectation** : quel robot prend quelle commande, et dans quel ordre. C'est là que vit la recherche
-  (`mcts` de `mcts-commun`), avec une décision chaque fois qu'un robot se libère. La profondeur de l'arbre
-  est le nombre de commandes, pas le nombre de pas.
-- **Les chemins** : A* dans le temps, avec une table de réservations pour que deux robots ne visent pas la
-  même case au même moment (`grid` de `mcts-commun`). Pas de pas de grille dans l'arbre : 4 robots à
-  6 actions chacun font 1 296 actions jointes par tour.
+- **L'affectation** : quel robot prend quelle commande (ou quel bac), et dans quel ordre. C'est là que joue la
+  recherche (`mcts` de `mcts-commun`) : une décision chaque fois qu'un robot se libère. Elle tire au sort, dans chacun
+  de ses mondes, ce que les robots ne savent pas : les blocages à venir, les ruptures, les modèles des véhicules après
+  la séquence connue, les délais de l'entrepôt.
+- **Les chemins** : A* dans le temps, avec une table de réservations pour que deux robots ne visent jamais la même case
+  au même moment (`grid` de `mcts-commun`).
 
-## Le premier scénario
+## Ce que la recherche gagne
 
-Le plan de Sami, 17 × 7 cases, le camion au bord droit :
-- 4 robots, tous au camion au départ ;
-- 12 commandes, une par bloc de stock : aller au bord du bloc, prendre, revenir déposer au camion ;
-- une allée bloquée avec une probabilité de 0,2, pendant 10 tours, découverte en arrivant (le problème du
-  voyageur canadien) ;
-- la fin à 120 tours ; on compte les commandes livrées, moins les retards.
-
-## La démarche
-
-1. **Un simulateur de grille** pur et testé : le plan, les robots, les commandes, les blocages tirés au
-   hasard.
-2. **Des règles de référence** : la commande la plus proche, l'ordre de la liste, la plus lointaine d'abord.
-3. **L'affectation par la recherche**, jugée contre elles, par paires, sur les mêmes journées.
-4. **Le cariste** : un humain simulé (celui qui prend la commande la plus proche, la plus urgente, ou au
-   hasard), puis un vrai joueur dans la page.
+Toujours par paires sur les mêmes journées, contre la meilleure règle simple :
+- **L'entrepôt** : 26 tours sur le plan de Sami, 14 aux trois quais (les mesures de nuit du 23/10).
+- **La ligne cadencée, tournées de 4 bacs** : 59 tours d'arrêt de moins par heure (de 48,9 à 69,6 ; 36 % d'arrêt en
+  moins). C'est quand il faut choisir les bacs qui complètent une tournée qu'elle fait le plus la différence.
+- **Les lignes bien servies** : rien. Il n'y a presque pas d'arrêt à éviter.
 
 ## D'où ça vient
 
-- [`entrepot.md`](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/entrepot.md) : le
-  découpage en deux étages, l'incertitude, la récompense, le plan pas à pas, ce qui existe déjà (le MAPF).
-- [`feuille-de-route.md`](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md)
-  § 3 : la coopération entre un humain et des robots.
+- [`entrepot.md`](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/entrepot.md) : le découpage en deux
+  étages, l'incertitude, la récompense.
+- [`feuille-de-route.md`](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md) § 3 :
+  la coopération entre un humain et des robots.
