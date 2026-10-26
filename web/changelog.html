@@ -31,6 +31,18 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.18</span> Le supermarché, son stock et l'entrepôt <span class="date">26/10</span></h3>
+        <ul>
+          <li>Le supermarché réapprovisionné par l'entrepôt : un stock fini par référence, une commande sous un seuil, un délai inconnu des robots. Bien dimensionné, il n'arrête jamais la ligne ; trop juste, il l'arrête quelle que soit la règle des robots.</li>
+          <li>Le seuil de commande comme décision : commander un bac plus tôt, ou à la couverture du délai attendu, supprime les 74 tours d'arrêt par heure du supermarché juste, pour 3 bacs de stock en plus.</li>
+          <li>L'entrepôt comme une file de préparateurs : avec 3 préparateurs rapides, la couverture tient un quart de stock en moins sans aucun arrêt (du juste-à-temps). Avec 2, sans stock de sécurité, la ligne s'arrête.</li>
+          <li>La zone de prudence : un robot à côté du cariste avance à demi-vitesse. L'analyse d'une heure jouée avec le cariste, dans l'onglet Replays.</li>
+          <li>Une recherche plus calme, en option : pas d'arbre quand aucun monde tiré n'arrête la ligne ; rien de perdu, un peu de temps gagné.</li>
+        </ul>
+        <p class="commits"><code>505841a</code> <code>3505e52</code> <code>b479a40</code></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.17</span> La ligne plus vraie, le cariste au clavier <span class="date">26/10</span></h3>
         <ul>
           <li>Les tournées : un robot porte jusqu'à 4 bacs, livrés au poste le plus proche d'abord ; la recherche y arrête la ligne 59 tours de moins par heure que la meilleure règle (36 % d'arrêt en moins, sur 100 heures).</li>

@@ -116,13 +116,20 @@ Fait le soir :
   Replays, « Analyser ») ;
 - **la zone de prudence** : un robot à côté du cariste avance à demi-vitesse.
 
-## Les suites possibles
+## Les suites (26/10, la nuit)
 
-- Le seuil de commande et la taille du stock du supermarché comme décisions : c'est là que se joue l'arrêt quand le
-  stock est juste.
-- L'entrepôt joué vraiment pour réapprovisionner le supermarché (les deux simulations reliées).
-- La recherche plus rapide sur les lignes à deux robots (27 s par heure).
-- La règle de jeu de la recherche : la couverture plutôt que la plus proche (campagne `night-rollout.json` en cours).
+Fait :
+- **le seuil de commande comme décision** (`supermarket.policy` : un seuil fixe, ou la couverture du délai attendu) ;
+- **l'entrepôt comme une file de préparateurs** (`supermarket.warehouse`, plan `file`) : un pas vers l'entrepôt joué ;
+- **une recherche plus calme** (`calm`), en option.
+
+Les chiffres sont dans [../modele-ligne.md](../modele-ligne.md).
+
+Reste :
+- **la règle de jeu de la recherche** : la couverture plutôt que la plus proche (campagne `night-rollout.json` en
+  cours), décidée avec l'option `calm` ;
+- **les commandes qui arrivent pendant la journée dans l'entrepôt** : c'est l'étape 5 de sa propre feuille de route
+  ([../modele.md](../modele.md)). Sans elle, on ne peut pas jouer l'entrepôt pour de bon et le relier au supermarché.
 
 ## À faire : l'atelier d'usinage (job shop)
 

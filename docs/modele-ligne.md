@@ -203,3 +203,38 @@ ressource rare, chaque tour perdu se paie), les autres ne bougent guère.
 rejouée telle qu'elle a été, contre la même heure sans le cariste, les robots sous la même règle (la couverture quand la
 recherche jouait : une heure de recherche est trop longue pour la page). L'arrêt de la ligne par tranches de 5 minutes,
 les deux côte à côte ; le tableau des mêmes chiffres ; ce que le cariste a fait.
+
+## Le stock comme décision, l'entrepôt comme une file (26/10, la nuit)
+
+**Le seuil de commande** (`supermarket.policy`, `src/line-supermarket.js`, `node scripts/line-stock.js`) :
+- **« point »** : on commande quand le stock tombe à `reorder` bacs (par défaut) ;
+- **« cover »** : on commande quand le stock ne couvre plus le délai attendu, au rythme de la ligne (une référence prise
+  par plusieurs postes, ou par la plupart des véhicules à venir, commande plus tôt).
+
+Sur 100 heures, les robots au kanban (tours d'arrêt par heure ; stock moyen tenu au supermarché) :
+
+| Cas | seuil à 1 bac | seuil à 2 bacs | à la couverture |
+|---|---|---|---|
+| le supermarché juste (3 bacs, retour en 10 à 40 min) | 73,8 ; 17,4 bacs | **0,0** ; 20,7 bacs | **0,0** ; 20,7 bacs |
+| le mélange de modèles, deux robots | 66,5 ; 19,1 | 0,2 ; 22,8 | **0,1 ; 21,2** |
+| un entrepôt lent (4 bacs, retour en 20 à 60 min) | 27,5 ; 20,1 | 20,7 ; 23,2 | **9,9** ; 26,9 |
+
+- Commander un bac plus tôt supprime les arrêts du supermarché juste, pour 3,3 bacs de stock en plus.
+- La couverture fait aussi bien avec moins de stock quand les références ne s'épuisent pas au même rythme (le mélange).
+- Face à un entrepôt lent, c'est la couverture qui protège le mieux, au prix de plus de stock.
+
+**L'entrepôt comme une file de préparateurs** (`supermarket.warehouse`, plan `file`) : chaque commande attend un
+préparateur libre, demande un temps de préparation tiré, puis 5 minutes de trajet. C'est un pas vers l'entrepôt joué
+pour de bon. Ce que ça montre (20 heures) :
+- **un entrepôt sous-dimensionné arrête la ligne quelle que soit la politique** : à 5 à 20 minutes de préparation par
+  commande, il faudrait environ 7 préparateurs ; à 3, la ligne perd 60 à 90 tours par heure ;
+- **un entrepôt rapide permet le juste-à-temps** (100 heures) : à 3 préparateurs de 2 à 6 minutes, aucune politique
+  n'arrête la ligne, mais la couverture tient 17,5 bacs, contre 22,7 au seuil à 1 bac et 27,5 au seuil à 2 (un quart de
+  stock en moins, deux fois moins de commandes). À 2 préparateurs, sans stock de sécurité, la couverture laisse 19,8
+  tours d'arrêt par heure (−23,4 à −16,3) quand les seuils n'en laissent aucun : le juste-à-temps demande un entrepôt
+  qui suit.
+
+**Une recherche plus calme** (`lineSearchRule({ calm: true })`) : quand la règle de jeu n'arrête la ligne dans aucun
+des mondes tirés pour sa référence, la recherche rend le choix de la règle sans construire d'arbre. Sur 10 heures par
+plan, rien de perdu, et un peu de temps gagné (la ligne à un robot de 18 à 12 s par heure, les tournées de 16 à 13). Elle
+reste coupée par défaut tant que la campagne sur la règle de jeu tourne : les deux se décideront ensemble.

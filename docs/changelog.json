@@ -54,6 +54,23 @@
   ],
   "versions": [
     {
+      "version": "0.18",
+      "title": "Le supermarché, son stock et l'entrepôt",
+      "date": "26/10",
+      "items": [
+        "Le supermarché réapprovisionné par l'entrepôt : un stock fini par référence, une commande sous un seuil, un délai inconnu des robots. Bien dimensionné, il n'arrête jamais la ligne ; trop juste, il l'arrête quelle que soit la règle des robots.",
+        "Le seuil de commande comme décision : commander un bac plus tôt, ou à la couverture du délai attendu, supprime les 74 tours d'arrêt par heure du supermarché juste, pour 3 bacs de stock en plus.",
+        "L'entrepôt comme une file de préparateurs : avec 3 préparateurs rapides, la couverture tient un quart de stock en moins sans aucun arrêt (du juste-à-temps). Avec 2, sans stock de sécurité, la ligne s'arrête.",
+        "La zone de prudence : un robot à côté du cariste avance à demi-vitesse. L'analyse d'une heure jouée avec le cariste, dans l'onglet Replays.",
+        "Une recherche plus calme, en option : pas d'arbre quand aucun monde tiré n'arrête la ligne ; rien de perdu, un peu de temps gagné."
+      ],
+      "commits": [
+        "505841a",
+        "3505e52",
+        "b479a40"
+      ]
+    },
+    {
       "version": "0.17",
       "title": "La ligne plus vraie, le cariste au clavier",
       "date": "26/10",
