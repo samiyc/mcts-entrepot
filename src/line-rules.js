@@ -1,4 +1,5 @@
 import { paired } from "mcts-commun/measure.js";
+import { usageOf } from "./line-models.js";
 import { runLine } from "./line.js";
 
 /**
@@ -6,10 +7,13 @@ import { runLine } from "./line.js";
  * rules.js. The search will have to beat these, by pairs, on the same days.
  */
 
-/** The pieces a lane has left before the line stops for it: the bin in use and the full ones behind. */
+/**
+ * The vehicles a lane has left before the line stops for it: its pieces (the bin in use and the full ones behind) over
+ * the share of the vehicles known to come that take its reference (1 without a mix of models: the pieces).
+ */
 export const coverOf = (state, request) => {
   const lane = state.lanes[request.lane];
-  return lane.pieces + lane.full * state.setup.binPieces;
+  return (lane.pieces + lane.full * state.setup.binPieces) / usageOf(state, lane.ref);
 };
 
 export const LINE_RULES = Object.freeze({

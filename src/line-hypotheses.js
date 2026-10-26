@@ -14,6 +14,18 @@ export const LINE = Object.freeze({
   binPieces: 12,
   /** Bins of each reference on the line side (two-bin kanban): one in use, one full behind it. */
   bins: 2,
+  /**
+   * HYPOTHESIS: the bins a robot carries on a round (step 2): 4 KLT of some 15 kg, under the 90 kg an Omron LD-90 takes.
+   * The weight of a full bin is not sourced.
+   */
+  tourBins: 4,
+  /**
+   * HYPOTHESIS: the mix of models (step 2): 60 % petrol, 40 % hybrid; the petrol car skips the hybrid's parts (I, J on
+   * Sami's line), the hybrid the petrol's (E, F). No mix is sourced.
+   */
+  mix: Object.freeze([Object.freeze({ name: "essence", share: 0.6, skip: "IJ" }), Object.freeze({ name: "hybride", share: 0.4, skip: "EF" })]),
+  /** HYPOTHESIS: the robots know the next 20 vehicles of the sequence (about 18 minutes), not the ones after. */
+  frozen: 20,
   /** HYPOTHESIS: a supplier shortage, a reference missing at the supermarket, once an hour on average. */
   shortagesPerHour: 1,
   /** HYPOTHESIS: a shortage lasts 5 to 15 minutes (60 to 180 turns). */

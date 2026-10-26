@@ -7,7 +7,8 @@ import { SIDES, readWarehouse } from "./warehouse.js";
  * warehouse's legend, and two signs more:
  * - `P` a station of the line, in reading order;
  * - `b` a slot of its line side, where bins wait (a rack: robots do not cross it, they drop from the floor beside it),
- *   belonging to the nearest station.
+ *   belonging to the nearest station;
+ * - `r` the shelf where empty bins go back (step 2, when `returnEmpties`), a rack too.
  * The blocks `A`…`L` are the supermarket, a part reference each. A station takes, at each takt, a piece of each of its
  * references (`refs`, a group a station split by `/`, the stations in reading order).
  */
@@ -29,12 +30,13 @@ function floorBeside(warehouse, cells) {
 
 /**
  * The line of `text` and its `refs`: the warehouse its robots move in (stations and slots are not floor), the
- * stations `{ id, x, y, refs, slots, access }` (`access`, where a robot drops a bin), and the plan as drawn. The
+ * stations `{ id, x, y, refs, slots, access }` (`access`, where a robot drops a bin), the plan as drawn, and the cells
+ * beside the return shelf (`returns`). The
  * stations also stand as the warehouse's docks, so that no robot waits in front of the line (day-spots.js).
  */
 export function readLine(text, refs) {
   const drawn = parsePlan(text);
-  const warehouse = readWarehouse(text.replace(/[Pb]/g, "#"), { autoZones: false, trucks: false });
+  const warehouse = readWarehouse(text.replace(/[Pbr]/g, "#"), { autoZones: false, trucks: false });
   const groups = refs.split("/");
   const stations = drawn.find("P").map((cell, i) => ({ id: i + 1, ...cell, refs: [...(groups[i] ?? "")], slots: [], access: [], bay: [], zones: [] }));
   if (stations.length === 0) throw new Error("la ligne n'a pas de poste (P)");
@@ -42,7 +44,7 @@ export function readLine(text, refs) {
   for (const slot of drawn.find("b")) stations.reduce((best, one) => (manhattan(one, slot) < manhattan(best, slot) ? one : best)).slots.push(slot);
   for (const station of stations) settle(warehouse, station);
   Object.assign(warehouse, { docks: stations, dock: stations[0] });
-  return { warehouse, stations, drawn };
+  return { warehouse, stations, drawn, returns: floorBeside(warehouse, drawn.find("r")) };
 }
 
 /** A station's drop cells, found; and every reference it takes, a block a robot reaches. */
@@ -62,6 +64,8 @@ const SAMI_LINE = {
   refs: "ABG/CDH/EI/FJ/KL",
   blocking: 0.3,
 };
+/** Sami's line with a return shelf for the empty bins (`rr`, row 3, at the supermarket's way out). */
+const SAMI_SHELF = { ...SAMI_LINE, text: SAMI_LINE.text.replace("c.........................", "c.rr......................") };
 export const LINE_PLANS = Object.freeze({
   petite: Object.freeze({
     ...BASE,
@@ -72,6 +76,11 @@ export const LINE_PLANS = Object.freeze({
   }),
   sami: Object.freeze({ ...BASE, ...SAMI_LINE, label: "Ligne de Sami (5 postes, 12 références, 2 robots, une allée qui se bloque)", robots: 2 }),
   seul: Object.freeze({ ...BASE, ...SAMI_LINE, label: "Ligne de Sami, un seul robot (le robot est la ressource rare)", robots: 1 }),
+  // Step 2 (26/10/2026): the empty bins go back to the shelf r, beside the supermarket's way out.
+  retours: Object.freeze({ ...BASE, ...SAMI_SHELF, label: "Ligne de Sami, les bacs vides rapportés (2 robots)", robots: 2, returnEmpties: true }),
+  tournee: Object.freeze({ ...BASE, ...SAMI_SHELF, label: `Ligne de Sami, un robot qui porte ${LINE.tourBins} bacs (les vides rapportés)`, robots: 1, returnEmpties: true, capacity: LINE.tourBins }),
+  // Step 2: two models, petrol and hybrid, each skipping the other's parts; the next 20 vehicles known.
+  melange: Object.freeze({ ...BASE, ...SAMI_LINE, label: "Ligne de Sami, essence et hybride mêlés (un robot)", robots: 1, models: LINE.mix }),
   etroite: Object.freeze({
     ...BASE,
     label: "Bord de ligne étroit (3 postes, un seul bac par référence, 2 robots)",

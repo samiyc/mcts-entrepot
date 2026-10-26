@@ -150,3 +150,10 @@ main.layout.folded .sidebar { display: none; }
 .bin { display: inline-block; width: 16px; height: 12px; border: 1px solid var(--ink-2); border-radius: 2px; background: linear-gradient(to top, #f2c14e var(--fill), transparent var(--fill)); }
 .bin.empty { border-color: var(--blocked); }
 .summary.line-stopped { border-color: var(--blocked); box-shadow: inset 4px 0 0 var(--blocked); }
+
+/* Step 2 of the line: the return shelf of the empty bins, the sequence of models known to come. */
+.cell.return { fill: color-mix(in srgb, var(--r3) 30%, var(--floor)); stroke: var(--r3); stroke-width: 1; }
+.sequence { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; }
+.model { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; color: #fff; background: var(--r2); }
+.model.hybride { background: var(--r3); }
+.model.current { outline: 2px solid var(--ink); outline-offset: 1px; }

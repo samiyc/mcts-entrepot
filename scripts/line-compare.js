@@ -22,7 +22,7 @@ function searchAgainstBest(runs, summary) {
   const gain = paired(runs[best].map((one) => one.stopped), runs.search.map((one) => one.stopped));
   const wins = runs.search.filter((one, i) => one.stopped < runs[best][i].stopped).length;
   const losses = runs.search.filter((one, i) => one.stopped > runs[best][i].stopped).length;
-  return `recherche sur la meilleure règle (${LINE_RULE_LABELS[best]}) : ${interval(gain)} tours d'arrêt en moins, ${wins} journées gagnées, ${losses} perdues`;
+  return `recherche sur la meilleure règle (${LINE_RULE_LABELS[best]}) : ${interval(gain)} tours d'arrêt en moins, ${wins} heures gagnées, ${losses} perdues`;
 }
 
 for (const id of named) {

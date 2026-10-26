@@ -1,7 +1,7 @@
 import { el } from "../dom.js";
 import { panelOf, playButtons } from "../knobs.js";
 import { lineBoard } from "../line-board.js";
-import { lanesOf, lineStatus } from "../line-view.js";
+import { lanesOf, lineStatus, sequenceOf } from "../line-view.js";
 import { replayNote } from "./entrepot.js";
 
 /**
@@ -28,9 +28,17 @@ function lineSide(state) {
   return el("aside", { class: "orders-card" }, el("h2", {}, "Le bord de ligne"), el("ol", { class: "stations" }, ...stations));
 }
 
+/** The models known to come, as chips (a mix of models only). */
+function sequence(state) {
+  const known = sequenceOf(state);
+  if (!known.length) return [];
+  const chips = known.map((one) => el("span", { class: `model ${one.name}${one.first ? " current" : ""}` }, one.name[0].toUpperCase()));
+  return [el("p", { class: "sequence hint" }, "La séquence connue : ", ...chips, " (puis inconnue)")];
+}
+
 export function ligneView({ state }) {
   const sim = state.sims.ligne;
   const summary = el("p", { class: `summary${sim.day.stopRun > 0 ? " line-stopped" : ""}`, "aria-live": "polite" }, sim.busy || lineStatus(sim.day));
   const layout = el("div", { class: "board-layout" }, el("div", { class: "board-wrap" }, lineBoard(sim.day)), lineSide(sim.day));
-  return [el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, layout];
+  return [el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, ...sequence(sim.day), layout];
 }

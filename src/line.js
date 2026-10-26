@@ -1,7 +1,8 @@
-import { closed, isHome, keyOf } from "./day-basics.js";
+import { closed, isHome } from "./day-basics.js";
 import { legToPickup, planLeg, standBy } from "./day-legs.js";
 import { arrive, discover, move, retry } from "./day-turn.js";
-import { bringBin, createLine, drawLineDay, isShortNow, measuresOfLine, takt } from "./line-day.js";
+import { createLine, drawLineDay, measuresOfLine, takt } from "./line-day.js";
+import { arriveAtShelf, finishActions, startDelivery } from "./line-tour.js";
 import { distancesFrom, nearestPickup } from "./warehouse.js";
 
 /**
@@ -9,63 +10,23 @@ import { distancesFrom, nearestPickup } from "./warehouse.js";
  * warehouse's paths (day-legs.js, day-turn.js: reserved legs, the `~` aisle seen only beside it, giving way): an idle
  * robot gets a request from the rule, fetches a full bin at its reference's block in the supermarket, takes a turn to
  * pick, carries it to the station's line side, takes a turn to drop. A reference short at the supermarket is seen only
- * by the robot come to pick it: it waits there, and every robot knows, until the bins are back. The same shape of
- * choices as simulate.js (`advance`, `nextChoice`, `choose`), so that the search and the page's worker work alike.
+ * by the robot come to pick it: it waits there, and every robot knows, until the bins are back. A robot may carry
+ * several bins a trip, and take the empties back (step 2, line-tour.js): while it has room at the supermarket, it is
+ * offered another request. The same shape of choices as simulate.js (`advance`, `nextChoice`, `choose`), so that
+ * the search and the page's worker work alike.
  */
 
-const requestOf = (state, robot) => state.orders.find((order) => order.id === robot.order);
-
-/** `robot` off to the line side of the request's station: the nearest drop cells first, kept as its target when none is reached now. */
-function goDrop(state, robot, request) {
-  const distances = distancesFrom(state.warehouse, robot, closed(state));
-  const cells = [...state.stations[request.station].access].sort((a, b) => (distances.get(keyOf(a)) ?? Infinity) - (distances.get(keyOf(b)) ?? Infinity));
-  if (!cells.slice(0, 3).some((cell) => planLeg(state, robot, cell))) robot.target = cells[0];
-}
-
-/** At the block: a full bin taken, or the reference short, seen, and waited for. */
-function picked(state, robot, request) {
-  if (isShortNow(state, request.block)) {
-    if (state.known.short[request.block] === undefined) {
-      state.known.short[request.block] = state.t;
-      state.seenShortages = (state.seenShortages ?? 0) + 1;
-      state.log.push({ t: state.t, type: "short", robot: robot.id, block: request.block });
-    }
-    robot.until = state.t + 1;
-    return;
-  }
-  if (state.known.short[request.block] !== undefined) {
-    delete state.known.short[request.block];
-    state.log.push({ t: state.t, type: "restocked", block: request.block });
-  }
-  request.status = "carried";
-  robot.phase = "toDrop";
-  goDrop(state, robot, request);
-}
-
-function dropped(state, robot, request) {
-  bringBin(state, request.lane);
-  Object.assign(request, { status: "delivered", deliveredAt: state.t });
-  Object.assign(robot, { phase: "idle", order: null, target: null });
-  state.log.push({ t: state.t, type: "delivered", robot: robot.id, order: request.id });
-}
-
-/** Picks and drops that end now. */
-function finishActions(state) {
-  for (const robot of state.robots) {
-    if (robot.until !== state.t) continue;
-    robot.until = null;
-    if (robot.phase === "picking") picked(state, robot, requestOf(state, robot));
-    else if (robot.phase === "dropping") dropped(state, robot, requestOf(state, robot));
-  }
-}
-
-/** The choice of idle `robot`, or null: with nothing it can take, it goes back where it started on the way. */
+/**
+ * The choice of `robot`, idle or with room left at the supermarket, or null: with nothing it can take, a robot with
+ * bins sets off on its round, an idle one goes back where it started on the way.
+ */
 function choiceOf(state, robot) {
   const distances = distancesFrom(state.warehouse, robot, closed(state));
   const reach = (order) => nearestPickup(state.warehouse, order.block, distances)?.steps ?? Infinity;
   const open = state.orders.filter((order) => order.status === "open" && state.known.short[order.block] === undefined && reach(order) < Infinity);
   if (open.length > 0) return { robot, open, reach, distances };
-  if (robot.phase === "idle" && !isHome(robot)) {
+  if (robot.phase === "loading") startDelivery(state, robot);
+  else if (robot.phase === "idle" && !isHome(robot)) {
     if (planLeg(state, robot, robot.home)) robot.phase = "home";
     else standBy(state, robot);
   }
@@ -76,7 +37,7 @@ function choiceOf(state, robot) {
 export function nextChoice(state) {
   for (; state.cursor < state.robots.length; state.cursor += 1) {
     const robot = state.robots[state.cursor];
-    if (robot.phase !== "idle" && robot.phase !== "home") continue;
+    if (robot.phase !== "idle" && robot.phase !== "home" && robot.phase !== "loading") continue;
     const choice = choiceOf(state, robot);
     if (choice) return choice;
   }
@@ -88,9 +49,10 @@ export function choose(state, choice, id) {
   state.cursor += 1;
   const { robot, distances } = choice;
   const chosen = state.orders.find((order) => order.id === id && order.status === "open");
-  if (!chosen) return;
-  if (!legToPickup(state, robot, chosen, distances)) {
-    standBy(state, robot);
+  if (!chosen || !legToPickup(state, robot, chosen, distances)) {
+    // A robot with bins on its back sets off with them; an idle one, out of the way.
+    if (robot.phase === "loading") startDelivery(state, robot);
+    else if (chosen) standBy(state, robot);
     return;
   }
   Object.assign(chosen, { status: "assigned", robot: robot.id });
@@ -110,6 +72,7 @@ export function beginTurn(state) {
 export function endTurn(state) {
   move(state);
   arrive(state);
+  arriveAtShelf(state);
   if (state.t >= state.nextTakt) takt(state);
   state.cursor = null;
 }
@@ -144,9 +107,10 @@ export function stepDay(state, rule) {
 export function cloneLine(state) {
   return {
     ...state,
-    robots: state.robots.map((robot) => ({ ...robot })),
+    robots: state.robots.map((robot) => ({ ...robot, load: [...robot.load] })),
     orders: state.orders.map((order) => ({ ...order })),
     lanes: state.lanes.map((lane) => ({ ...lane })),
+    empties: [...state.empties],
     known: { ...state.known, short: { ...state.known.short } },
     stops: { ...state.stops },
     claims: new Map(),

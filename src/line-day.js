@@ -1,6 +1,7 @@
 import { createReservations } from "mcts-commun/grid.js";
 import { createRng } from "mcts-commun/random.js";
 import { homesOf } from "./day-spots.js";
+import { drawSequence, modelAt, uses, vehiclesOf } from "./line-models.js";
 import { readLine } from "./line-plan.js";
 import { drawBlockages } from "./simulate.js";
 
@@ -39,12 +40,15 @@ export function drawLineDay(seed, setup) {
   const lanes = setup.refs.split("/").reduce((sum, group) => sum + group.length, 0);
   // The line runs already: each bin in use is somewhere between full and nearly empty.
   const stock = Array.from({ length: lanes }, () => 1 + rng.int(setup.binPieces));
-  return { blockages, shortages, stock };
+  // The mix of models (step 2, line-models.js): drawn last, so that a line without one draws as in step 1.
+  const sequence = setup.models ? drawSequence(rng, setup, vehiclesOf(setup)) : null;
+  return { blockages, shortages, stock, sequence };
 }
 
 /** The start of the day: the robots at home, every lane with its spare bins and its bin in use as drawn, nothing known. */
 export function createLine(setup, day) {
-  const { warehouse, stations, drawn } = readLine(setup.text, setup.refs);
+  const { warehouse, stations, drawn, returns } = readLine(setup.text, setup.refs);
+  if (setup.returnEmpties && returns.length === 0) throw new Error("les bacs vides repartent, mais la ligne n'a pas d'étagère de retour (r)");
   const homes = homesOf(warehouse, setup.robots);
   const reservations = createReservations();
   homes.forEach((home, i) => reservations.reserve(i + 1, [{ x: home.x, y: home.y, t: 0 }], { stay: true }));
@@ -55,13 +59,16 @@ export function createLine(setup, day) {
     warehouse,
     stations,
     drawn,
+    returns,
     setup,
     day,
     t: 0,
     trucks: [],
-    robots: homes.map((home, i) => ({ id: i + 1, x: home.x, y: home.y, home: { x: home.x, y: home.y }, phase: "idle", order: null, target: null, queued: null, resume: null, blockedFor: 0, path: null, until: null, moves: 0, waits: 0 })),
+    robots: homes.map((home, i) => ({ id: i + 1, x: home.x, y: home.y, home: { x: home.x, y: home.y }, phase: "idle", order: null, target: null, queued: null, resume: null, blockedFor: 0, path: null, until: null, moves: 0, waits: 0, load: [], empties: 0 })),
     orders: [],
     lanes,
+    // The empty bins waiting on each station's line side to go back (step 2).
+    empties: stations.map(() => 0),
     claims: new Map(),
     queues: new Map(),
     known: { blockedUntil: -1, seenAt: null, short: {} },
@@ -90,14 +97,16 @@ function consume(state, i) {
   lane.pieces -= 1;
   if (lane.pieces > 0) return;
   state.orders.push({ id: state.orders.length + 1, block: lane.ref, station: lane.station, lane: i, status: "open", robot: null, at: state.t, deliveredAt: null, cell: null });
+  if (state.setup.returnEmpties) state.empties[lane.station] += 1;
   if (lane.full === 0) return;
   lane.full -= 1;
   lane.pieces = state.setup.binPieces;
 }
 
-/** The takt: every station takes a piece of each reference, or the line stops while one is missing. */
+/** The takt: every station takes a piece of each reference the vehicle's model takes, or the line stops while one is missing. */
 export function takt(state) {
-  const missing = state.lanes.findIndex((lane) => lane.pieces === 0);
+  const model = modelAt(state, state.produced);
+  const missing = state.lanes.findIndex((lane) => lane.pieces === 0 && uses(model, lane.ref));
   if (missing >= 0) {
     const key = `${state.lanes[missing].station + 1}:${state.lanes[missing].ref}`;
     if (state.stopRun === 0) state.log.push({ t: state.t, type: "stopped", lane: key });
@@ -106,7 +115,7 @@ export function takt(state) {
     state.longestStop = Math.max(state.longestStop, state.stopRun);
     return;
   }
-  state.lanes.forEach((_, i) => consume(state, i));
+  state.lanes.forEach((lane, i) => uses(model, lane.ref) && consume(state, i));
   Object.assign(state, { produced: state.produced + 1, nextTakt: state.t + state.setup.takt, stopRun: 0 });
 }
 
@@ -140,6 +149,9 @@ export function measuresOfLine(state) {
     replans: state.replans,
     stuck: state.stuck,
     shortages: state.seenShortages ?? 0,
+    trips: state.trips ?? 0,
+    returned: state.returned ?? 0,
+    emptiesLeft: state.empties.reduce((sum, count) => sum + count, 0),
     blocked: state.day.blockages.length > 0,
   };
 }

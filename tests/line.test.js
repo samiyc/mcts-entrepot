@@ -84,3 +84,39 @@ describe("the assembly line (src/line*.js)", () => {
     assert.ok(one.produced > 0);
   });
 });
+
+describe("the line, step 2: rounds, empty bins, a mix of models", () => {
+  it("takes up to `capacity` bins on a round, drops them nearest first, takes the empties back to the shelf", () => {
+    const setup = LINE_PLANS.tournee;
+    const { state } = runLine(setup, 1, LINE_RULES.nearest);
+    assert.ok(state.trips > 0 && state.orders.filter((order) => order.status === "delivered").length > state.trips, "des tournées d'un seul bac");
+    assert.ok(state.returned > 0);
+    const returned = state.log.filter((event) => event.type === "returned");
+    assert.ok(returned.every((event) => event.bins >= 1 && event.bins <= setup.capacity));
+    // Every empty bin made is on a line side, on a robot, or back on the shelf.
+    const made = state.orders.length;
+    const onRobots = state.robots.reduce((sum, robot) => sum + robot.empties, 0);
+    assert.equal(state.empties.reduce((sum, count) => sum + count, 0) + onRobots + state.returned, made);
+  });
+
+  it("refuses empties to bring back without a shelf", () => {
+    const setup = { ...LINE_PLANS.sami, returnEmpties: true };
+    assert.throws(() => createLine(setup, drawLineDay(1, setup)), /étagère de retour/);
+  });
+
+  it("takes only the references of each vehicle's model, and knows the sequence only so far ahead", async () => {
+    const { knownModels, modelAt, usageOf } = await import("../src/line-models.js");
+    const setup = { ...LINE_PLANS.melange, shortagesPerHour: 0, blocking: 0 };
+    const state = createLine(setup, drawLineDay(1, setup));
+    assert.equal(knownModels(state).length, setup.frozen + 1);
+    const model = modelAt(state, 0);
+    const before = state.lanes.map((lane) => lane.pieces + lane.full * setup.binPieces);
+    state.t = state.nextTakt;
+    takt(state);
+    state.lanes.forEach((lane, i) => {
+      const taken = before[i] - (lane.pieces + lane.full * setup.binPieces);
+      assert.equal(taken, model.skip.includes(lane.ref) ? 0 : 1, `${lane.ref} pour un véhicule ${model.name}`);
+    });
+    assert.ok(usageOf(state, "E") < 1 && usageOf(state, "A") === 1);
+  });
+});

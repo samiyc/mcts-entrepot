@@ -23,6 +23,7 @@ const MARKS = [
   (cell, blockage) => (cell.kind === "blockable" && blockage.now ? crossOf(cell, blockage) : []),
   (cell) => (cell.kind === "block" ? blockMarks(cell) : []),
   (cell) => (cell.kind === "station" ? stationMarks(cell) : []),
+  (cell) => (cell.kind === "return" ? [svg("title", {}, "Étagère de retour : les bacs vides y repartent")] : []),
   (cell) => (cell.kind === "charge" ? [svg("text", { x: centreX(cell), y: centreY(cell, 6), class: "symbol" }, SYMBOLS.charge)] : []),
 ];
 

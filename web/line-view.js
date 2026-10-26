@@ -1,3 +1,4 @@
+import { knownModels } from "../src/line-models.js";
 import { isBlock } from "../src/warehouse.js";
 
 /**
@@ -5,7 +6,7 @@ import { isBlock } from "../src/warehouse.js";
  * (tests/line-view.test.js): the cells to draw, the line side's lanes, the robots, the hour in one line. The DOM layer
  * (line-board.js, tabs/ligne.js) only draws it.
  */
-const PHASES = Object.freeze({ idle: "libre", toPick: "va chercher un bac", picking: "prend le bac", toDrop: "porte le bac", dropping: "pose le bac", home: "rentre" });
+const PHASES = Object.freeze({ idle: "libre", toPick: "va chercher un bac", picking: "prend le bac", loading: "peut prendre un autre bac", toDrop: "porte ses bacs", dropping: "pose un bac", toReturn: "rapporte les bacs vides", returning: "pose les bacs vides", home: "rentre" });
 const STATUS = Object.freeze({ open: "en attente", assigned: "un robot y va", carried: "en route", delivered: "posé" });
 const plural = (count) => (count > 1 ? "s" : "");
 export const clock = (state) => {
@@ -26,6 +27,7 @@ export function cellsOfLine(state) {
   const stationAt = new Map(state.stations.map((station) => [`${station.x},${station.y}`, station]));
   const slotAt = new Map(state.stations.flatMap((station) => station.slots.map((slot) => [`${slot.x},${slot.y}`, station.id])));
   const kindOf = (char, x, y) => {
+    if (char === "r") return { kind: "return" };
     const station = stationAt.get(`${x},${y}`);
     if (station) return { kind: "station", id: station.id, stopped: stopped?.station === station.id - 1 };
     if (slotAt.has(`${x},${y}`)) return { kind: "slot", station: slotAt.get(`${x},${y}`) };
@@ -48,20 +50,31 @@ export function lanesOf(state) {
 }
 
 /** The robots: where they are, the bin they carry, what they do, the cells left on their leg. */
-export function robotsOfLine(state) {
-  return state.robots.map((robot) => {
-    const request = state.orders.find((order) => order.id === robot.order);
-    const what = request ? ` (bac ${request.block} pour le poste ${request.station + 1})` : "";
-    return {
-      id: robot.id,
-      x: robot.x,
-      y: robot.y,
-      carrying: request?.status === "carried" ? request.block : null,
-      label: `Robot ${robot.id} : ${PHASES[robot.phase] ?? robot.phase}${what}`,
-      ahead: robot.target ? (robot.path ?? []).filter((step) => step.t >= state.t) : [],
-    };
-  });
+export const robotsOfLine = (state) => state.robots.map((robot) => robotView(state, robot));
+
+/** What a robot does, in words: its phase, the bin it heads with, the full bins and the empties on its back. */
+function robotLabel(robot, request) {
+  const what = request ? ` (bac ${request.block} pour le poste ${request.station + 1})` : "";
+  const load = robot.load.length > 1 ? `, ${robot.load.length} bacs pleins` : "";
+  const empties = robot.empties > 0 ? `, ${robot.empties} vide${plural(robot.empties)}` : "";
+  return `Robot ${robot.id} : ${PHASES[robot.phase] ?? robot.phase}${what}${load}${empties}`;
 }
+
+function robotView(state, robot) {
+  const request = state.orders.find((order) => order.id === robot.order);
+  const loaded = robot.load.length > 0 || robot.empties > 0;
+  return {
+    id: robot.id,
+    x: robot.x,
+    y: robot.y,
+    carrying: loaded ? (request?.block ?? "∅") : null,
+    label: robotLabel(robot, request),
+    ahead: robot.target ? (robot.path ?? []).filter((step) => step.t >= state.t) : [],
+  };
+}
+
+/** The models known to come (a mix of models only): the vehicle being made first, `{ name, first }` each. */
+export const sequenceOf = (state) => knownModels(state).map((model, i) => ({ name: model.name, first: i === 0 }));
 
 /** The hour in one line. */
 export function lineStatus(state) {

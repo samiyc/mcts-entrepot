@@ -31,7 +31,15 @@ contrainte y est moins le trajet et le temps à quai que **l'ordonnancement des 
 
 L'onglet **Ligne cadencée** vient avec l'étape 1.
 
-## Étape 1 : la ligne cadencée, mono-modèle
+## Étape 1 : la ligne cadencée, mono-modèle (faite le 26/10)
+
+Les chiffres sont dans [../modele-ligne.md](../modele-ligne.md). En bref :
+- une ligne bien servie ne s'arrête presque pas ;
+- quand un seul robot sert cinq postes, la plus proche d'abord arrête deux fois moins la ligne que le kanban ;
+- la recherche n'a de prise que quand le robot manque.
+
+Les plans de départ ont changé en route : 1 robot pour la petite ligne, 2 pour celle de Sami, un plan « seul » à un
+robot, 2 pour le bord étroit. Avec plus de robots, aucune ligne ne s'arrêtait.
 
 **Le plan**, un texte comme ceux de l'entrepôt, avec deux signes de plus :
 - `P` : un poste de la ligne, dans l'ordre de lecture ;

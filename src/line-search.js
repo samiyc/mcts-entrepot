@@ -1,6 +1,7 @@
 import { search } from "mcts-commun/mcts.js";
 import { createRng } from "mcts-commun/random.js";
 import { drawShortages } from "./line-day.js";
+import { worldSequence } from "./line-models.js";
 import { LINE_RULES, coverOf } from "./line-rules.js";
 import { advance, choose, cloneLine, nextChoice } from "./line.js";
 import { drawBlockages } from "./simulate.js";
@@ -8,7 +9,8 @@ import { drawBlockages } from "./simulate.js";
 /**
  * The search (ISMCTS, `search` of mcts-commun) choosing which bin an idle robot brings (Sami, 26/10/2026), as
  * src/search.js does for the warehouse's orders. What the robots cannot know is drawn again at every iteration: the
- * blockages of the aisle to come, and the supplier shortages not seen yet; a shortage seen goes on for a drawn while.
+ * blockages of the aisle to come, the supplier shortages not seen yet (a shortage seen goes on for a drawn while), and
+ * the models of the vehicles beyond the frozen sequence.
  * A world is played `lookahead` turns ahead (an hour of the line is too long to roll out at every iteration; two bins
  * cover 11 minutes, 15 minutes see what a choice costs), by `rollout` beyond the tree, and scored on the turns the line
  * stood still against the same rule's from the same point.
@@ -28,7 +30,7 @@ export function drawLineWorld(state, rng, limit = state.setup.horizon) {
   const { known } = state;
   const now = state.t <= known.blockedUntil ? [{ from: known.seenAt, to: known.blockedUntil + 1 }] : [];
   const blockages = [...now, ...drawBlockages(rng, state.setup, Math.max(state.t, known.blockedUntil) + 1)];
-  world.day = { ...state.day, blockages, shortages: worldShortages(state, rng) };
+  world.day = { ...state.day, blockages, shortages: worldShortages(state, rng), sequence: worldSequence(state, rng) };
   world.limit = limit;
   world.choice = nextChoice(world);
   return world;
