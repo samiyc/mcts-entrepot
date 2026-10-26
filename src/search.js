@@ -78,6 +78,7 @@ function baseOf(state, rng, runs = 4) {
 /**
  * The search as a rule (simulate.js's signature, reading `context.state`): a single open order is taken at
  * once; otherwise `budget` iterations, seeded from the turn and the robot.
+ * @returns {import("./types.js").Rule}
  */
 export function searchRule(options = {}) {
   const { budget, depth, explore, width, spread, seed } = { ...SEARCH_SETTINGS, ...options };

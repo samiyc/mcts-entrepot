@@ -50,6 +50,9 @@ export const crossesAfter = (state, mover, cell) => mover.path?.some((step) => s
 /**
  * The cells reached from `start`, stepping into those `enter(next, key)` lets through (`seen`, their keys); stops early
  * once `found(cell)` holds for a cell taken from the queue (`found: true`).
+ * @param {{ x: number, y: number }} start
+ * @param {(next: { x: number, y: number }, key: string) => boolean} enter
+ * @param {(cell: { x: number, y: number }) => boolean} [found]
  */
 export function flood(start, enter, found = () => false) {
   const seen = new Set([keyOf(start)]);

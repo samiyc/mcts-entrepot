@@ -165,22 +165,23 @@ function setKnob(name, value) {
 }
 
 app.addEventListener("change", (event) => {
-  const name = event.target.dataset?.knob;
+  const knob = /** @type {HTMLInputElement} */ (event.target);
+  const name = knob.dataset?.knob;
   if (!name) return;
-  setKnob(name, event.target.value);
+  setKnob(name, knob.value);
   if (name === "speed" && state.timer) play();
   else restart();
   render();
 });
 app.addEventListener("click", (event) => {
-  const action = event.target.closest?.("[data-action]")?.dataset.action;
+  const action = /** @type {HTMLElement} */ (event.target).closest?.("[data-action]")?.getAttribute("data-action");
   if (!ACTIONS[action]) return;
   ACTIONS[action]();
   render();
 });
 app.addEventListener("submit", (event) => {
   event.preventDefault();
-  applyPlan(event.target);
+  applyPlan(/** @type {HTMLFormElement} */ (event.target));
   render();
 });
 restart();
