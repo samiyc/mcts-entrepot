@@ -1,13 +1,14 @@
 import { createReservations } from "mcts-commun/grid.js";
 import { createRng } from "mcts-commun/random.js";
-import { arrivalMeasures, arriveOrders, drawArrivals } from "./day-arrivals.js";
-import { truckOf } from "./day-basics.js";
+import { arriveOrders, drawArrivals } from "./day-arrivals.js";
 import { choose, nextChoice } from "./day-choice.js";
+import { assemble, drawWorks, kitOrders, kitsOf, stationTrucks } from "./day-kits.js";
+import { measuresOf } from "./day-measures.js";
 import { homesOf } from "./day-spots.js";
 import { arrive, discover, finishActions, load, move, retry } from "./day-turn.js";
 import { readWarehouse } from "./warehouse.js";
 
-export { choose, nextChoice };
+export { choose, nextChoice, measuresOf };
 
 /**
  * A day in the warehouse, turn by turn. Robots start at a charging point (`c`), or at the truck when the plan
@@ -60,9 +61,9 @@ export { choose, nextChoice };
 export function drawDay(seed, setup) {
   const rng = createRng(seed);
   const blockages = drawBlockages(rng, setup, 1);
-  if (!setup.arrivals) return { blockages };
-  // The orders' arrivals (day-arrivals.js), drawn after the blockages: a day without them draws as before.
-  return { blockages, arrivals: drawArrivals(rng, setup, setup.orders.replaceAll("/", "").length) };
+  // The orders' arrivals (day-arrivals.js), then the kits' works (day-kits.js), drawn after the blockages: a day without them draws as before.
+  const arrivals = setup.arrivals ? { arrivals: drawArrivals(rng, setup, setup.orders.replaceAll("/", "").length) } : {};
+  return { blockages, ...arrivals, ...(setup.kits ? { works: drawWorks(rng, setup.kits) } : {}) };
 }
 
 /** The blockages from turn `start` to the day's end, for `drawDay` and for the search's worlds. */
@@ -86,11 +87,13 @@ function trucksOf(setup, warehouse) {
 /** The start of a day: robots at their charging point (or near the first dock), orders open, nothing known of the blockage. */
 export function createDay(setup, day) {
   const warehouse = readWarehouse(setup.text, { autoZones: setup.autoZones !== false });
-  const trucks = trucksOf(setup, warehouse);
+  const docked = trucksOf(setup, warehouse);
+  const trucks = [...docked, ...stationTrucks(setup, warehouse, docked.length)];
   for (const block of new Set(setup.orders.replaceAll("/", ""))) if (!warehouse.blocks.get(block)?.length) throw new Error(`commande ${block} : pas de bloc ${block} accessible sur le plan`);
   const homes = homesOf(warehouse, setup.robots);
   // Older callers give one `blockage` (or none): read as a list.
-  day = { ...(day.arrivals ? { arrivals: day.arrivals } : {}), blockages: day.blockages ?? (day.blockage ? [day.blockage] : []) };
+  day = { ...(day.arrivals ? { arrivals: day.arrivals } : {}), ...(day.works ? { works: day.works } : {}), blockages: day.blockages ?? (day.blockage ? [day.blockage] : []) };
+  const orders = docked.flatMap((truck) => [...truck.blocks].map((block) => ({ block, truck: truck.id - 1 }))).map(({ block, truck }, i) => ({ id: i + 1, block, truck, status: day.arrivals?.[i] > 0 ? "pending" : "open", robot: null, deliveredAt: null, stagedAt: null, cell: null }));
   // Every robot holds its starting cell: nobody plans through a robot standing still.
   const reservations = createReservations();
   homes.forEach((home, i) => reservations.reserve(i + 1, [{ x: home.x, y: home.y, t: 0 }], { stay: true }));
@@ -101,7 +104,8 @@ export function createDay(setup, day) {
     t: 0,
     trucks,
     robots: homes.map((home, i) => ({ id: i + 1, x: home.x, y: home.y, home: { x: home.x, y: home.y }, phase: "idle", order: null, target: null, queued: null, resume: null, blockedFor: 0, path: null, until: null, moves: 0, waits: 0 })),
-    orders: trucks.flatMap((truck) => [...truck.blocks].map((block) => ({ block, truck: truck.id - 1 }))).map(({ block, truck }, i) => ({ id: i + 1, block, truck, status: day.arrivals?.[i] > 0 ? "pending" : "open", robot: null, deliveredAt: null, stagedAt: null, cell: null })),
+    orders: [...orders, ...kitOrders(setup, trucks, orders.length + 1)],
+    kits: kitsOf(setup),
     claims: new Map(),
     // One robot at a time goes into a truck's cell: the others wait their turn aside, in order.
     queues: new Map(),
@@ -118,6 +122,7 @@ export function createDay(setup, day) {
 /** The start of a turn, up to the robots' choices: blockages seen, legs retried, picks and drops ended. */
 export function beginTurn(state) {
   arriveOrders(state);
+  assemble(state);
   discover(state);
   retry(state);
   load(state);
@@ -169,44 +174,9 @@ export function cloneDay(state) {
     claims: new Map(state.claims),
     queues: new Map([...state.queues].map(([key, queue]) => [key, [...queue]])),
     known: { ...state.known },
+    kits: state.kits?.map((kit) => ({ ...kit })) ?? null,
     reservations: state.reservations.clone(),
     log: [],
-  };
-}
-
-/** The turn `truck` left with its last pallet: its arrival when it has none, the horizon when one is still missing. */
-function leftAt(state, truck) {
-  const mine = state.orders.filter((order) => order.truck === truck.id - 1);
-  if (mine.length === 0) return truck.at;
-  if (mine.some((order) => order.status !== "delivered")) return state.setup.horizon;
-  return Math.max(...mine.map((order) => order.deliveredAt));
-}
-
-/**
- * The day's measures: orders delivered by the horizon, the turn the last one was (the horizon when some are
- * left: the score a rule should keep low), the mean delivery turn, the robots' moves and waits, the legs
- * planned again after a blockage was seen, and the turns a robot ran into one; the turns trucks waited at
- * their dock for their last pallet (`truckWait`, summed), and the orders ready on a bay before their truck.
- */
-export function measuresOf(state) {
-  const delivered = state.orders.filter((order) => order.status === "delivered");
-  const all = delivered.length === state.orders.length;
-  return {
-    orders: state.orders.length,
-    delivered: delivered.length,
-    finish: all ? Math.max(0, ...delivered.map((order) => order.deliveredAt)) : state.setup.horizon,
-    meanDelivery: delivered.length ? delivered.reduce((sum, order) => sum + order.deliveredAt, 0) / delivered.length : state.setup.horizon,
-    moves: state.robots.reduce((sum, robot) => sum + robot.moves, 0),
-    waits: state.robots.reduce((sum, robot) => sum + robot.waits, 0),
-    replans: state.replans,
-    stuck: state.stuck,
-    truckWait: state.trucks.reduce((sum, truck) => sum + Math.max(0, leftAt(state, truck) - truck.at), 0),
-    early: state.orders.filter((order) => order.stagedAt !== null && order.stagedAt < truckOf(state, order).at).length,
-    relays: state.relays ?? 0,
-    blocked: state.day.blockages.length > 0,
-    blockages: state.day.blockages.filter((blockage) => blockage.from <= state.t).length,
-    seenAt: state.known.seenAt,
-    ...arrivalMeasures(state),
   };
 }
 

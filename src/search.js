@@ -1,6 +1,7 @@
 import { search } from "mcts-commun/mcts.js";
 import { createRng } from "mcts-commun/random.js";
 import { drawWorldOrders } from "./day-arrivals.js";
+import { drawWorldKits } from "./day-kits.js";
 import { RULES } from "./rules.js";
 import { advance, choose, cloneDay, drawBlockages, measuresOf, nextChoice } from "./simulate.js";
 
@@ -25,6 +26,8 @@ export function drawWorld(state, rng) {
   world.day = { blockages: [...now, ...drawBlockages(rng, state.setup, Math.max(state.t, known.blockedUntil) + 1)] };
   // The orders still to come, drawn again (a day with arrivals only: the others draw as before).
   drawWorldOrders(world, state, rng);
+  // The kits' works not seen yet, drawn again (a day with kits only).
+  drawWorldKits(world, state, rng);
   world.choice = nextChoice(world);
   return world;
 }

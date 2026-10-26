@@ -1,3 +1,5 @@
+import { WAREHOUSE } from "./warehouse-hypotheses.js";
+
 /**
  * Warehouses drawn as text (Sami, 22/10/2026: change the warehouse to test other configurations; very simple
  * plans first). The legend:
@@ -65,5 +67,17 @@ export const PLANS = Object.freeze({
     blocking: 0.8,
     duration: 8,
     horizon: 420,
+  }),
+  // An assembly station (26/10/2026, day-kits.js): Sami's plan, a station S under the bottom left charging point; a
+  // specialist wires I and J together, then packs K and L, both parcels to the truck with the 8 other orders.
+  assemblage: Object.freeze({
+    label: "Le plan de Sami et un poste d'assemblage (un spécialiste : un câblage, une mise en colis)",
+    text: ["c........www#", "AA.BB.CC.DDw#", "c.~~~~......#", "EE.FF.GG.HH.T", "c...........#", "II.JJ.KK.LLw#", "c........www#", "#S###########"].join("\n"),
+    robots: 4,
+    orders: "ABCDEFGH",
+    kits: Object.freeze([Object.freeze({ parts: "IJ", truck: 0, work: WAREHOUSE.works.wiring }), Object.freeze({ parts: "KL", truck: 0, work: WAREHOUSE.works.packing })]),
+    blocking: 0.8,
+    duration: 8,
+    horizon: 480,
   }),
 });

@@ -10,7 +10,9 @@ function checkTrucks(state, seed) {
   for (const truck of state.trucks) {
     const inside = state.robots.filter((robot) => robot.x === truck.dock.x && robot.y === truck.dock.y);
     const full = (robot) => state.log.some((event) => event.type === "overflow" && event.robot === robot.id && event.truck === truck.id);
-    const allowed = (robot) => Object.values(truck.loaders).includes(robot.id) || full(robot) || robot.phase === "idle";
+    // At an assembly station, a robot also comes onto the station's cell for an assembled parcel, and leaves with it (day-kits.js).
+    const picking = (robot) => truck.station && state.orders.find((order) => order.id === robot.order)?.parcel;
+    const allowed = (robot) => Object.values(truck.loaders).includes(robot.id) || full(robot) || robot.phase === "idle" || picking(robot);
     if (truck.dock.bay.length > 0 && state.t >= truck.at) for (const robot of inside) assert.ok(allowed(robot), `jour ${seed}, tour ${state.t} : le robot ${robot.id} entre dans le camion ${truck.id}, chargé par ${truck.loader}`);
     const waiting = state.orders.filter((order) => order.truck === truck.id - 1 && order.cell);
     assert.ok(state.t >= truck.at || waiting.length <= truck.dock.bay.length, `jour ${seed}, tour ${state.t} : trop de palettes pour le quai ${truck.id}`);

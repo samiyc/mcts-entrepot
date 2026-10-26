@@ -5,14 +5,14 @@ import { parsePlan } from "mcts-commun/grid.js";
  * block's pickup cells (the floor cells beside it), and the cells that may get blocked. Static: what moves is
  * in simulate.js.
  */
-const FLOOR = new Set([".", "T", "~", "c", "w"]);
+const FLOOR = new Set([".", "T", "~", "c", "w", "S"]);
 const SIDES = [
   [1, 0],
   [-1, 0],
   [0, 1],
   [0, -1],
 ];
-export const isBlock = (char) => /^[A-Z]$/.test(char) && char !== "T";
+export const isBlock = (char) => /^[A-Z]$/.test(char) && char !== "T" && char !== "S";
 
 /**
  * A dock's bay: the `w` cells joined to it through other `w` cells, nearest the truck first (so the far end
@@ -129,17 +129,19 @@ function pickupsOf(plan) {
 }
 
 /**
- * The warehouse of `text`: `{ plan, dock, docks, charges, blocks: Map(letter → pickup cells), blockable,
- * floor(char) }`. Each dock is `{ x, y, bay }`, in reading order; `dock` is the first. `trucks: false` reads a plan
+ * The warehouse of `text`: `{ plan, dock, docks, stations, charges, blocks: Map(letter → pickup cells), blockable,
+ * floor(char) }`. Each dock is `{ x, y, bay }`, in reading order; `dock` is the first. An assembly station `S`
+ * (day-kits.js) is read as a dock too, `station: true`, its bay and zones with the docks'. `trucks: false` reads a plan
  * without a truck (the assembly line's, line-plan.js, which gives its own docks).
  */
 export function readWarehouse(text, { autoZones = true, trucks = true } = {}) {
   const plan = parsePlan(text);
   const docks = plan.find("T").map((cell) => ({ ...cell, bay: bayOf(plan, cell) }));
-  attachZones(plan, docks, autoZones);
+  const stations = plan.find("S").map((cell) => ({ ...cell, bay: bayOf(plan, cell), station: true }));
+  attachZones(plan, [...docks, ...stations], autoZones);
   const [dock] = docks;
   if (!dock && trucks) throw new Error("le plan n'a pas de camion (T)");
-  return { plan, dock, docks, charges: plan.find("c"), blocks: pickupsOf(plan), blockable: plan.find("~"), floor: (char) => FLOOR.has(char) };
+  return { plan, dock, docks, stations, charges: plan.find("c"), blocks: pickupsOf(plan), blockable: plan.find("~"), floor: (char) => FLOOR.has(char) };
 }
 
 /** Floor distances from `from` (a breadth-first search), `~` cells left out while `closed`: a Map "x,y" → steps. */

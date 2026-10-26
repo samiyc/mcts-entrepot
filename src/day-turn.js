@@ -146,8 +146,8 @@ const intoTruck = (state, robot) => {
   const order = orderOf(state, robot);
   if (!order || robot.relay) return false;
   const truck = truckOf(state, order);
-  // The line has no truck: its bins take a turn.
-  return Boolean(truck) && isThere(state, truck) && sameCell(robot, truck.dock);
+  // The line has no truck: its bins take a turn; a part set down at an assembly station too.
+  return Boolean(truck) && !truck.station && isThere(state, truck) && sameCell(robot, truck.dock);
 };
 
 /**
