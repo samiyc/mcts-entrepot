@@ -1,128 +1,54 @@
 import { PLANS } from "../src/plans.js";
-import { RULES, compareRules, summaryOf } from "../src/rules.js";
-import { beginTurn, choose, createDay, drawDay, endTurn, isOver, measuresOf, nextChoice, runDay, stepDay } from "../src/simulate.js";
-import { board } from "./board.js";
-import { el } from "./dom.js";
-import { COMPARED, COMPARED_WITH_SEARCH, comparison, controls, editor, orders, readPlan } from "./panels.js";
-import { statusLine } from "./view.js";
-import { ask, stopWorkers } from "./workers.js";
+import { createDay } from "../src/simulate.js";
+import { compare, compareWithSearch, finish, play, restart, step, stop } from "./game.js";
+import { readPlan } from "./panels.js";
+import { comparaisonsPanel, comparaisonsView } from "./tabs/comparaisons.js";
+import { entrepotPanel, entrepotView } from "./tabs/entrepot.js";
 
 /**
- * The page: a day in the chosen warehouse under the chosen rule, played turn by turn (or all at once), then
- * the rules on the same 100 days. The plan can be edited (text, robots, orders, blockage): a new warehouse is
- * a new text. The search (src/search.js) thinks for a while at each choice (seconds at a day's start): it runs in
- * workers (search-worker.js), the page asking for each choice and drawing between two, and is compared on fewer
- * days, several at once. What it shows is computed in view.js, and drawn by board.js and panels.js; this module
- * keeps the page's state and listens.
+ * The page, in tabs (Sami, 26/10/2026, the layout of lopin and mcts-urgences): a tab per simulation, and the
+ * comparisons; the settings of the tab open in the panel on the left, which folds. The settings shared by the tabs live
+ * in `state`; the tabs are in tabs/, the playing in game.js, the drawing in board.js and view.js. This module only
+ * keeps the page's state and listens (event delegation on the layout).
  */
-const app = document.getElementById("app");
-const state = { planId: "sami", setup: { ...PLANS.sami }, rule: "search", seed: 1, speed: 4, day: null, choices: [], thinking: false, timer: null, compared: null, error: "", busy: "", run: 0 };
-
-/**
- * One turn of the shown day: under a rule at once; under the search, each robot's choice asked of the worker,
- * then the turn played. False when a newer run started meanwhile.
- */
-async function playTurn(run) {
-  const day = state.day;
-  if (state.rule !== "search") {
-    stepDay(day, RULES[state.rule]);
-    return true;
-  }
-  state.thinking = true;
+const TAB_NAMES = ["entrepot", "comparaisons"];
+const STORE = "entrepot-onglet";
+const FOLDED = "entrepot-replie";
+const read = (key) => {
   try {
-    if (day.cursor === null) beginTurn(day);
-    for (let choice = nextChoice(day); choice; choice = nextChoice(day)) {
-      state.busy = `La recherche réfléchit (tour ${day.t}, robot ${choice.robot.id})…`;
-      render();
-      const { id } = await ask(0, { kind: "choice", setup: state.setup, seed: state.seed, choices: state.choices });
-      if (run !== state.run) return false;
-      choose(day, choice, id);
-      state.choices.push(id);
-    }
-    endTurn(day);
-    state.busy = "";
-    return true;
-  } finally {
-    state.thinking = false;
+    return localStorage.getItem(key);
+  } catch {
+    return null;
   }
-}
-
-function restart() {
-  stop();
-  stopWorkers();
-  Object.assign(state, { run: state.run + 1, busy: "", choices: [], thinking: false });
-  state.day = createDay(state.setup, drawDay(state.seed, state.setup));
-}
-
-async function finish() {
-  stop();
-  const run = ++state.run;
-  if (state.rule !== "search") {
-    while (!isOver(state.day)) stepDay(state.day, RULES[state.rule]);
-  } else {
-    while (!isOver(state.day)) {
-      if (!(await playTurn(run))) return;
-      render();
-    }
+};
+const write = (key, value) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage refused: the choice is only not remembered.
   }
-  state.busy = "";
-  render();
-}
+};
+const firstTab = () => [location.hash.slice(1), read(STORE)].find((name) => TAB_NAMES.includes(name)) ?? "entrepot";
 
-/** The rules and the search on the same few days, the search's days in several workers at once. */
-async function compareWithSearch() {
-  stop();
-  const run = ++state.run;
-  const runs = { ...Object.fromEntries(Object.keys(RULES).map((name) => [name, []])), search: [] };
-  for (let i = 0; i < COMPARED_WITH_SEARCH; i += 1) for (const [name, rule] of Object.entries(RULES)) runs[name].push(runDay(state.setup, state.seed + i, rule).measures);
-  const pool = Math.max(1, Math.min(COMPARED_WITH_SEARCH, (navigator.hardwareConcurrency || 4) - 2));
-  let next = 0;
-  let done = 0;
-  const found = [];
-  state.busy = `Comparaison : la recherche joue ${COMPARED_WITH_SEARCH} journées, ${pool} à la fois…`;
-  render();
-  // Worker 0 answers the shown day's choices; the days go to workers 1 to pool.
-  await Promise.all(
-    Array.from({ length: pool }, async (_, w) => {
-      while (next < COMPARED_WITH_SEARCH) {
-        const i = next++;
-        const { measures } = await ask(w + 1, { kind: "day", setup: state.setup, seed: state.seed + i });
-        if (run !== state.run) return;
-        found[i] = measures;
-        done += 1;
-        state.busy = `Comparaison : ${done} journées de recherche sur ${COMPARED_WITH_SEARCH}`;
-        render();
-      }
-    }),
-  );
-  if (run !== state.run) return;
-  runs.search = found;
-  Object.assign(state, { compared: { days: COMPARED_WITH_SEARCH, rows: summaryOf(runs) }, busy: "" });
-  render();
-}
-function stop() {
-  clearInterval(state.timer);
-  state.timer = null;
-}
-function play() {
-  stop();
-  const run = state.run;
-  state.timer = setInterval(async () => {
-    if (state.thinking) return;
-    if (isOver(state.day)) {
-      stop();
-      render();
-      return;
-    }
-    if (await playTurn(run)) render();
-  }, 1000 / state.speed);
-}
+const state = { tab: firstTab(), planId: "sami", setup: { ...PLANS.sami }, rule: "search", seed: 1, speed: 4, day: null, choices: [], thinking: false, timer: null, compared: null, error: "", busy: "", run: 0 };
+const layout = document.getElementById("layout");
+const sidebar = document.getElementById("sidebar");
+const app = document.getElementById("app");
+const ctx = { state, render: () => render() };
+const TABS = { entrepot: [entrepotPanel, entrepotView], comparaisons: [comparaisonsPanel, comparaisonsView] };
 
 function render() {
-  const over = isOver(state.day);
-  const summary = el("p", { class: "summary", "aria-live": "polite" }, state.busy || statusLine(state.day, over ? measuresOf(state.day) : null));
-  const layout = el("div", { class: "layout" }, el("div", { class: "board-wrap" }, board(state.day)), el("aside", {}, el("h2", {}, "Les commandes"), orders(state.day)));
-  app.replaceChildren(controls(state), summary, layout, ...comparison(state), editor(state));
+  for (const button of document.querySelectorAll(".tabs [role=tab]")) button.setAttribute("aria-selected", String(/** @type {HTMLElement} */ (button).dataset.tab === state.tab));
+  const [panel, view] = TABS[state.tab];
+  sidebar.replaceChildren(...[panel(ctx)].flat());
+  app.replaceChildren(...view(ctx));
+}
+
+function openTab(name) {
+  state.tab = name;
+  history.replaceState(null, "", `#${name}`);
+  write(STORE, name);
+  render();
 }
 
 function applyPlan(form) {
@@ -130,30 +56,24 @@ function applyPlan(form) {
   try {
     createDay(setup, { blockages: [] });
     Object.assign(state, { setup, error: "", compared: null });
-    restart();
+    restart(ctx);
   } catch (error) {
     state.error = `Plan refusé : ${error.message}`;
   }
 }
 
 const ACTIONS = {
-  play,
-  pause: stop,
-  step: () => {
-    stop();
-    if (!isOver(state.day) && !state.thinking) playTurn(state.run).then((played) => played && render());
-  },
-  finish,
-  restart,
+  play: () => play(ctx),
+  pause: () => stop(ctx),
+  step: () => step(ctx),
+  finish: () => finish(ctx),
+  restart: () => restart(ctx),
   next: () => {
     state.seed += 1;
-    restart();
+    restart(ctx);
   },
-  compare: () => {
-    state.run += 1;
-    Object.assign(state, { compared: { days: COMPARED, rows: compareRules(state.setup, { days: COMPARED }) }, busy: "" });
-  },
-  compareSearch: compareWithSearch,
+  compare: () => compare(ctx),
+  compareSearch: () => compareWithSearch(ctx),
 };
 
 /** A setting changed: a plan, a day, a speed, a rule. */
@@ -164,25 +84,40 @@ function setKnob(name, value) {
   else state[name] = value;
 }
 
-app.addEventListener("change", (event) => {
+layout.addEventListener("change", (event) => {
   const knob = /** @type {HTMLInputElement} */ (event.target);
   const name = knob.dataset?.knob;
   if (!name) return;
   setKnob(name, knob.value);
-  if (name === "speed" && state.timer) play();
-  else restart();
+  if (name === "speed" && state.timer) play(ctx);
+  else restart(ctx);
   render();
 });
-app.addEventListener("click", (event) => {
+layout.addEventListener("click", (event) => {
   const action = /** @type {HTMLElement} */ (event.target).closest?.("[data-action]")?.getAttribute("data-action");
   if (!ACTIONS[action]) return;
   ACTIONS[action]();
   render();
 });
-app.addEventListener("submit", (event) => {
+layout.addEventListener("submit", (event) => {
   event.preventDefault();
   applyPlan(/** @type {HTMLFormElement} */ (event.target));
   render();
 });
-restart();
+document.querySelector(".tabs").addEventListener("click", (event) => {
+  const name = /** @type {HTMLElement} */ (event.target).closest?.("[data-tab]")?.getAttribute("data-tab");
+  if (name) openTab(name);
+});
+// A tab named in the address (a link, the back button) opens.
+window.addEventListener("hashchange", () => TAB_NAMES.includes(location.hash.slice(1)) && location.hash.slice(1) !== state.tab && openTab(location.hash.slice(1)));
+const fold = document.getElementById("fold");
+const setFolded = (folded) => {
+  layout.classList.toggle("folded", folded);
+  fold.setAttribute("aria-expanded", String(!folded));
+  fold.textContent = folded ? "»" : "«";
+  write(FOLDED, folded ? "1" : "0");
+};
+fold.addEventListener("click", () => setFolded(!layout.classList.contains("folded")));
+setFolded(read(FOLDED) === "1");
+restart(ctx);
 render();

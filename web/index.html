@@ -11,12 +11,19 @@
     </script>
   </head>
   <body>
-    <header class="masthead">
+    <header class="masthead topbar">
       <p class="links"><a href="changelog.html">Journal des versions, et ce que gagne la recherche</a></p>
       <h1>Robots d'entrepôt</h1>
-      <p>Des robots vont chercher les commandes dans les rayons et les rapportent au camion. Chacun réserve son chemin dans l'espace et le temps autour de ceux des autres : jamais deux robots dans la même case. Une allée peut se bloquer à un moment inconnu ; un robot ne le voit qu'en arrivant à côté.</p>
+      <nav class="tabs" role="tablist" aria-label="Simulation">
+        <button type="button" role="tab" data-tab="entrepot" aria-selected="true" title="Des robots portent les commandes des rayons aux camions">Entrepôt</button>
+        <button type="button" role="tab" data-tab="comparaisons" aria-selected="false" title="Les règles et la recherche sur les mêmes journées">Comparaisons</button>
+      </nav>
     </header>
-    <main id="app"></main>
+    <main class="layout" id="layout">
+      <aside class="sidebar" id="sidebar" aria-label="Réglages"></aside>
+      <section class="view" id="app" aria-live="off"></section>
+    </main>
+    <button type="button" id="fold" class="quiet sidebar-fold" aria-expanded="true" title="Replier le panneau">«</button>
     <script type="module" src="app.js"></script>
   </body>
 </html>

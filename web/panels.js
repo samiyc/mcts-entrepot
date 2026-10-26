@@ -1,32 +1,8 @@
-import { PLANS } from "../src/plans.js";
 import { RULE_LABELS } from "../src/rules.js";
 import { el } from "./dom.js";
 import { ordersOf } from "./view.js";
 
-/** The page's panels around the board (app.js, split on 26/10/2026): the settings, the orders, the plan editor, the comparison. */
-export const COMPARED = 100;
-export const COMPARED_WITH_SEARCH = 12;
-
-function select(name, options, current) {
-  return el("select", { "data-knob": name }, ...options.map(([value, label]) => el("option", { value, selected: value === current }, label)));
-}
-
-export function controls(state) {
-  const playing = state.timer !== null;
-  return el(
-    "div",
-    { class: "controls" },
-    el("label", {}, "Entrepôt", select("plan", Object.entries(PLANS).map(([id, plan]) => [id, plan.label]), state.planId)),
-    el("label", {}, "Règle", select("rule", Object.entries(RULE_LABELS), state.rule)),
-    el("label", {}, "Journée n°", el("input", { type: "number", min: "1", value: String(state.seed), "data-knob": "seed", inputmode: "numeric" })),
-    el("label", {}, "Vitesse", select("speed", [["2", "lente"], ["4", "normale"], ["10", "rapide"]], String(state.speed))),
-    el("button", { type: "button", "data-action": playing ? "pause" : "play" }, playing ? "Pause" : "Jouer"),
-    el("button", { type: "button", class: "quiet", "data-action": "step" }, "Un tour"),
-    el("button", { type: "button", class: "quiet", "data-action": "finish" }, "Jusqu'au bout"),
-    el("button", { type: "button", class: "quiet", "data-action": "restart" }, "Recommencer"),
-    el("button", { type: "button", class: "quiet", "data-action": "next" }, "Journée suivante"),
-  );
-}
+/** The pieces of the warehouse's tabs (app.js, split on 26/10/2026): the orders, the plan editor, the rules compared. */
 
 export function orders(day) {
   return el("ol", { class: "orders" }, ...ordersOf(day).map((order) => el("li", { class: order.status }, el("strong", {}, order.block), order.truck ? el("span", { class: "truck-tag" }, `camion ${order.truck}`) : null, ` ${order.label}`)));
@@ -55,7 +31,7 @@ export function editor(state) {
   const text = el("textarea", { name: "text", rows: String(Math.max(5, setup.text.split("\n").length + 1)), spellcheck: "false" }, setup.text);
   return el(
     "details",
-    { class: "editor" },
+    { class: "panel editor" },
     el("summary", {}, "Changer d'entrepôt"),
     el("p", { class: "hint" }, HINT),
     el("form", { "data-form": "plan" }, text, planFields(setup), el("button", { type: "submit" }, "Appliquer")),
@@ -92,17 +68,11 @@ function comparedRow(state, name, row) {
   return el("tr", { class: name === state.rule ? "current" : null }, el("td", {}, RULE_LABELS[name]), num(fixed(row.delivered, 2)), num(fixed(row.finish)), num(fixed(row.truckWait)), num(gain), num(fixed(row.early)), num(fixed(row.waits)), num(fixed(row.replans, 2)));
 }
 
-export function comparison(state) {
-  const buttons = el(
-    "div",
-    { class: "controls" },
-    el("button", { type: "button", class: "quiet compare", "data-action": "compare" }, `Comparer les règles sur ${COMPARED} journées`),
-    el("button", { type: "button", class: "quiet compare", "data-action": "compareSearch" }, `Comparer avec la recherche sur ${COMPARED_WITH_SEARCH} journées`),
-  );
-  if (!state.compared) return [buttons];
+/** The rules compared (`state.compared`): a row each, the shown rule marked. */
+export function comparedTable(state) {
   const { days, rows: compared } = state.compared;
   const rows = Object.entries(compared).map(([name, row]) => comparedRow(state, name, row));
   const head = HEAD.map((label, i) => el("th", { class: i > 0 ? "num" : null }, label));
   const table = el("table", {}, el("thead", {}, el("tr", {}, ...head)), el("tbody", {}, ...rows));
-  return [el("h2", {}, `Les règles sur les mêmes ${days} journées (blocage ${Math.round(100 * compared.list.blockedDays)} % des jours)`), el("div", { class: "scroll" }, table), buttons];
+  return [el("h2", {}, `Les règles sur les mêmes ${days} journées (blocage ${Math.round(100 * compared.list.blockedDays)} % des jours)`), el("div", { class: "scroll" }, table)];
 }
