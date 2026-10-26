@@ -128,8 +128,9 @@ Les chiffres sont dans [../modele-ligne.md](../modele-ligne.md).
 Reste :
 - **la règle de jeu de la recherche** : la couverture plutôt que la plus proche (campagne `night-rollout.json` en
   cours), décidée avec l'option `calm` ;
-- **les commandes qui arrivent pendant la journée dans l'entrepôt** : c'est l'étape 5 de sa propre feuille de route
-  ([../modele.md](../modele.md)). Sans elle, on ne peut pas jouer l'entrepôt pour de bon et le relier au supermarché.
+- **relier l'entrepôt au supermarché** : ses commandes arrivent maintenant pendant la journée (fait le 26/10,
+  `arrivals`, [../modele.md](../modele.md)). Il reste à faire des commandes de réapprovisionnement de la ligne les
+  commandes de l'entrepôt, les deux simulations jouées ensemble.
 
 ## À faire : l'atelier d'usinage (job shop)
 

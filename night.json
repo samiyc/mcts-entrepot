@@ -65,6 +65,11 @@
       "id": "ligne-supermarche",
       "command": "npm run line -- --plan supermarche --days 100 --search",
       "estimate": "1 h"
+    },
+    {
+      "id": "ent-flux",
+      "command": "npm run compare -- --plan flux --days 100 --search",
+      "estimate": "30 min"
     }
   ]
 }

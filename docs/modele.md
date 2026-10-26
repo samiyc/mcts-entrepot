@@ -310,6 +310,33 @@ Deux robots coincés face à face : celui qui porte un colis ne passe pas, l'aut
 
 **L'allure** (Sami, 23/10, tard) : la page prend l'allure commune des projets (`mcts-commun/web/theme.css`, dans l'esprit de Lopin) : un bandeau dans la couleur de l'application, les réglages en carte, les sections pliables bien visibles (une barre, un chevron qui tourne, « Ouvrir / Fermer »), les tableaux et le thème sombre. Ici, un bleu-gris métallique, industriel, avec de fines rayures, et 📦 devant le titre.
 
+## Les commandes au fil de la journée (26/10, Sami)
+
+Jusqu'ici, toutes les commandes étaient là au départ. Avec `arrivals` (`src/day-arrivals.js`, plan **« flux »**) :
+- **les premières commandes de la liste sont connues au départ** (`known`), les suivantes arrivent l'une après l'autre,
+  `every` tours d'écart en moyenne, tirés de la graine de la journée ; **aucune après l'heure limite** (`until`), pour que
+  la dernière ait le temps d'être servie. La première version n'en avait pas : la dernière commande du jour 6 arrivait au
+  tour 293 sur 300 ;
+- **une commande pas encore arrivée est cachée** : aucune règle, aucun robot ne la voit ; la page la montre « pas encore
+  arrivée », son bloc en « ? » ;
+- **la recherche tire à nouveau, dans chacun de ses mondes, les commandes à venir** : quand elles arrivent, et de quel bloc
+  chacune vient (son camion gardé). Jamais les vraies ;
+- une journée avec arrivées mesure aussi **la réponse** : du moment où la commande arrive à sa livraison.
+
+Le plan « flux » : le plan de Sami, 4 commandes au départ, puis une tous les 15 tours environ (une hypothèse), aucune
+après le tour 200. Ce que ça donne (tour de la dernière livraison) :
+
+| | la plus proche | la liste | la plus lointaine | le camion d'abord | recherche |
+|---|---|---|---|---|---|
+| 100 journées | 175,3 | 171,8 | 168,2 | 175,3 | — |
+| 20 journées | 166,1 | 165,5 | 163,8 | 166,1 | **148,7** (+16,8 sur la liste : 3,7 à 29,9) |
+
+- **Quand les commandes arrivent au fil de l'eau, les règles se valent** : sur 100 journées, aucune ne se détache de la
+  liste (les intervalles contiennent 0).
+- **La recherche finit environ 15 tours avant la meilleure règle** sur 20 journées. Elle sait qu'il viendra d'autres
+  commandes, et où sont les robots quand elles arriveront. Les mesures de nuit (`night.json`, 100 journées) diront si
+  l'écart tient.
+
 ## La suite
 
 Les étapes communes aux trois dépôts sont dans la [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md) § 6 (Sami, 23/10 au soir) : l'ordonnanceur en commun pour les mesures de nuit, les replays avec un humain pour analyser les écarts, la vitrine. Le journal des versions est dans la page (`web/changelog.html`).
@@ -322,7 +349,8 @@ Les étapes communes aux trois dépôts sont dans la [feuille de route](https://
    cuisine ; puis les replays de ses journées, comparées à la recherche.
 4. **Une zone d'assemblage** (Sami, à préciser) : une commande de plusieurs colis, réunis sur une zone avant
    de partir au camion.
-5. **Des commandes qui arrivent pendant la journée**, avec des échéances.
+5. **Des commandes qui arrivent pendant la journée** — fait le 26/10 (« Les commandes au fil de la journée », plus
+   haut) ; reste à relier l'entrepôt au supermarché de la ligne.
 6. **Une variante de production** (Sami, 26/10) : la ligne cadencée d'abord, faite le 26/10, à côté de l'entrepôt
    ([`docs/modele-ligne.md`](modele-ligne.md)) ; l'atelier d'usinage, avec ses rejets et ses pannes, plus tard. Les
    recherches, le glossaire des termes réels et la feuille de route sont dans [`docs/recherche/`](recherche/README.md). L'outillage du dépôt

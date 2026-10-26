@@ -54,6 +54,20 @@
   ],
   "versions": [
     {
+      "version": "0.19",
+      "title": "Les commandes au fil de la journée",
+      "date": "26/10",
+      "items": [
+        "Dans l'entrepôt, les commandes arrivent pendant la journée : quelques-unes au départ, puis une tous les 15 tours environ, jusqu'à une heure limite. Une commande pas encore arrivée est cachée aux robots.",
+        "La recherche tire au sort, dans chacun de ses mondes, les commandes à venir et leurs blocs, jamais les vraies. Sur 20 journées, elle finit environ 15 tours avant la meilleure règle.",
+        "Une nouvelle mesure, la réponse : du moment où une commande arrive à sa livraison.",
+        "Le plan « flux » dans l'onglet Entrepôt. C'est le chemin pour relier un jour l'entrepôt au supermarché de la ligne."
+      ],
+      "commits": [
+        "356adc2"
+      ]
+    },
+    {
       "version": "0.18",
       "title": "Le supermarché, son stock et l'entrepôt",
       "date": "26/10",

@@ -31,6 +31,17 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.19</span> Les commandes au fil de la journée <span class="date">26/10</span></h3>
+        <ul>
+          <li>Dans l'entrepôt, les commandes arrivent pendant la journée : quelques-unes au départ, puis une tous les 15 tours environ, jusqu'à une heure limite. Une commande pas encore arrivée est cachée aux robots.</li>
+          <li>La recherche tire au sort, dans chacun de ses mondes, les commandes à venir et leurs blocs, jamais les vraies. Sur 20 journées, elle finit environ 15 tours avant la meilleure règle.</li>
+          <li>Une nouvelle mesure, la réponse : du moment où une commande arrive à sa livraison.</li>
+          <li>Le plan « flux » dans l'onglet Entrepôt. C'est le chemin pour relier un jour l'entrepôt au supermarché de la ligne.</li>
+        </ul>
+        <p class="commits"><code>356adc2</code></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.18</span> Le supermarché, son stock et l'entrepôt <span class="date">26/10</span></h3>
         <ul>
           <li>Le supermarché réapprovisionné par l'entrepôt : un stock fini par référence, une commande sous un seuil, un délai inconnu des robots. Bien dimensionné, il n'arrête jamais la ligne ; trop juste, il l'arrête quelle que soit la règle des robots.</li>
