@@ -300,3 +300,39 @@ plus lointaine / la plus urgente / la couverture de la ligne) :
   les livraisons, mais l'arrêt de la ligne ne bouge pas. C'est la référence la plus en retard qui le fixe, et un seul
   choix d'entrepôt ne la déplace presque jamais. Ce qui compte, c'est la règle tenue sur toute l'heure (la plus
   lointaine, la couverture), pas une décision. La mesure sur 100 heures est dans la file (`usine-train-recherche`).
+
+## Les chiffres trouvés en ligne, appliqués (26/10, le soir)
+
+Sami : prendre les valeurs trouvées ([recherche/hypotheses.md](recherche/hypotheses.md)), en attendant un référent.
+- **Le mélange** : 20 % essence, 80 % hybride (`LINE.mix`, 60/40 avant ; Toyota Motor Europe vend 77 % d'électrifiés).
+- **La séquence** : prévue pour toute l'heure ; 5 % des véhicules reculent de 1 à 5 places au dernier moment, et ne se
+  voient que 5 véhicules avant (`LINE.resequence` ; la part et la portée sont estimées). Les mondes de la recherche
+  gardent les 5 véhicules sûrs et retirent les déplacements sur la suite prévue. La page montre les véhicules prévus en
+  plus pâle.
+- **Les 90 s du camion** ne touchent pas la ligne (un bac se pose en un tour), mais l'usine, dont l'entrepôt charge la
+  navette au quai ([modele.md](modele.md)).
+
+La ligne mêlée (un robot, 100 heures, tours d'arrêt par heure ; le kanban / la couverture / la plus proche) :
+- 60/40 : 63,5 / 32,4 / 44,2 ;
+- 20/80 : 60,0 / 33,6 / 36,7 ;
+- 20/80 et le reséquencement : 60,6 / 33,5 / 37,6.
+
+La couverture reste la meilleure règle. La plus proche s'en rapproche : les pièces du modèle rare, l'essence
+maintenant, servent moins souvent. Le reséquencement ne change presque rien aux règles, qui ne regardaient que les 20
+véhicules suivants.
+
+**L'usine avec les 90 s du quai** (100 heures, la ligne au kanban ; tours d'arrêt par heure ; dans l'ordre / la plus
+proche / la plus lointaine / la plus urgente / la couverture de la ligne). Dans l'usine, le quai de l'entrepôt est le
+départ de la navette, et le modèle compte 90 s pour y poser une palette, comme dans un camion :
+
+| L'usine | 1 robot | 2 robots | 4 robots |
+|---|---|---|---|
+| navette à la demande (`usine`) | 11,1 / 117,2 / 149,5 / 34,3 / 66,6 | 0 / 1,5 / 11,8 / 0 / 0 | 0,3 / 0,8 / 2,3 / 0,8 / 0,7 |
+| navette à heure fixe (`train`) | 82,0 / 132,7 / 153,6 / 116,9 / 113,7 | 30,0 / 37,1 / 86,7 / 32,2 / 37,9 | 33,4 / 42,6 / 51,4 / 36,0 / 31,2 |
+
+- **Le quai devient le goulot** : un robot à la fois, 90 s par palette. Avec la navette à heure fixe, 4 robots
+  n'arrêtent pas plus la ligne que 2 (33,4 contre 30,0) : c'est le quai, pas les robots, qui manque.
+- **L'ordre des commandes reste la meilleure règle** avec un ou deux robots. La plus proche, qui ne perdait rien avec
+  un tour au quai, perd maintenant 106 tours par heure avec un robot.
+- **Ce chiffre est à confirmer** : poser une palette sur un train de manutention prend sans doute moins de temps que la
+  charger dans un camion ([recherche/hypotheses.md](recherche/hypotheses.md), Q21).

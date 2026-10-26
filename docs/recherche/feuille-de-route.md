@@ -133,7 +133,13 @@ Reste :
 - ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la
   navette à heure fixe (plan `train`). Elle joue exactement l'ordre des commandes : un seul choix d'entrepôt ne déplace
   pas l'arrêt de la ligne ([../modele-ligne.md](../modele-ligne.md)). Les 100 heures sont dans la file ;
-- **les chiffres à confirmer sur le terrain** : [hypotheses.md](hypotheses.md), et ses questions.
+- **les chiffres à confirmer sur le terrain** : [hypotheses.md](hypotheses.md), et ses questions. Trois valeurs
+  trouvées en ligne sont appliquées depuis le 26/10 au soir (Sami), en attendant un référent : 90 s pour charger une
+  palette, 80 % d'hybrides, la séquence prévue avec quelques véhicules déplacés ;
+- ~~la zone d'assemblage~~ : **un poste d'assemblage fait le 26/10** (`src/day-kits.js`, [../modele.md](../modele.md)) :
+  un spécialiste, des pièces apportées par les robots, un travail de durée cachée, un colis qui part au camion. Il en
+  reste : la prudence des robots près du spécialiste, un spécialiste pour plusieurs postes, le contrôle après
+  assemblage, un colis qui va vers un autre poste.
 
 ## À faire : l'atelier d'usinage (job shop)
 

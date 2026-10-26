@@ -337,6 +337,65 @@ après le tour 200. Ce que ça donne (tour de la dernière livraison) :
   commandes, et où sont les robots quand elles arriveront. Les mesures de nuit (`night.json`, 100 journées) diront si
   l'écart tient.
 
+## 90 secondes pour poser une palette dans le camion (26/10, Sami, le soir)
+
+Les recherches du soir ([recherche/hypotheses.md](recherche/hypotheses.md), Q5) trouvent 43 à 86 s par palette pour
+charger un camion au chariot ; le modèle comptait un tour, 5 s. Sami : prendre la valeur trouvée, avec un peu de marge,
+en attendant un référent.
+- **Un robot qui pose sa palette dans son camion y reste 18 tours (90 s)** (`WAREHOUSE.loadTurns`,
+  `src/warehouse-hypotheses.js`). Poser sur une baie, ou sur un quai avant son camion, prend toujours un tour ; les bacs
+  de la ligne aussi. `loadTurns: 1` rejoue les journées d'avant.
+- **Les journées s'allongent**, pour que toutes les règles finissent : petit entrepôt 160 → 220 tours, plan de Sami
+  260 → 420, trois quais 240 → 300, deux couloirs 120 → 280, flux 300 → 420.
+
+Ce que ça change (100 journées, tour de la dernière livraison ; la plus proche / la liste / la plus lointaine / le
+camion attendu d'abord) :
+
+| Plan | avant (1 tour) | après (18 tours) |
+|---|---|---|
+| petit entrepôt | 53,9 / 66,9 / 71,6 / 53,9 | 143,5 / 149,2 / 162,6 / 143,5 |
+| plan de Sami | 121,0 / 136,5 / 136,0 / 121,0 | 305,0 / 310,5 / 314,4 / 305,0 |
+| trois quais | 119,0 / 123,4 / 163,7 / 146,3 | 175,4 / 198,8 / 204,3 / 193,8 |
+| deux couloirs | 97,8 / 73,7 / 59,7 / 97,8 | 207,0 partout |
+| flux | 175,3 / 171,8 / 168,2 / 175,3 | 310,3 / 313,3 / 316,6 / 310,3 |
+
+- **C'est le chargement qui fait la journée** : un quai, un chargeur, 18 tours par palette. Sur le plan de Sami, les
+  règles tiennent en 10 tours ; dans les couloirs, elles finissent toutes au même tour. Le choix des commandes ne
+  compte plus que là où il y a plusieurs quais : sur les trois quais, la plus proche gagne 21 tours sur la liste.
+- **Les relais disparaissent** : la file au camion règle le pas des robots, et plus personne ne reste coincé sur les
+  trois quais. Le test des relais se joue avec `loadTurns: 1`.
+- **Ce que la recherche gagne encore** : les mesures sont dans la file de la machine (`ent-*-chargement`). Les gains du
+  tableau de la page (les nuits du 23/10) ont été mesurés avec un tour.
+- Ce que ça ouvre : préparer les palettes sur la baie pendant que le chargeur charge, plusieurs chargeurs, ou un cariste
+  qui charge pendant que les robots préparent.
+
+## Le poste d'assemblage (26/10, Sami, le soir)
+
+Sami : l'assemblage, c'est un humain, un spécialiste. Ce peut être juste mettre plusieurs petits éléments dans un plus
+grand colis, ou une tâche plus longue, du câblage, avec des composants que les robots stockent et transportent. Fini,
+l'assemblage devient un colis que les robots portent au camion, ou au poste suivant.
+
+`src/day-kits.js`, plan **« assemblage »** :
+- **un poste `S` sur le plan** : les robots y posent les pièces, un à la fois, un tour chacune ; il a sa zone d'attente,
+  comme un quai ;
+- **un kit** (`setup.kits`) : ses pièces (chacune une commande vers le poste), le camion de son colis, la durée de son
+  travail. Le kit commence quand toutes ses pièces sont là et que le spécialiste est libre, un kit à la fois ;
+- **la durée du travail est cachée** jusqu'à la fin : elle est tirée entre deux bornes (un câblage de 5 à 15 minutes,
+  une mise en colis de 1 à 3, des hypothèses : [recherche/hypotheses.md](recherche/hypotheses.md), Q19 et Q20). La
+  recherche la retire au sort dans ses mondes ;
+- **le colis assemblé** n'est visible d'aucune règle avant la fin du travail. Il se prend sur le poste et part au
+  camion ;
+- la page dessine le poste et son spécialiste, les pièces déjà là (« 1/2 ») et le kit en cours.
+
+Le plan : celui de Sami, un poste sous la rangée du bas, 8 palettes et deux kits (I et J câblés, K et L mis en colis),
+480 tours. Sur 100 journées (tour de la dernière livraison) : **la plus proche 271,8, la liste 324,4, la plus lointaine
+303,1, le camion attendu d'abord 271,8**. La liste va chercher les palettes du camion avant les pièces des kits : le
+spécialiste commence tard, et la journée finit 52,6 tours plus tard (44,9 à 60,3). Le camion attendu d'abord sert le
+poste en premier (il est « là » dès le départ). La recherche est dans la file de la machine (`ent-assemblage`).
+
+Pas encore fait : les robots qui ralentissent près du spécialiste, un spécialiste pour plusieurs postes, le contrôle
+après assemblage (retouche, rebut), un colis qui part vers un autre poste plutôt qu'au camion.
+
 ## La suite
 
 Les étapes communes aux trois dépôts sont dans la [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md) § 6 (Sami, 23/10 au soir) : l'ordonnanceur en commun pour les mesures de nuit, les replays avec un humain pour analyser les écarts, la vitrine. Le journal des versions est dans la page (`web/changelog.html`).
@@ -347,8 +406,10 @@ Les étapes communes aux trois dépôts sont dans la [feuille de route](https://
    à placer les robots hors du seul couloir d'un plan.
 3. **Un personnage au clavier** (Z Q S D et E, Sami) qui prend et pose des colis, comme le chef de la
    cuisine ; puis les replays de ses journées, comparées à la recherche.
-4. **Une zone d'assemblage** (Sami, à préciser) : une commande de plusieurs colis, réunis sur une zone avant
-   de partir au camion.
+4. **Une zone d'assemblage** (Sami, 26/10, précisée le soir) : un humain, un spécialiste, assemble au poste des
+   composants que les robots vont chercher et lui apportent : plusieurs petits éléments dans un plus grand colis, ou un
+   assemblage long (du câblage). Fini, l'assemblage devient un colis que les robots portent au camion ou au poste
+   suivant. **Première version faite le 26/10** (« Le poste d'assemblage », plus haut).
 5. **Des commandes qui arrivent pendant la journée** — fait le 26/10 (« Les commandes au fil de la journée », plus
    haut) ; reste à relier l'entrepôt au supermarché de la ligne.
 6. **Une variante de production** (Sami, 26/10) : la ligne cadencée d'abord, faite le 26/10, à côté de l'entrepôt

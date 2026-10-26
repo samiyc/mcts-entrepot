@@ -54,6 +54,26 @@
   ],
   "versions": [
     {
+      "version": "0.22",
+      "title": "Les chiffres réels appliqués, le poste d'assemblage",
+      "date": "26/10",
+      "items": [
+        "Poser une palette dans un camion prend 90 s, plus 5 : la valeur trouvée en ligne, avec de la marge, en attendant un référent. Les journées de l'entrepôt s'allongent ; c'est le chargement qui les fait, et les règles se rapprochent, sauf aux trois quais.",
+        "La ligne fait 80 % d'hybrides, et ses robots connaissent la séquence prévue de l'heure ; quelques véhicules changent de place au dernier moment, vus 5 véhicules avant.",
+        "Dans l'usine, charger la navette au quai devient le goulot : avec la navette à heure fixe, 4 robots d'entrepôt n'arrêtent pas moins la ligne que 2.",
+        "Un poste d'assemblage dans l'entrepôt : les robots apportent les pièces d'un kit, un spécialiste le câble ou le met en colis, dans un temps que personne ne connaît d'avance ; le colis assemblé part au camion.",
+        "Sur le plan à poste d'assemblage, servir d'abord les pièces fait finir la journée 52 tours plus tôt que l'ordre de la liste.",
+        "Les nouvelles questions pour le terrain sont dans docs/recherche/hypotheses.md : la durée d'un câblage, d'une mise en colis, le chargement d'un train de manutention."
+      ],
+      "commits": [
+        "84f1702",
+        "e589590",
+        "7e03d59",
+        "3ac2b8b",
+        "0e7fdb0"
+      ]
+    },
+    {
       "version": "0.21",
       "title": "Les chiffres à confirmer, la navette à heure fixe",
       "date": "26/10",

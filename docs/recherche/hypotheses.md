@@ -25,12 +25,13 @@ Les statuts :
 | Vitesse d'un robot | 1 case par tour, ≈ 1 m/s | toutes les simulations | ordre de grandeur | Q2 |
 | Ralentir près du cariste | moitié de la vitesse, cases voisines | `line-human.js`, `caution` | ordre de grandeur | Q3 |
 | Vitesse du cariste | 1 case par tour, ≈ 1 m/s | `line-human.js` | ordre de grandeur | Q4 |
-| Prendre ou poser une charge | 1 tour (5 s) | `day-turn.js` | estimée | Q5 |
+| Poser une palette dans le camion | **18 tours (90 s)**, depuis le 26/10 ; 1 tour avant | `WAREHOUSE.loadTurns` | appliquée, à confirmer | Q5 |
+| Prendre une charge, poser un bac ou une palette ailleurs | 1 tour (5 s) | `day-turn.js` | estimée | Q5 |
 | Pièces par bac | 12 | `LINE.binPieces` | ordre de grandeur (un exemple) | Q6 |
 | Bacs au bord de ligne | 2 par référence | `LINE.bins` | sourcée (le *two-bin*) | Q6 |
 | Bacs par tournée | 4 KLT d'environ 15 kg | `LINE.tourBins` | estimée | Q7 |
-| Mélange des modèles | 60 % essence, 40 % hybride | `LINE.mix` | estimée, sans doute loin | Q8 |
-| Séquence connue d'avance | 20 véhicules, ≈ 18 min | `LINE.frozen` | estimée, sans doute trop court | Q9 |
+| Mélange des modèles | **20 % essence, 80 % hybride**, depuis le 26/10 ; 60/40 avant | `LINE.mix` | appliquée, à confirmer | Q8 |
+| Séquence connue d'avance | **toute l'heure, prévue** ; 5 % des véhicules reculent de 1 à 5 places, vus 5 véhicules avant | `LINE.resequence` | la séquence prévue : sourcée ; le reste : estimé | Q9 |
 | Le supermarché | 3 bacs, commande à 1 | `LINE.supermarket` | estimée | Q10 |
 | Délai de l'entrepôt | 10 à 40 min | `LINE.supermarket.lead` | estimée | Q11 |
 | Les préparateurs | 3, 2 à 6 min par commande | `LINE.pickedSupermarket` | ordre de grandeur | Q12 |
@@ -41,6 +42,9 @@ Les statuts :
 | Les camions | aux tours 20, 40, 60 | `PLANS.sami.trucks` | réglage de test | Q16 |
 | Les commandes du jour | 4 au départ, une tous les 15 tours, plus rien après 200 | `PLANS.flux.arrivals` | estimée | Q17 |
 | Les batteries | pas modélisées | — | choix du modèle | Q18 |
+| Un câblage au poste d'assemblage | 5 à 15 min, tiré uniformément | `WAREHOUSE.works.wiring` | estimée | Q19 |
+| Une mise en colis | 1 à 3 min | `WAREHOUSE.works.packing` | estimée | Q20 |
+| Poser une palette sur la navette de l'usine | 90 s, comme dans un camion | `WAREHOUSE.loadTurns` | estimée, sans doute trop long | Q21 |
 
 ## Le temps et l'espace
 
@@ -82,8 +86,10 @@ qu'on a trouvé :
   palettes ([US5082415](https://patents.google.com/patent/US5082415)) ; 82 s sur un forum de transporteurs ; 30 s chez
   un vendeur de systèmes de chargement.
 
-Pour un bac posé sur une étagère par un AMR, 5 s se défend. **Pour une palette posée dans un camion, c'est 10 à 15 fois
-trop court.** Si le temps à quai doit se lire en minutes, c'est le premier chiffre à corriger.
+Pour un bac posé sur une étagère par un AMR, 5 s se défend. **Pour une palette posée dans un camion, c'était 10 à 15 fois
+trop court.** Sami (26/10) : prendre la valeur trouvée, avec un peu de marge, **90 s**, en attendant un référent. C'est
+fait (`WAREHOUSE.loadTurns`, `src/warehouse-hypotheses.js`) ; les journées ont été allongées pour que toutes les
+règles finissent ([../modele.md](../modele.md)).
 
 ## La ligne
 
@@ -101,12 +107,13 @@ robots comptent. Le nombre de pièces dépend de la pièce : 12 vis ou 12 faisce
 - pour la manutention à la main, l'équation de levage du NIOSH part de 23 kg dans les meilleures conditions. Ce chiffre
   est connu, on ne l'a pas revérifié ici ; la norme EN 1005-2 n'a pas été lue.
 
-**Le mélange des modèles.** 60 % essence et 40 % hybride, sans source. Ce qu'on a trouvé : Toyota Motor Europe a vendu
+**Le mélange des modèles.** 60 % essence et 40 % hybride au départ, sans source. Ce qu'on a trouvé :
+Toyota Motor Europe a vendu
 **77 % de véhicules électrifiés** en 2025, et presque 100 % d'hybrides là où le modèle existe en hybride
 ([New Mobility](https://newmobility.news/en/2026/01/16/toyota-motor-europe-scores-sales-record-in-2025/),
 [Toyota UK](https://media.toyota.co.uk/?p=65400)). Ce sont des ventes, pas la production d'une ligne. Une ligne
-Toyota européenne serait plutôt à **20 % essence, 80 % hybride**. On n'a pas changé la valeur : ce qui compte pour le
-modèle, c'est qu'un modèle rare fasse manquer des pièces qu'on ne sert pas souvent. Le chiffre se règle dans la page.
+Toyota européenne serait plutôt à **20 % essence, 80 % hybride** : c'est la valeur du modèle depuis le 26/10
+(Sami), en attendant un référent.
 
 **La séquence connue d'avance.** Le modèle laisse voir aux robots les 20 véhicules suivants (environ 18 minutes) ; au
 delà, les modèles sont tirés au sort. Ce qu'on a trouvé :
@@ -117,8 +124,10 @@ delà, les modèles sont tirés au sort. Ce qu'on a trouvé :
 - la séquence peut quand même changer au dernier moment, quand une caisse sort de la peinture en retard ou qu'une pièce
   manque : un brevet porte sur ce reséquencement ([USPTO 9823651](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9823651)).
 
-**18 minutes, c'est sans doute bien plus court que ce que voit une vraie logistique de bord de ligne.** L'incertitude
-réelle serait plutôt le reséquencement : quelques véhicules qui changent de place, pas une suite inconnue.
+**18 minutes, c'était sans doute bien plus court que ce que voit une vraie logistique de bord de ligne.** L'incertitude
+réelle serait plutôt le reséquencement : quelques véhicules qui changent de place, pas une suite inconnue. Depuis le
+26/10 (Sami), les robots connaissent la séquence prévue de toute l'heure ; 5 % des véhicules reculent de 1 à 5 places
+au dernier moment, et ne se voient que 5 véhicules avant (`LINE.resequence`). La part et la portée sont estimées.
 
 **Le coût d'un arrêt.** 10 000 à 50 000 $ la minute, d'après un vendeur de GMAO. Siemens (*True Cost of Downtime*,
 2024) donne 2,3 millions de dollars l'heure pour une ligne automobile à l'arrêt, soit environ 38 000 $ la minute
@@ -177,6 +186,23 @@ ou d'une heure. Rien n'a été cherché là-dessus.
 **Les commandes du jour.** 4 au départ, puis une tous les 15 tours en moyenne (75 s), plus aucune après le tour 200 :
 c'est la limite de commande (*cut-off*). Sans source ; c'est le plan de test `flux`.
 
+**Le poste d'assemblage** (26/10, le soir). Un spécialiste câble ou met en colis des pièces que les robots lui
+apportent ([../modele.md](../modele.md)). Aucune durée publiée n'a été trouvée :
+- une étude de Chalmers compare 15 cas de préparation de kits sans donner de minutes par kit dans son résumé
+  ([Hanson et Medbo, 2019](https://research.chalmers.se/en/publication/511175)) ;
+- une étude de l'université de Pannonie, sur des tables de câblage instrumentées, trouve des temps qui suivent une loi
+  normale ([Assembly Magazine](https://www.assemblymag.com/articles/95406-monitoring-activity-during-wire-harness-assembly)) ;
+  le modèle tire les durées uniformément ;
+- pour le câblage, le temps baisse au fil des premières pièces, puis se stabilise : l'apprentissage compte
+  ([Vilnius, Nonlinear Analysis](https://journals.vu.lt/nonlinear-analysis/article/view/15738)).
+
+Les valeurs du modèle, un câblage de 5 à 15 minutes et une mise en colis de 1 à 3 minutes, sont des estimations.
+
+**La navette de l'usine.** Le quai de l'entrepôt, dans l'usine, est le départ de la navette ; le modèle y compte 90 s
+par palette, comme pour un camion. Avec la navette à heure fixe, ce quai devient le goulot : 4 robots d'entrepôt
+n'arrêtent pas moins la ligne que 2. Poser une palette sur un chariot de train de manutention prend sans doute moins de
+temps qu'entrer dans une remorque : c'est à demander (Q21).
+
 **Les batteries.** Pas modélisées. Le LD-90 tient 12 à 15 heures, le RollerTop environ 9 heures. Sur une heure de ligne,
 on peut les oublier ; sur un poste de 8 heures, non.
 
@@ -212,6 +238,15 @@ on peut les oublier ; sur un poste de 8 heures, non.
 - **Q7** : combien de bacs, et quel poids, sur une tournée ?
 - **Q18** : combien de temps entre deux charges, et combien dure une charge ?
 
+À un chef d'atelier d'assemblage, ou au spécialiste lui-même :
+- **Q19** : combien de temps pour un câblage courant, et combien cela varie-t-il d'une fois à l'autre ?
+- **Q20** : combien de temps pour mettre quelques pièces dans un colis ?
+- Et : combien de pièces par kit, combien de kits par poste et par heure, un spécialiste sert-il plusieurs postes ?
+  Que se passe-t-il quand un kit est raté au contrôle ?
+
+À un logisticien d'usine :
+- **Q21** : combien de temps pour poser une palette, ou un chariot, sur un train de manutention ?
+
 ## Le journal des réponses
 
 Quand une réponse arrive, l'écrire ici : la date, qui l'a donnée (son métier, pas son nom), la valeur, et ce qui a
@@ -220,4 +255,6 @@ dire dans le journal des versions (`docs/changelog.json`), avec les chiffres d'a
 
 | Date | Question | Réponse | Qui | Ce qui a changé |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| 26/10/2026 | Q5 | 90 s pour poser une palette dans un camion | Sami, la valeur trouvée en ligne et de la marge, en attendant un référent | `WAREHOUSE.loadTurns` : 1 → 18 tours ; journées allongées |
+| 26/10/2026 | Q8 | 20 % essence, 80 % hybride | Sami, la valeur trouvée en ligne, en attendant un référent | `LINE.mix` : 60/40 → 20/80 |
+| 26/10/2026 | Q9 | la séquence prévue pour l'heure, quelques véhicules déplacés | Sami, idem | `LINE.resequence` ajouté |
