@@ -1,6 +1,10 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { LINE_PLANS } from "../src/line-plan.js";
+import { LINE_RULES } from "../src/line-rules.js";
+import { lineSearchRule } from "../src/line-search.js";
+import { runLine } from "../src/line.js";
 import { PLANS } from "../src/plans.js";
 import { RULES } from "../src/rules.js";
 import { searchRule } from "../src/search.js";
@@ -9,12 +13,13 @@ import { runDay } from "../src/simulate.js";
 /**
  * What the warehouse does, held in a few hashes (Sami, 26/10/2026, before the code went under the lint budget, as in
  * mcts-urgences): a refactor must leave every one unchanged. A change meant to alter what the model does updates its
- * hash here, and its commit says so, with the measures before and after.
+ * hash here, and its commit says so, with the measures before and after. The assembly line (26/10/2026) has its own.
  */
 const EXPECTED = {
   rules: "e1e6da092158c43c",
   variants: "b6f4f8a298e5ce56",
   search: "b6be81de0070fcb0",
+  line: "5ad4c19f3cdf66b1",
 };
 
 const digest = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex").slice(0, 16);
@@ -23,6 +28,11 @@ const digest = (value) => createHash("sha256").update(JSON.stringify(value)).dig
 const played = (setup, seed, rule) => {
   const { state, measures } = runDay(setup, seed, rule);
   return { log: state.log, measures, robots: state.robots.map((robot) => [robot.x, robot.y, robot.moves, robot.waits]) };
+};
+
+const lineDay = (setup, seed, rule) => {
+  const { state, measures } = runLine(setup, seed, rule);
+  return { log: state.log, measures, lanes: state.lanes, robots: state.robots.map((robot) => [robot.x, robot.y, robot.moves, robot.waits]) };
 };
 
 const FINGERPRINTS = {
@@ -39,6 +49,11 @@ const FINGERPRINTS = {
     ].flatMap((setup) => [1, 2].flatMap((seed) => [RULES.nearest, RULES.list].map((rule) => played(setup, seed, rule)))),
   // A day played by the search, at a small budget.
   search: () => played({ ...PLANS.petit, autoZones: false }, 1, searchRule({ budget: 16 })),
+  // The assembly line: every plan under every rule, two hours each, and a short hour of its search.
+  line: () => [
+    ...Object.values(LINE_PLANS).flatMap((setup) => [1, 2].flatMap((seed) => Object.values(LINE_RULES).map((rule) => lineDay(setup, seed, rule)))),
+    lineDay({ ...LINE_PLANS.seul, horizon: 240 }, 1, lineSearchRule({ budget: 12 })),
+  ],
 };
 
 describe("the fingerprints of the warehouse (a refactor changes none)", () => {

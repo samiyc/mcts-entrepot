@@ -62,4 +62,14 @@
  * }} Summary
  */
 
+/**
+ * A rule's hours of the assembly line summed up (line-rules.js `summaryOfLine`): the mean measures, and the turns the
+ * line stood still gained on the kanban by pairs (null without the kanban).
+ * @typedef {{
+ *   stopped: number, stoppedSeconds: number, produced: number, longestStop: number, maxWip: number, meanResponse: number,
+ *   moves: number, waits: number, replans: number, stuck: number, shortages: number,
+ *   gain: { mean: number, low: number, high: number } | null,
+ * }} LineSummary
+ */
+
 export {};

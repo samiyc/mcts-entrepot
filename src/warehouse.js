@@ -130,14 +130,15 @@ function pickupsOf(plan) {
 
 /**
  * The warehouse of `text`: `{ plan, dock, docks, charges, blocks: Map(letter → pickup cells), blockable,
- * floor(char) }`. Each dock is `{ x, y, bay }`, in reading order; `dock` is the first.
+ * floor(char) }`. Each dock is `{ x, y, bay }`, in reading order; `dock` is the first. `trucks: false` reads a plan
+ * without a truck (the assembly line's, line-plan.js, which gives its own docks).
  */
-export function readWarehouse(text, { autoZones = true } = {}) {
+export function readWarehouse(text, { autoZones = true, trucks = true } = {}) {
   const plan = parsePlan(text);
   const docks = plan.find("T").map((cell) => ({ ...cell, bay: bayOf(plan, cell) }));
   attachZones(plan, docks, autoZones);
   const [dock] = docks;
-  if (!dock) throw new Error("le plan n'a pas de camion (T)");
+  if (!dock && trucks) throw new Error("le plan n'a pas de camion (T)");
   return { plan, dock, docks, charges: plan.find("c"), blocks: pickupsOf(plan), blockable: plan.find("~"), floor: (char) => FLOOR.has(char) };
 }
 
