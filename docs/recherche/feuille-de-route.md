@@ -132,7 +132,8 @@ Reste :
   [../modele-ligne.md](../modele-ligne.md)). Il en reste les replays de l'usine ;
 - ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la
   navette à heure fixe (plan `train`). Elle joue exactement l'ordre des commandes : un seul choix d'entrepôt ne déplace
-  pas l'arrêt de la ligne ([../modele-ligne.md](../modele-ligne.md)). Les 100 heures sont dans la file ;
+  pas l'arrêt de la ligne ([../modele-ligne.md](../modele-ligne.md)). Sur 100 heures, elle ne gagne rien, à 90 s au
+  quai (−0,3) comme avec le chargeur (0,4, dans l'intervalle) ;
 - **les chiffres à confirmer sur le terrain** : [hypotheses.md](hypotheses.md), et ses questions. Trois valeurs
   trouvées en ligne sont appliquées depuis le 26/10 au soir (Sami), en attendant un référent : 90 s pour charger une
   palette, 80 % d'hybrides, la séquence prévue avec quelques véhicules déplacés ;

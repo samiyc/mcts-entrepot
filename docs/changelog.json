@@ -4,7 +4,7 @@
   "intro": "Des robots vont chercher les commandes dans les rayons et les portent aux camions ; une recherche (ISMCTS) leur répartit les commandes en imaginant les allées qui vont se bloquer.",
   "repo": "mcts-entrepot",
   "gainsTitle": "Ce que gagne la recherche (ISMCTS)",
-  "gainsNote": "Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut). Moins, c'est mieux. Les mesures du 23/10 au soir, jouées par l'ordonnanceur commun (mcts-backlog, night.json).",
+  "gainsNote": "Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut), un chargeur au quai. Moins, c'est mieux. Les mesures de la nuit du 26 au 27/10, jouées par l'ordonnanceur commun (mcts-backlog).",
   "gainsHead": [
     "Plan",
     "la plus proche",
@@ -17,42 +17,72 @@
   "gainsRows": [
     [
       "Petit entrepôt",
-      "54,4",
-      "81,4",
-      "71,6",
-      "54,4",
-      "<strong>50,3</strong>",
-      "−4,1"
+      "118,8",
+      "120,5",
+      "121,9",
+      "118,8",
+      "<strong>118,8</strong>",
+      "0,0"
     ],
     [
       "Plan de Sami",
-      "121,2",
-      "146,1",
-      "136,7",
-      "121,2",
-      "<strong>95,2</strong>",
-      "−26,0"
+      "251,4",
+      "234,9",
+      "240,8",
+      "251,4",
+      "<strong>229,2</strong>",
+      "−5,7"
     ],
     [
-      "Trois quais",
-      "125,7",
-      "123,4",
-      "148,3",
-      "149,0",
-      "<strong>109,2</strong>",
-      "−14,2"
+      "Trois quais, un chargeur",
+      "265,0",
+      "253,8",
+      "272,5",
+      "252,2",
+      "<strong>244,0</strong>",
+      "−8,2"
     ],
     [
       "Deux couloirs étroits",
-      "97,8",
-      "73,7",
-      "59,7",
-      "97,8",
-      "<strong>60,0</strong>",
-      "+0,3"
+      "155,0",
+      "155,0",
+      "157,0",
+      "155,0",
+      "<strong>151,0</strong>",
+      "−4,0"
+    ],
+    [
+      "Flux (commandes au fil de la journée)",
+      "243,9",
+      "239,4",
+      "256,4",
+      "243,9",
+      "<strong>239,0</strong>",
+      "−0,4"
+    ],
+    [
+      "Poste d'assemblage",
+      "259,4",
+      "261,0",
+      "259,7",
+      "259,4",
+      "<strong>249,7</strong>",
+      "−9,7"
     ]
   ],
   "versions": [
+    {
+      "version": "0.24",
+      "title": "Ce que gagne la recherche avec le chargeur",
+      "date": "27/10",
+      "items": [
+        "Avec le chargeur au quai, la recherche bat la meilleure règle sur 6 plans sur 8, mesurée par paires sur 100 journées : 5,7 tours sur le plan de Sami (99 journées sur 100), 9,7 au poste d'assemblage, 4,0 dans les couloirs.",
+        "Elle gagne le plus aux trois quais quand les chargeurs manquent : 49 tours à quai de moins pour les camions avec un chargeur, 23 avec deux, 4 avec trois. Elle amène les palettes dans l'ordre où le chargeur peut les prendre, et l'occupe davantage.",
+        "Elle n'apporte rien au flux, ni à l'usine, où un seul choix d'entrepôt ne déplace pas l'arrêt de la ligne. Dans le petit entrepôt, elle joue la plus proche.",
+        "Une journée de recherche prend de 6 s (petit entrepôt) à 5 min (trois quais, trois chargeurs). Le tableau des gains, en haut, est refait avec ces mesures."
+      ],
+      "commits": []
+    },
     {
       "version": "0.23",
       "title": "Le chargeur au quai",

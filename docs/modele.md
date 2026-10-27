@@ -429,7 +429,35 @@ camion attendu d'abord) :
   passage en boucle dans l'allée bloquée. C'est à reprendre.
 - **L'usine** ([modele-ligne.md](modele-ligne.md)) : le quai de la navette n'est plus un goulot.
 - **La recherche coûte moins cher** : une journée du plan de Sami passe de plus de 10 minutes à 57 s. Aux trois quais
-  avec un seul chargeur, c'est 292 s. Ses mesures sont dans la file de la machine.
+  avec un seul chargeur, c'est 292 s. Ses mesures sont plus bas.
+
+**La recherche avec le chargeur** (la nuit du 26 au 27/10, la file de la machine, 100 journées par plan). L'écart
+se compte par paires sur **la meilleure règle** du plan, mêmes journées ; aux trois quais, en tours à quai des camions
+(ailleurs, un camion là dès le départ : le tour de fin) :
+
+| Plan | la meilleure règle | recherche | gain sur elle (IC 95 %) | journées gagnées / perdues |
+|---|---|---|---|---|
+| petit entrepôt | la plus proche, 118,8 | 118,8 | 0 : elle joue la plus proche | — |
+| plan de Sami | la liste, 234,9 | 229,2 | **5,7 (3,2 à 8,1)** | 99 / 1 |
+| deux couloirs | la liste, 155,0 | 151,0 | **4,0 chaque journée** | 100 / 0 |
+| flux | la liste, 239,4 | 239,0 | 0,4 (−4,3 à 5,0) | 17 / 29 |
+| assemblage | la plus proche, 259,4 | 249,7 | **9,7 (4,7 à 14,6)** | 56 / 41 |
+| trois quais, 1 chargeur | le camion d'abord, 477,8 | 428,9 | **48,9 (42,2 à 55,6)** ; fin 252,2 → 244,0 | 100 / 0 |
+| trois quais, 2 chargeurs | la liste, 289,3 | 266,0 | **23,3 (22,1 à 24,5)** ; fin 185,6 → 155,4 | 100 / 0 |
+| trois quais, 3 chargeurs | le camion d'abord, 240,6 | 236,3 | **4,3 (3,3 à 5,4)** ; fin 140,2 → 139,4 | 82 / 18 |
+
+- **La recherche bat la meilleure règle sur 6 plans sur 8.** Elle n'apporte rien au flux, où les commandes arrivent
+  au fil de la journée et où le chargeur fixe le pas. Dans le petit entrepôt, elle joue la plus proche.
+- **Elle gagne le plus aux trois quais, quand les chargeurs manquent** : 49 tours à quai de moins avec 1 chargeur, 23
+  avec 2, 4 avec 3. Elle amène les palettes dans l'ordre où le chargeur peut les prendre.
+- **Elle occupe mieux le chargeur** : 94 % du temps sur le plan de Sami (92 % sous la liste), 88 % aux quais avec 1
+  chargeur (85 % au mieux sous une règle), 69 % avec 2 (58 à 66 %).
+- **Sur l'assemblage, elle départage ce que les règles ne départagent plus** : 9,7 tours en moyenne, mais 41 journées
+  perdues sur 100. Le gain est net en moyenne, pas à chaque journée.
+- **Son coût**, d'après la durée des jobs (les 4 règles et la recherche, par journée) : environ 6 s dans le petit
+  entrepôt, 50 s à 1 min sur le plan de Sami, les couloirs et le flux, 1,5 min sur l'assemblage, 3,5 à 5 min aux
+  trois quais.
+- **L'usine** : la recherche n'y gagne rien non plus ([modele-ligne.md](modele-ligne.md)).
 
 Deux défauts ressortis avec les poses plus rapides, corrigés :
 - **un robot sans borne de recharge part d'une case qui ne coupe aucune allée quand le `~` est fermé.** Sur le petit

@@ -299,7 +299,9 @@ plus lointaine / la plus urgente / la couverture de la ligne) :
   minutes et 2 bacs au supermarché : ni gain ni perte). Ce n'est pas un défaut des mondes : chaque commande change bien
   les livraisons, mais l'arrêt de la ligne ne bouge pas. C'est la référence la plus en retard qui le fixe, et un seul
   choix d'entrepôt ne la déplace presque jamais. Ce qui compte, c'est la règle tenue sur toute l'heure (la plus
-  lointaine, la couverture), pas une décision. La mesure sur 100 heures est dans la file (`usine-train-recherche`).
+  lointaine, la couverture), pas une décision. Sur 100 heures, avec un robot (`usine-train-recherche`, 26/10) : 82,3
+  tours d'arrêt par heure, contre 82,0 pour l'ordre des commandes, soit −0,3 (−1,0 à 0,3). Avec le chargeur au quai,
+  la même mesure ne donne pas plus (plus bas).
 
 ## Les chiffres trouvés en ligne, appliqués (26/10, le soir)
 
@@ -351,4 +353,10 @@ sa palette au quai en un tour, et un chargeur la met sur la navette en 90 s. Mê
   lointaine d'abord avec un robot (6,0 tours de plus, 1,3 à 10,7).
 - **Ce qui arrête encore la ligne, c'est la navette à heure fixe** : une palette prête attend le prochain départ. Plus
   de robots n'y change rien.
+- **La recherche ne fait pas mieux** (100 heures, 1 robot, la nuit du 26 au 27/10) :
+  - navette à la demande : 0 tour d'arrêt par heure, comme toutes les règles ;
+  - navette à heure fixe : 6,0, contre 6,4 pour l'ordre des commandes, soit 0,4 (−0,4 à 1,2). La plus proche et la
+    plus urgente font 5,9.
+
+  Le constat d'avant tient : un seul choix d'entrepôt ne déplace pas l'arrêt de la ligne.
 - Le chargeur met 90 s par palette sur la navette comme dans un camion : Q21 reste ouverte.
