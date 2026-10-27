@@ -21,7 +21,8 @@ describe("the units of a long measure (scripts/units.js)", () => {
     const file = path.join(folder(), "a.jsonl");
     piece(file, { from: 1, of: 3 });
     stop();
-    assert.deepEqual(events.map(({ done, of, unit }) => ({ done, of, unit })).at(-1), { done: 3, of: 3, unit: "journée" });
+    const told = events.map(({ done, of, unit }) => ({ done, of, unit }));
+    assert.deepEqual([told[0], told.at(-1)], [{ done: 0, of: 3, unit: "journée" }, { done: 3, of: 3, unit: "journée" }]);
     assert.equal(fs.readFileSync(file, "utf8").trim().split("\n").length, 3);
   });
 

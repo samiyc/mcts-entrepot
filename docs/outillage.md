@@ -125,6 +125,17 @@ Essayé le 27/10 sur une file temporaire (`--home` d'un dossier du bloc-notes), 
 leur réunion finissent, la trace de chaque tranche porte ses `progress`, et une réunion à qui il manque une tranche
 finit en échec.
 
+Puis sur la vraie file, à la demande de Sami (27/10, 11:42 à 11:52) : 12 jobs de 1 à 10 min, sur les cinq scripts.
+- Les 8 tranches et les 3 réunions finissent, sans incident. La 12e, une réunion à qui il manque une tranche exprès,
+  finit en échec : « manquent 17 à 24 ».
+- Les vues disent par exemple « journée 1/8, fin vers 11:46 » et « heure 80/360, fin vers 11:44 ».
+- L'usine réunie en deux tranches de 7 heures donne le tableau des 14 heures d'un seul tenant. Les 16 journées du plan
+  de Sami redonnent les chiffres de la nuit (la liste 232,2, la recherche 229,0).
+- Un job ne disait rien avant la fin de sa première unité, parfois plusieurs minutes. Il annonce maintenant « journée
+  0/8 » dès son départ.
+- Les tranches ont pris 2 à 4 fois moins que leur estimation : les coûts de `scripts/night.js` viennent d'une nuit où
+  18 jobs tournaient ensemble. La file apprend ensuite les durées des commandes déjà passées.
+
 ## mcts-commun
 
 L'entrepôt en dépend par `"mcts-commun": "file:../mcts-commun"` : `node_modules/mcts-commun` est un lien vers le

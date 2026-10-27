@@ -25,6 +25,8 @@ export function unitsOf({ scope, of, unit, out = null, log = console.error }) {
   }
   const started = Date.now();
   let done = 0;
+  // Said from the start: a job whose first day takes minutes showed nothing until then (27/10, the queue tried).
+  progress(scope, 0, of, { unit });
   return (record) => {
     done += 1;
     progress(scope, done, of, { unit });
