@@ -3,25 +3,27 @@ import { LINE_RULES } from "../src/line-rules.js";
 import { PLANT_PLANS, WAREHOUSE_RULES, WAREHOUSE_RULE_LABELS, runPlant } from "../src/plant.js";
 import { plantSearchRule } from "../src/plant-search.js";
 import { fixed, interval, meanOf } from "./format.js";
-import { searchesLines, takeAll, watchersOf } from "./searches.js";
+import { searchesLines, takeAll, variantLines, variantsOf, watchersOf } from "./searches.js";
 import { mergeEnd, mergedOf, pieceOptions, runsOfLines, unitsOf } from "./units.js";
 
 /**
  * `npm run plant -- [--plan usine] [--days 100] [--from 1] [--robots 1,2,4] [--search] [--budget 64] [--diagnose]
- * [--early] [--out FILE]` (Sami, 26/10/2026): the plant, the line under the kanban, the warehouse under each of its rules
+ * [--early] [--variant key=value,…]… [--out FILE]` (Sami, 26/10/2026): the plant, the line under the kanban, the warehouse under each of its rules
  * (and the search with `--search`) on the same hours; the line's stop gained on the warehouse's list order by pairs,
  * the mean lead from the supermarket's order to its stock full again. `--diagnose` counts what each search saw
- * (scripts/searches.js); `--early` adds the search with `earlyStop`. `--out` writes each hour as a JSON line,
+ * (scripts/searches.js); `--early` adds the search with `earlyStop`, each `--variant` the search with those
+ * settings (`budget=128`), paired on the search. `--out` writes each hour as a JSON line,
  * `--merge FILE…` makes the tables of the pieces (scripts/units.js).
  */
 const args = process.argv.slice(2);
 const option = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
 const { from, days, out, merging } = pieceOptions(args);
 const RULE_NAMES = ["list", "nearest", "farthest", "urgent", "lineCover"];
-const LABELS = { ...WAREHOUSE_RULE_LABELS, search: "recherche (ISMCTS)", early: "recherche, arrêt anticipé" };
+const LABELS = { ...WAREHOUSE_RULE_LABELS, search: "recherche (ISMCTS)" };
 const searching = args.includes("--search");
-const early = searching && args.includes("--early");
-const watchers = watchersOf(searching && (early || args.includes("--diagnose")) ? ["search", ...(early ? ["early"] : [])] : []);
+const variants = searching ? variantsOf(args) : [];
+const watchers = watchersOf(searching && (variants.length || args.includes("--diagnose")) ? ["search", ...variants.map((one) => one.name)] : []);
+for (const one of variants) LABELS[one.name] = one.label;
 
 /** The rules' measures over the hours (`records`) of one robot count, against the list order; what the searches saw. */
 function report(setup, robots, records, took) {
@@ -32,15 +34,14 @@ function report(setup, robots, records, took) {
     const gain = name === "list" ? "—" : interval(paired(list, measures.map((one) => one.stopped)));
     console.log(`${LABELS[name].padEnd(30)} arrêt de la ligne ${fixed(meanOf(measures, "stopped")).padStart(6)}  gagné sur l'ordre ${gain.padStart(22)}  délai ${fixed(meanOf(measures, "supplyLead"), 0)} tours`);
   }
-  if (runs.early) console.log(`arrêt anticipé sur la recherche : ${interval(paired(runs.search.map((one) => one.stopped), runs.early.map((one) => one.stopped)))} tours d'arrêt en moins`);
-  for (const line of searchesLines(records, LABELS)) console.log(line);
+  for (const line of [...variantLines(runs, variants, "stopped"), ...searchesLines(records, LABELS)]) console.log(line);
 }
 
 /** The warehouse's rules, and the searches asked. */
 function rulesOf() {
   const budget = Number(option("--budget", 64));
-  const searches = searching ? { search: plantSearchRule({ budget, onSearch: watchers.search?.onSearch }) } : {};
-  if (early) searches.early = plantSearchRule({ budget, earlyStop: true, onSearch: watchers.early.onSearch });
+  const searchOf = (options, name) => plantSearchRule({ budget, ...options, onSearch: watchers[name]?.onSearch });
+  const searches = searching ? { search: searchOf({}, "search"), ...Object.fromEntries(variants.map((one) => [one.name, searchOf(one.options, one.name)])) } : {};
   return { ...Object.fromEntries(RULE_NAMES.map((name) => [name, WAREHOUSE_RULES[name]])), ...searches };
 }
 

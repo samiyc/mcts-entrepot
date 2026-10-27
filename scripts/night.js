@@ -57,17 +57,35 @@ const ROLLOUT = [["petite", 0.11], ["etroite", 0.08], ["seul", 0.58], ["melange"
  * the early one about three quarters of the other), and what `diagnose` says of the other lines, the plant and the
  * warehouse's plans. The costs are those of 27/10 by day, three quarters more where the search runs twice.
  */
+const WAREHOUSE_COSTS = { petit: 0.1, sami: 0.8, couloirs: 0.92, flux: 1.3, assemblage: 1.5, quais: 3.5 };
 const LINE_COSTS = { petite: 0.06, sami: 0.62, seul: 0.3, etroite: 0.05, retours: 0.78, tournee: 0.25, melange: 0.21, supermarche: 0.48 };
 const ESSAIS = [
   ...["tournee", "etroite", "retours"].map((plan) => ({ id: `essai-arret-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search --early`, cost: Math.round(175 * LINE_COSTS[plan]) / 100 })),
   ...["petite", "sami", "seul", "melange", "supermarche"].map((plan) => ({ id: `essai-diagnose-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search --diagnose`, cost: LINE_COSTS[plan], days: 20 })),
   { id: "essai-diagnose-usine", script: "plant-compare.js", args: "--plan train --robots 1 --search --diagnose", cost: 0.9, days: 20 },
-  ...[["petit", 0.1], ["sami", 0.8], ["couloirs", 0.92], ["flux", 1.3], ["assemblage", 1.5], ["quais", 3.5]]
+  ...Object.entries(WAREHOUSE_COSTS)
     .map(([plan, cost]) => ({ id: `essai-diagnose-${plan}-jour`, script: "compare.js", args: `--plan ${plan} --search --diagnose`, cost, days: 10 })),
 ].map((measure) => ({ ...measure, folder: "essais" }));
+
+/**
+ * The three decisions to adopt (Sami, 27/10/2026: test the early stop, `calm` and more iterations, then make them the
+ * default if they hold), each paired on the search of today. The line: `calm` with the early stop, then 128 iterations
+ * on top, over 100 hours of each line. The warehouse and the plant have no `calm`: the early stop, then 128 iterations,
+ * over 30 days of each plan and 50 hours of the plant. A cost is the search's, three and a quarter times over (the
+ * search, the early stop at three quarters at most, 128 iterations at twice), four times where the early stop saved
+ * nothing (the warehouse, tried on two days).
+ */
+const LINE_VARIANTS = "--variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128";
+const WAREHOUSE_VARIANTS = "--variant earlyStop=1 --variant earlyStop=1,budget=128";
+const DECISIONS = [
+  ...Object.entries(LINE_COSTS).map(([plan, cost]) => ({ id: `choix-ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search ${LINE_VARIANTS}`, cost: Math.round(325 * cost) / 100 })),
+  ...Object.entries(WAREHOUSE_COSTS).map(([plan, cost]) => ({ id: `choix-entrepot-${plan}`, script: "compare.js", args: `--plan ${plan} --search ${WAREHOUSE_VARIANTS}`, cost: 4 * cost, days: 30 })),
+  { id: "choix-usine", script: "plant-compare.js", args: `--plan train --robots 1 --search ${WAREHOUSE_VARIANTS}`, cost: 3.6, days: 50 },
+].map((measure) => ({ ...measure, folder: "choix" }));
 
 const write = (file, about, measures) => writeFileSync(new URL(file, ROOT), `${JSON.stringify({ about, jobs: measures.flatMap(jobsOf) }, null, 2)}\n`);
 write("night.json", "Les mesures de nuit (Sami, 23/10/2026, écrites par npm run night) : la recherche contre les règles, 100 journées par plan de l'entrepôt aux réglages par défaut, 100 heures par ligne, l'usine ; en tranches d'une demi-heure au plus, réunies par un job après elles (mcts-commun, 27/10). mcts-backlog --add-file mcts-entrepot/night.json, puis mcts-backlog.", NIGHT);
 write("night-rollout.json", "La règle de jeu de la recherche de la ligne (Sami, 26/10/2026, écrit par npm run night) : jouée par la plus proche ou par la couverture, sur les mêmes 100 heures par plan, et ce qu'en disent les 30 premières (scripts/line-rollout.js) ; en tranches d'une demi-heure au plus. mcts-backlog --add-file mcts-entrepot/night-rollout.json, puis mcts-backlog.", ROLLOUT);
 write("essais-commun.json", "Les essais demandés par mcts-commun (27/10/2026 au soir, écrits par npm run night) : earlyStop par paires sur la recherche, 100 heures des tournées, du bord étroit et des bacs vides ; ce que dit diagnose des autres lignes, de l'usine et des plans de l'entrepôt. mcts-backlog --add-file mcts-entrepot/essais-commun.json --tag essais-commun-AAAA-MM-JJ.", ESSAIS);
-console.log("night.json, night-rollout.json, essais-commun.json");
+write("decisions.json", "Les trois décisions à adopter (Sami, 27/10/2026, écrites par npm run night) : l'arrêt anticipé, calm et 128 itérations, chacun par paires sur la recherche d'aujourd'hui ; 100 heures par ligne, 30 journées par plan de l'entrepôt, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/decisions.json --tag decisions-AAAA-MM-JJ.", DECISIONS);
+console.log("night.json, night-rollout.json, essais-commun.json, decisions.json");

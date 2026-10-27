@@ -1,5 +1,6 @@
 import { diagnose } from "mcts-commun/mcts.js";
-import { fixed } from "./format.js";
+import { paired } from "mcts-commun/measure.js";
+import { fixed, interval } from "./format.js";
 
 /**
  * What the searches of a measure saw (mcts-commun, 27/10/2026 evening: docs/recherche.md § 2, docs/backlog.md
@@ -61,4 +62,35 @@ export function takeAll(watchers) {
 export function searchesLines(records, labels) {
   const names = [...new Set(records.flatMap((record) => Object.keys(record.searches ?? {})))];
   return names.map((name) => searchesLine(labels[name] ?? name, sumOf(records.map((record) => record.searches?.[name]).filter(Boolean))));
+}
+
+/** `key=value,key=value` as search options, each value a number (`earlyStop=1`, `budget=128`). */
+export const optionsOf = (text) => Object.fromEntries(text.split(",").filter(Boolean).map((pair) => pair.split("=")).map(([key, value]) => [key, Number(value)]));
+
+/**
+ * The search variants a measure asks (Sami, 27/10/2026: try the early stop, `calm` and more iterations, then adopt them):
+ * `--early` (`earlyStop=1`, named `early`), then each `--variant key=value,…`, named by its text; each `{ name, label,
+ * options }`.
+ */
+export function variantsOf(args) {
+  const asked = args.flatMap((arg, i) => (arg === "--variant" ? [{ name: args[i + 1], label: `variante ${args[i + 1]}`, options: optionsOf(args[i + 1]) }] : []));
+  return [...(args.includes("--early") ? [{ name: "early", label: "recherche, arrêt anticipé", options: { earlyStop: true } }] : []), ...asked];
+}
+
+/** `name`'s units against `against`'s on `key` (lower is better): what it saves, by pairs, and the units it wins and loses. */
+export function pairedOn(runs, against, name, key) {
+  const gain = paired(runs[against].map((one) => one[key]), runs[name].map((one) => one[key]));
+  const wins = runs[name].filter((one, i) => one[key] < runs[against][i][key]).length;
+  const losses = runs[name].filter((one, i) => one[key] > runs[against][i][key]).length;
+  return `${interval(gain)} en moins, ${wins} gagnées, ${losses} perdues`;
+}
+
+const MEASURES = { stopped: "tours d'arrêt", truckWait: "tours d'attente des camions" };
+
+/** Each variant against the search, and against the variant before it: the lines of the report. */
+export function variantLines(runs, variants, key) {
+  return variants.flatMap((variant, i) => [
+    `${variant.label} sur la recherche (${MEASURES[key] ?? key}) : ${pairedOn(runs, "search", variant.name, key)}`,
+    ...(i > 0 ? [`${variant.label} sur ${variants[i - 1].label} : ${pairedOn(runs, variants[i - 1].name, variant.name, key)}`] : []),
+  ]);
 }

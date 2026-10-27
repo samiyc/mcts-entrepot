@@ -4,7 +4,7 @@ import { RULES } from "../src/rules.js";
 import { searchRule } from "../src/search.js";
 import { runDay } from "../src/simulate.js";
 import { fixed, interval, meanOf as mean } from "./format.js";
-import { searchesLine, watcherOf } from "./searches.js";
+import { optionsOf, searchesLine, watcherOf } from "./searches.js";
 
 /**
  * `node scripts/search-bench.js [days] [plan] [variant…]`: the search against the list order, the nearest
@@ -18,7 +18,6 @@ const diagnosing = rest.includes("--diagnose");
 const variants = rest.filter((one) => one !== "--diagnose");
 const days = Number(daysArg);
 const plans = planArg === "tous" ? Object.keys(PLANS) : [planArg];
-const optionsOf = (text) => Object.fromEntries(text.split(",").filter(Boolean).map((pair) => pair.split("=")).map(([key, value]) => [key, Number(value)]));
 for (const id of plans) {
   const setup = PLANS[id];
   const list = [];
