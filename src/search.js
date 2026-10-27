@@ -83,16 +83,19 @@ function baseOf(state, rng, runs = 4) {
 
 /**
  * The search as a rule (simulate.js's signature, reading `context.state`): a single open order is taken at
- * once; otherwise `budget` iterations, seeded from the turn and the robot.
+ * once; otherwise `budget` iterations, seeded from the turn and the robot. `earlyStop` (off: mcts-commun, 27/10/2026)
+ * stops a search once its leader cannot be caught; `onSearch(found, depth)` sees each result (scripts/searches.js).
+ * @param {Record<string, any> & import("./types.js").SearchHooks} [options]
  * @returns {import("./types.js").Rule}
  */
 export function searchRule(options = {}) {
-  const { budget, depth, explore, width, spread, seed } = { ...SEARCH_SETTINGS, ...options };
+  const { budget, depth, explore, width, spread, seed, earlyStop, onSearch } = { ...SEARCH_SETTINGS, ...options };
   return (robot, open, { state }) => {
     if (open.length === 1) return open[0];
     const rng = createRng((Math.imul(seed, 0x9e3779b1) + state.t * 131 + robot.id * 7 + open.length) >>> 0);
     // The trucks' waits add up: the scale grows with them, or every world of a three-truck day scores 0 or 1.
-    const found = search(state, problemFor(baseOf(state, rng), { width, spread: spread * state.trucks.length }), { budget, rng, depth, explore, common: true });
+    const found = search(state, problemFor(baseOf(state, rng), { width, spread: spread * state.trucks.length }), { budget, rng, depth, explore, common: true, earlyStop });
+    onSearch?.(found, depth);
     return open.find((order) => order.id === found.move?.id) ?? RULES.list(robot, open);
   };
 }

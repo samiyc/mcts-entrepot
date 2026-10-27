@@ -73,11 +73,13 @@ function baseOf(root, rng, rules, runs = 4) {
 
 /**
  * The search as a warehouse rule in the plant (plant.js gives it the plant, `context.plant`): a single open order is
- * taken at once; otherwise `budget` iterations, seeded from the turn and the robot.
+ * taken at once; otherwise `budget` iterations, seeded from the turn and the robot. `earlyStop` and `onSearch` as in
+ * search.js.
+ * @param {Record<string, any> & import("./types.js").SearchHooks} [options]
  * @returns {import("./types.js").Rule}
  */
 export function plantSearchRule(options = {}) {
-  const { budget, depth, explore, width, spread, seed, lookahead, lineRule, rollout } = { ...PLANT_SEARCH_SETTINGS, ...options };
+  const { budget, depth, explore, width, spread, seed, lookahead, lineRule, rollout, earlyStop, onSearch } = { ...PLANT_SEARCH_SETTINGS, ...options };
   const rules = { lineRule: LINE_RULES[lineRule], rule: WAREHOUSE_RULES[rollout] };
   return (robot, open, context) => {
     // The plant, not a warehouse's day: the rule's types know only the warehouse's.
@@ -87,7 +89,8 @@ export function plantSearchRule(options = {}) {
     const root = { ...plant, limit: Math.min(plant.line.setup.horizon, plant.t + lookahead) };
     const base = baseOf(root, rng, rules);
     if (base === plant.line.stopped) return rules.rule(robot, open, context);
-    const found = search(root, problemFor(base, { width, spread, ...rules }), { budget, rng, depth, explore, common: true });
+    const found = search(root, problemFor(base, { width, spread, ...rules }), { budget, rng, depth, explore, common: true, earlyStop });
+    onSearch?.(found, depth);
     return open.find((order) => order.id === found.move?.id) ?? rules.rule(robot, open, context);
   };
 }

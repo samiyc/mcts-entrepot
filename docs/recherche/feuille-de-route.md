@@ -130,6 +130,9 @@ Reste :
   couverture devant la plus proche sur les quatre lignes où le robot manque, et nulle part derrière
   ([../modele-ligne.md](../modele-ligne.md)). Reste à en faire le défaut (les empreintes changent) ; l'option `calm` n'est
   pas mesurée ;
+- **l'arrêt anticipé de la recherche** (`earlyStop` de mcts-commun, 27/10 au soir) : il est dans la file, mesuré par
+  paires sur 100 heures des tournées, du bord étroit et des bacs vides, avec ce que dit `diagnose` de chaque plan
+  ([../outillage.md](../outillage.md)). En faire le défaut est à Sami, comme pour la couverture ;
 - ~~relier l'entrepôt au supermarché~~ : **fait le 26/10**, l'usine (`src/plant.js`, onglet Usine,
   [../modele-ligne.md](../modele-ligne.md)). Il en reste les replays de l'usine ;
 - ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la

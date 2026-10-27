@@ -72,4 +72,10 @@
  * }} LineSummary
  */
 
+/**
+ * What a search rule takes beside its settings (search.js, line-search.js, plant-search.js; mcts-commun, 27/10/2026):
+ * `earlyStop`, off by default, and `onSearch`, which sees each search's result and the depth asked.
+ * @typedef {{ earlyStop?: boolean, onSearch?: (found: any, depth: number) => void }} SearchHooks
+ */
+
 export {};

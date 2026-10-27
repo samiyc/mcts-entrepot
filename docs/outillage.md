@@ -139,6 +139,66 @@ Puis sur la vraie file, à la demande de Sami (27/10, 11:42 à 11:52) : 12 jobs 
 - Les tranches ont pris 2 à 4 fois moins que leur estimation : les coûts de `scripts/night.js` viennent d'une nuit où
   18 jobs tournaient ensemble. La file apprend ensuite les durées des commandes déjà passées.
 
+## Les essais demandés par mcts-commun (27/10 au soir)
+
+mcts-commun a corrigé le test « cible hors d'atteinte » d'A* (`a9a4c99`), qui grossissait sur un plan large. Il a aussi
+ajouté deux choses (`4abc577`, `../mcts-commun/docs/recherche.md`) :
+- `diagnose`, ce qu'une recherche a vu ;
+- `earlyStop`, arrêter une recherche dont le coup en tête ne peut plus être rattrapé.
+
+Il demandait à l'entrepôt de vérifier le correctif et d'essayer les deux réglages.
+
+**Les empreintes ne bougent pas** : `npm run check` passe tel quel (68 tests), avec la lib du soir.
+
+**Les mêmes résultats, au chiffre près** :
+- 10 heures de `retours` (`line-compare --search`) : 40 mesures sur 40 (10 heures, 4 règles) sont celles de
+  `tmp/night/ligne-retours-001.jsonl` de ce matin ;
+- 5 journées de l'assemblage (`compare --search`, qui passe par `day-legs`) : 25 sur 25 sont celles de la nuit.
+
+**Le temps : le correctif n'explique pas les 38 min.** Pour départager, les mêmes mesures ont été jouées côte à côte,
+avec la lib d'avant le correctif (`git archive a9a4c99^`, dans le bloc-notes) et avec celle du soir :
+
+| Mesure | Avant | Après | Appels d'A* | Abandons (`givenUp`) | Cases par appel |
+|---|---|---|---|---|---|
+| `retours`, 10 heures | 381 s (A* 317 s) | 352 s (A* 288 s) | 1 444 710 | 43 366 | 20,0 |
+| assemblage, 5 journées | 79 s (A* 45,5 s) | 80 s (A* 44,7 s) | 265 921 | 13 373 | 25,4 |
+
+- Les appels, les abandons et les chemins introuvables sont les mêmes avant et après. A* abandonne une fois sur 33
+  appels, et sur nos plans de 16 cases de large l'abandon coûtait peu.
+- Ce matin, les 10 premières heures de `ligne-retours-001` ont pris 660 s. Le même calcul seul ce soir prend 289 s, A*
+  compris (546 s contre 235 s). Le reste de la recherche va lui aussi deux fois plus vite (114 s contre 54 s) : c'est
+  la machine chargée (18 jobs ensemble), pas A*.
+- **A\* fait 80 % du temps d'une recherche de la ligne** (235 s sur 289) : c'est là qu'un gain se prendrait.
+
+**`diagnose` et `earlyStop` dans les scripts** :
+- les trois recherches (`searchRule`, `lineSearchRule`, `plantSearchRule`) prennent `earlyStop`, éteint par défaut, et
+  `onSearch(found, depth)`, qui voit chaque résultat ;
+- `scripts/searches.js` compte, pour chaque unité, les décisions, leurs itérations, leur temps et les codes de
+  `diagnose`. Ils vont dans la ligne JSON de l'unité, et la réunion les additionne ;
+- `--diagnose` les affiche dans `compare`, `line-compare` et `plant-compare`, et dans `search-bench` ;
+- `--early`, dans `line-compare` et `plant-compare`, ajoute la recherche avec `earlyStop`, comparée par paires à la
+  recherche sur les mêmes heures.
+
+Lire un résultat ne change rien à la recherche : les mesures avec `--diagnose` sont celles d'avant.
+
+**Les jobs** : `npm run night` écrit aussi `essais-commun.json`, 25 jobs ajoutés le 27/10 à 17:54 avec le tag
+`essais-commun-2026-10-27`, à partir des durées de la journée :
+- `earlyStop` sur 100 heures des tournées, du bord étroit et des bacs vides, en tranches de 25 min au plus ;
+- `diagnose` sur 20 heures des cinq autres lignes et de l'usine, et sur 10 journées de chaque plan de l'entrepôt.
+
+Les sorties vont dans `tmp/essais/`. Leurs résultats : [modele-ligne.md](modele-ligne.md), quand ils seront là.
+
+**Les robots se gênent-ils assez pour PIBT ?** (la question de mcts-commun, `recherche.md` § 3 et 4) Pas encore :
+- **attendre** coûte de 1,3 à 10 % des pas dans l'entrepôt, et 2 % à la ligne. Le plus haut est le plan de Sami sous
+  la plus proche ;
+- **replanifier** coûte de 2 à 4 % des pas dans l'entrepôt, et 0,5 % à la ligne ;
+- **aucun robot bloqué** sur les journées de la nuit (`stuck` à 0) ;
+- **aucune case réservée deux fois** dans les 79 traces de l'entrepôt du 26 et du 27/10.
+
+L'A* coopératif tient les 2 à 4 robots de nos plans. PIBT vaudrait d'être essayé avec bien plus de robots. Il le
+vaudrait aussi pour sa vitesse, dans les mondes de la recherche, puisque A* y fait 80 % du temps. Mais ce serait un
+autre modèle, et toutes les empreintes changeraient.
+
 ## mcts-commun
 
 L'entrepôt en dépend par `"mcts-commun": "file:../mcts-commun"` : `node_modules/mcts-commun` est un lien vers le

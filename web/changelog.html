@@ -33,6 +33,16 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.27</span> Le correctif d'A* de mcts-commun, et ce que voit la recherche <span class="date">27/10</span></h3>
+        <ul>
+          <li>Le correctif d'A* de mcts-commun ne change ni les empreintes ni les résultats : les mêmes heures de la ligne et les mêmes journées de l'assemblage, au chiffre près.</li>
+          <li>Les 38 minutes d'une tranche des bacs vides venaient surtout de la machine chargée ; à charge égale, le correctif fait gagner 8 % sur la ligne, rien sur l'assemblage.</li>
+          <li>Chaque mesure peut dire ce que ses recherches ont vu (--diagnose) et essayer l'arrêt anticipé (--early), éteint par défaut ; ses essais sont dans la file.</li>
+        </ul>
+        <p class="commits"></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.26</span> La règle de jeu de la ligne, sur 100 heures <span class="date">27/10</span></h3>
         <ul>
           <li>La recherche de la ligne mesurée sur 100 heures par ligne. Elle gagne nettement aux tournées (59 tours d'arrêt par heure de moins que la meilleure règle) et au bord étroit, et ne trouve rien sur les lignes bien servies.</li>

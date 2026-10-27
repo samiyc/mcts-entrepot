@@ -12,20 +12,20 @@ const ROOT = new URL("../", import.meta.url);
 const SLICE = 25;
 const DAYS = 100;
 
-/** The jobs of one measure: `cost` minutes a unit (every rule and the search), sliced to `SLICE` minutes. */
-function jobsOf({ id, script, args, cost }) {
+/** The jobs of one measure: `days` units of `cost` minutes (every rule and the search), sliced to `SLICE` minutes. */
+function jobsOf({ id, script, args, cost, days = DAYS, folder = "night" }) {
   // As many slices as the units need, their sizes a unit apart at most.
-  const count = Math.ceil(DAYS / Math.max(1, Math.floor(SLICE / cost)));
+  const count = Math.ceil(days / Math.max(1, Math.floor(SLICE / cost)));
   const minutes = (units) => Math.max(1, Math.ceil(units * cost));
   const job = (jobId, command, units) => ({ id: jobId, command, estimate: `${minutes(units)} min`, limit: Math.max(30, 3 * minutes(units)) });
-  const fileOf = (jobId) => `tmp/night/${jobId}.jsonl`;
+  const fileOf = (jobId) => `tmp/${folder}/${jobId}.jsonl`;
   const run = ["node", `scripts/${script}`, args].filter(Boolean).join(" ");
   const command = (from, units, jobId) => `${run} --from ${from} --days ${units} --out ${fileOf(jobId)}`;
-  if (count === 1) return [job(id, command(1, DAYS, id), DAYS)];
-  const sizes = Array.from({ length: count }, (_, i) => Math.floor(DAYS / count) + (i < DAYS % count ? 1 : 0));
+  if (count === 1) return [job(id, command(1, days, id), days)];
+  const sizes = Array.from({ length: count }, (_, i) => Math.floor(days / count) + (i < days % count ? 1 : 0));
   const slices = sizes.map((units, i) => ({ from: 1 + sizes.slice(0, i).reduce((sum, one) => sum + one, 0), units }));
   const ids = slices.map(({ from }) => `${id}-${String(from).padStart(3, "0")}`);
-  const merge = { id: `${id}-reunion`, command: `${run} --from 1 --days ${DAYS} --merge ${ids.map(fileOf).join(" ")}`, estimate: "1 min", limit: 10, after: ids };
+  const merge = { id: `${id}-reunion`, command: `${run} --from 1 --days ${days} --merge ${ids.map(fileOf).join(" ")}`, estimate: "1 min", limit: 10, after: ids };
   return [...slices.map(({ from, units }, i) => job(ids[i], command(from, units, ids[i]), units)), merge];
 }
 
@@ -51,7 +51,23 @@ const NIGHT = [
 const ROLLOUT = [["petite", 0.11], ["etroite", 0.08], ["seul", 0.58], ["melange", 0.54], ["tournee", 0.52], ["sami", 1.38], ["retours", 2.33]]
   .map(([plan, cost]) => ({ id: `ligne-jeu-${plan}`, script: "line-rollout.js", args: `--plan ${plan} --short 30`, cost }));
 
+/**
+ * The trials mcts-commun asked of the warehouse (27/10/2026 evening, its docs/essais-projets.md): `earlyStop` paired on
+ * the search over 100 hours of the lines where the search wins (tours, the narrow edge, the empties; the search twice,
+ * the early one about three quarters of the other), and what `diagnose` says of the other lines, the plant and the
+ * warehouse's plans. The costs are those of 27/10 by day, three quarters more where the search runs twice.
+ */
+const LINE_COSTS = { petite: 0.06, sami: 0.62, seul: 0.3, etroite: 0.05, retours: 0.78, tournee: 0.25, melange: 0.21, supermarche: 0.48 };
+const ESSAIS = [
+  ...["tournee", "etroite", "retours"].map((plan) => ({ id: `essai-arret-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search --early`, cost: Math.round(175 * LINE_COSTS[plan]) / 100 })),
+  ...["petite", "sami", "seul", "melange", "supermarche"].map((plan) => ({ id: `essai-diagnose-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search --diagnose`, cost: LINE_COSTS[plan], days: 20 })),
+  { id: "essai-diagnose-usine", script: "plant-compare.js", args: "--plan train --robots 1 --search --diagnose", cost: 0.9, days: 20 },
+  ...[["petit", 0.1], ["sami", 0.8], ["couloirs", 0.92], ["flux", 1.3], ["assemblage", 1.5], ["quais", 3.5]]
+    .map(([plan, cost]) => ({ id: `essai-diagnose-${plan}-jour`, script: "compare.js", args: `--plan ${plan} --search --diagnose`, cost, days: 10 })),
+].map((measure) => ({ ...measure, folder: "essais" }));
+
 const write = (file, about, measures) => writeFileSync(new URL(file, ROOT), `${JSON.stringify({ about, jobs: measures.flatMap(jobsOf) }, null, 2)}\n`);
 write("night.json", "Les mesures de nuit (Sami, 23/10/2026, écrites par npm run night) : la recherche contre les règles, 100 journées par plan de l'entrepôt aux réglages par défaut, 100 heures par ligne, l'usine ; en tranches d'une demi-heure au plus, réunies par un job après elles (mcts-commun, 27/10). mcts-backlog --add-file mcts-entrepot/night.json, puis mcts-backlog.", NIGHT);
 write("night-rollout.json", "La règle de jeu de la recherche de la ligne (Sami, 26/10/2026, écrit par npm run night) : jouée par la plus proche ou par la couverture, sur les mêmes 100 heures par plan, et ce qu'en disent les 30 premières (scripts/line-rollout.js) ; en tranches d'une demi-heure au plus. mcts-backlog --add-file mcts-entrepot/night-rollout.json, puis mcts-backlog.", ROLLOUT);
-console.log("night.json, night-rollout.json");
+write("essais-commun.json", "Les essais demandés par mcts-commun (27/10/2026 au soir, écrits par npm run night) : earlyStop par paires sur la recherche, 100 heures des tournées, du bord étroit et des bacs vides ; ce que dit diagnose des autres lignes, de l'usine et des plans de l'entrepôt. mcts-backlog --add-file mcts-entrepot/essais-commun.json --tag essais-commun-AAAA-MM-JJ.", ESSAIS);
+console.log("night.json, night-rollout.json, essais-commun.json");
