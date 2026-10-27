@@ -28,12 +28,15 @@ au terrain, sont dans [`docs/recherche/hypotheses.md`](docs/recherche/hypotheses
 |---|---|
 | `npm run page` | la page, http://127.0.0.1:4802/web/ : Entrepôt, Ligne cadencée, Usine, Comparaisons, Replays, Stats |
 | `npm run compare -- [--plan sami] [--search]` | les règles de l'entrepôt, et la recherche, sur les mêmes journées |
-| `node scripts/compare-merge.js FICHIER…` | une longue mesure faite en morceaux (`compare -- --from N --out FICHIER`), réunie et comparée par paires |
 | `npm run line -- [--plan tournee] [--search]` | les règles de la ligne, et la recherche, sur les mêmes heures |
 | `node scripts/line-drivers.js` | ce que le cariste apporte à la ligne, ou ce qu'il coûte |
+| `npm run night` | `night.json` et `night-rollout.json`, les mesures longues pour la file, en tranches d'une demi-heure au plus |
 | `npm run check` | le lint, les types et les tests ; le hook le relance avant chaque commit |
 
-Les mesures longues passent par la file de la machine (`mcts-backlog --add-file mcts-entrepot/night.json`).
+Les mesures longues passent par la file de la machine (`mcts-backlog --add-file mcts-entrepot/night.json`). Chaque
+script de mesure prend `--from N --days D --out FICHIER` (une ligne JSON par journée ou par heure) et
+`--merge FICHIER…`, qui réunit les tranches en un seul tableau ([`docs/outillage.md`](docs/outillage.md), « Les jobs de
+la file »).
 L'outillage est décrit dans [`docs/outillage.md`](docs/outillage.md), le journal des versions dans la page.
 
 ## Deux étages

@@ -495,7 +495,7 @@ après assemblage (retouche, rebut), un colis qui part vers un autre poste plut�
 
 Les étapes communes aux trois dépôts sont dans la [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md) § 6 (Sami, 23/10 au soir) : l'ordonnanceur en commun pour les mesures de nuit, les replays avec un humain pour analyser les écarts, la vitrine. Le journal des versions est dans la page (`web/changelog.html`).
 
-1. **Les mesures de nuit** — prêtes (23/10) : `night.json` à la racine du dépôt, à ajouter à la file de la machine par `mcts-backlog --add-file` (mcts-commun), puis à lancer par `mcts-backlog` ; : la recherche contre les règles sur des centaines de journées, et ses réglages
+1. **Les mesures de nuit** — prêtes (23/10) : `night.json` à la racine du dépôt (écrit par `npm run night`, en tranches d'une demi-heure au plus depuis le 27/10), à ajouter à la file de la machine par `mcts-backlog --add-file` (mcts-commun), puis à lancer par `mcts-backlog` : la recherche contre les règles sur des centaines de journées, et ses réglages
    (budget, profondeur) à 80 % de blocage, où elle est la plus lente.
 2. **Le transfert de colis entre deux robots bloqués** — fait le 23/10 au soir (« Les relais », plus haut) ; reste
    à placer les robots hors du seul couloir d'un plan.

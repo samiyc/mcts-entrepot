@@ -100,6 +100,31 @@ corrige, on ne contourne pas le hook. `npm install` l'active par le script `prep
 d'abord, avec ses commits. `npm run changelog` en fait `web/changelog.html` ; le script est celui d'urgences. Le 26/10,
 les données ont été tirées de la page telle qu'elle était, et le fichier refait était identique à l'octet près.
 
+## Les jobs de la file
+
+Les mesures longues tournent dans la file de la machine (`mcts-backlog` de mcts-commun). Elles suivent ses
+recommandations du 27/10 (`../mcts-commun/docs/backlog.md`, « Recommandations aux projets »), écrites après qu'un job
+ne disait rien pendant 45 min, puis tout à la fin :
+- **dire où on en est** : chaque script de mesure (`compare`, `line-compare`, `line-drivers`, `line-rollout`,
+  `plant-compare`) appelle `progress` de `mcts-commun/trace.js` à chaque journée ou heure (`scripts/units.js`). Les
+  vues de la file disent « journée 12/30, fin vers 10:20 ». Une ligne courte part sur la sortie d'erreur, et le tableau
+  reste seul sur la sortie standard ;
+- **écrire au fil de l'eau** : `--out FICHIER` ajoute une ligne JSON par unité, ses mesures sous chaque règle. Un job
+  arrêté à sa limite garde ce qu'il a calculé ;
+- **des jobs d'une demi-heure au plus** : `--from N --days D` mesure une tranche, et `--merge FICHIER…` refait le
+  tableau des tranches. La réunion attend les unités de `--from` et `--days` : s'il en manque (une tranche coupée, ou
+  qui n'a jamais écrit), elle le dit et sort avec 1, et la file la montre en échec ;
+- **des estimations honnêtes** : `npm run night` (`scripts/night.js`) écrit `night.json` et `night-rollout.json` à
+  partir de ce qu'une unité a coûté la nuit du 26 au 27/10. Il coupe chaque mesure en tranches de 25 min au plus, avec
+  une `limit` de trois fois l'estimation (30 min au moins), puis ajoute le job qui les réunit (`after`) ;
+- **les fils** : les scripts n'en prennent qu'un, ce que la file donne par défaut (`MCTS_THREADS` vaut 1). Une erreur
+  sort avec un code non nul (une exception que rien ne rattrape). `--add-file` date chaque id ;
+- **jamais à la main dans `~/.mcts-backlog`** : les sorties vont dans `tmp/night/` du dépôt, hors de git.
+
+Essayé le 27/10 sur une file temporaire (`--home` d'un dossier du bloc-notes), pas sur la vraie : deux tranches et
+leur réunion finissent, la trace de chaque tranche porte ses `progress`, et une réunion à qui il manque une tranche
+finit en échec.
+
 ## mcts-commun
 
 L'entrepôt en dépend par `"mcts-commun": "file:../mcts-commun"` : `node_modules/mcts-commun` est un lien vers le

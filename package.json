@@ -20,7 +20,8 @@
     "bench": "node scripts/search-bench.js",
     "page": "node node_modules/mcts-commun/bin/serve.js 4802",
     "prepare": "git config core.hooksPath .githooks",
-    "changelog": "node scripts/changelog.js"
+    "changelog": "node scripts/changelog.js",
+    "night": "node scripts/night.js"
   },
   "author": "Sami",
   "license": "UNLICENSED",

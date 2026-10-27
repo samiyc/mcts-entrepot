@@ -33,6 +33,16 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.25</span> Des mesures de nuit qui disent où elles en sont <span class="date">27/10</span></h3>
+        <ul>
+          <li>Chaque mesure lancée par la file de la machine dit où elle en est (« journée 12/30, fin vers 10:20 ») et écrit ses résultats au fil de l'eau : un job arrêté garde ce qu'il a calculé.</li>
+          <li>Les mesures longues se coupent en tranches d'une demi-heure au plus, réunies ensuite en un seul tableau. Une réunion à qui il manque une tranche le dit, et finit en échec.</li>
+          <li>Les fichiers de la nuit (night.json, night-rollout.json) sont écrits par un script, avec des estimations tirées de ce que la nuit du 26 au 27/10 a coûté.</li>
+        </ul>
+        <p class="commits"></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.24</span> Ce que gagne la recherche avec le chargeur <span class="date">27/10</span></h3>
         <ul>
           <li>Avec le chargeur au quai, la recherche bat la meilleure règle sur 6 plans sur 8, mesurée par paires sur 100 journées : 5,7 tours sur le plan de Sami (99 journées sur 100), 9,7 au poste d'assemblage, 4,0 dans les couloirs.</li>

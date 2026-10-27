@@ -1,47 +1,295 @@
 {
-  "about": "La règle de jeu de la recherche de la ligne (Sami, 26/10/2026) : jouée par la plus proche ou par la couverture, sur les mêmes 100 heures par plan, et ce qu'en disent les 30 premières (scripts/line-rollout.js). Un travail par plan : mcts-backlog --add-file mcts-entrepot/night-rollout.json, puis mcts-backlog.",
+  "about": "La règle de jeu de la recherche de la ligne (Sami, 26/10/2026, écrit par npm run night) : jouée par la plus proche ou par la couverture, sur les mêmes 100 heures par plan, et ce qu'en disent les 30 premières (scripts/line-rollout.js) ; en tranches d'une demi-heure au plus. mcts-backlog --add-file mcts-entrepot/night-rollout.json, puis mcts-backlog.",
   "jobs": [
     {
       "id": "ligne-jeu-petite",
-      "command": "node scripts/line-rollout.js --plan petite --days 100 --short 30",
-      "estimate": "5 min",
+      "command": "node scripts/line-rollout.js --plan petite --short 30 --from 1 --days 100 --out tmp/night/ligne-jeu-petite.jsonl",
+      "estimate": "6 min",
       "limit": 30
     },
     {
       "id": "ligne-jeu-etroite",
-      "command": "node scripts/line-rollout.js --plan etroite --days 100 --short 30",
-      "estimate": "5 min",
+      "command": "node scripts/line-rollout.js --plan etroite --short 30 --from 1 --days 100 --out tmp/night/ligne-jeu-etroite.jsonl",
+      "estimate": "4 min",
       "limit": 30
     },
     {
-      "id": "ligne-jeu-seul",
-      "command": "node scripts/line-rollout.js --plan seul --days 100 --short 30",
-      "estimate": "20 min",
-      "limit": 60
+      "id": "ligne-jeu-seul-001",
+      "command": "node scripts/line-rollout.js --plan seul --short 30 --from 1 --days 50 --out tmp/night/ligne-jeu-seul-001.jsonl",
+      "estimate": "25 min",
+      "limit": 75
     },
     {
-      "id": "ligne-jeu-melange",
-      "command": "node scripts/line-rollout.js --plan melange --days 100 --short 30",
-      "estimate": "45 min",
-      "limit": 120
+      "id": "ligne-jeu-seul-051",
+      "command": "node scripts/line-rollout.js --plan seul --short 30 --from 51 --days 50 --out tmp/night/ligne-jeu-seul-051.jsonl",
+      "estimate": "25 min",
+      "limit": 75
     },
     {
-      "id": "ligne-jeu-tournee",
-      "command": "node scripts/line-rollout.js --plan tournee --days 100 --short 30",
-      "estimate": "50 min",
-      "limit": 150
+      "id": "ligne-jeu-seul-reunion",
+      "command": "node scripts/line-rollout.js --plan seul --short 30 --from 1 --days 100 --merge tmp/night/ligne-jeu-seul-001.jsonl tmp/night/ligne-jeu-seul-051.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ligne-jeu-seul-001",
+        "ligne-jeu-seul-051"
+      ]
     },
     {
-      "id": "ligne-jeu-sami",
-      "command": "node scripts/line-rollout.js --plan sami --days 100 --short 30",
-      "estimate": "2 h 30",
-      "limit": 300
+      "id": "ligne-jeu-melange-001",
+      "command": "node scripts/line-rollout.js --plan melange --short 30 --from 1 --days 50 --out tmp/night/ligne-jeu-melange-001.jsonl",
+      "estimate": "19 min",
+      "limit": 57
     },
     {
-      "id": "ligne-jeu-retours",
-      "command": "node scripts/line-rollout.js --plan retours --days 100 --short 30",
-      "estimate": "2 h 30",
-      "limit": 300
+      "id": "ligne-jeu-melange-051",
+      "command": "node scripts/line-rollout.js --plan melange --short 30 --from 51 --days 50 --out tmp/night/ligne-jeu-melange-051.jsonl",
+      "estimate": "19 min",
+      "limit": 57
+    },
+    {
+      "id": "ligne-jeu-melange-reunion",
+      "command": "node scripts/line-rollout.js --plan melange --short 30 --from 1 --days 100 --merge tmp/night/ligne-jeu-melange-001.jsonl tmp/night/ligne-jeu-melange-051.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ligne-jeu-melange-001",
+        "ligne-jeu-melange-051"
+      ]
+    },
+    {
+      "id": "ligne-jeu-tournee-001",
+      "command": "node scripts/line-rollout.js --plan tournee --short 30 --from 1 --days 50 --out tmp/night/ligne-jeu-tournee-001.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-tournee-051",
+      "command": "node scripts/line-rollout.js --plan tournee --short 30 --from 51 --days 50 --out tmp/night/ligne-jeu-tournee-051.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-tournee-reunion",
+      "command": "node scripts/line-rollout.js --plan tournee --short 30 --from 1 --days 100 --merge tmp/night/ligne-jeu-tournee-001.jsonl tmp/night/ligne-jeu-tournee-051.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ligne-jeu-tournee-001",
+        "ligne-jeu-tournee-051"
+      ]
+    },
+    {
+      "id": "ligne-jeu-sami-001",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 1 --days 8 --out tmp/night/ligne-jeu-sami-001.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-sami-009",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 9 --days 8 --out tmp/night/ligne-jeu-sami-009.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-sami-017",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 17 --days 8 --out tmp/night/ligne-jeu-sami-017.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-sami-025",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 25 --days 8 --out tmp/night/ligne-jeu-sami-025.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-sami-033",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 33 --days 8 --out tmp/night/ligne-jeu-sami-033.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-sami-041",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 41 --days 8 --out tmp/night/ligne-jeu-sami-041.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-sami-049",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 49 --days 8 --out tmp/night/ligne-jeu-sami-049.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-sami-057",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 57 --days 8 --out tmp/night/ligne-jeu-sami-057.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-sami-065",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 65 --days 8 --out tmp/night/ligne-jeu-sami-065.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "ligne-jeu-sami-073",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 73 --days 7 --out tmp/night/ligne-jeu-sami-073.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-jeu-sami-080",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 80 --days 7 --out tmp/night/ligne-jeu-sami-080.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-jeu-sami-087",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 87 --days 7 --out tmp/night/ligne-jeu-sami-087.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-jeu-sami-094",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 94 --days 7 --out tmp/night/ligne-jeu-sami-094.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-jeu-sami-reunion",
+      "command": "node scripts/line-rollout.js --plan sami --short 30 --from 1 --days 100 --merge tmp/night/ligne-jeu-sami-001.jsonl tmp/night/ligne-jeu-sami-009.jsonl tmp/night/ligne-jeu-sami-017.jsonl tmp/night/ligne-jeu-sami-025.jsonl tmp/night/ligne-jeu-sami-033.jsonl tmp/night/ligne-jeu-sami-041.jsonl tmp/night/ligne-jeu-sami-049.jsonl tmp/night/ligne-jeu-sami-057.jsonl tmp/night/ligne-jeu-sami-065.jsonl tmp/night/ligne-jeu-sami-073.jsonl tmp/night/ligne-jeu-sami-080.jsonl tmp/night/ligne-jeu-sami-087.jsonl tmp/night/ligne-jeu-sami-094.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ligne-jeu-sami-001",
+        "ligne-jeu-sami-009",
+        "ligne-jeu-sami-017",
+        "ligne-jeu-sami-025",
+        "ligne-jeu-sami-033",
+        "ligne-jeu-sami-041",
+        "ligne-jeu-sami-049",
+        "ligne-jeu-sami-057",
+        "ligne-jeu-sami-065",
+        "ligne-jeu-sami-073",
+        "ligne-jeu-sami-080",
+        "ligne-jeu-sami-087",
+        "ligne-jeu-sami-094"
+      ]
+    },
+    {
+      "id": "ligne-jeu-retours-001",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 1 --days 7 --out tmp/night/ligne-jeu-retours-001.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-008",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 8 --days 7 --out tmp/night/ligne-jeu-retours-008.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-015",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 15 --days 7 --out tmp/night/ligne-jeu-retours-015.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-022",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 22 --days 7 --out tmp/night/ligne-jeu-retours-022.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-029",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 29 --days 7 --out tmp/night/ligne-jeu-retours-029.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-036",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 36 --days 7 --out tmp/night/ligne-jeu-retours-036.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-043",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 43 --days 7 --out tmp/night/ligne-jeu-retours-043.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-050",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 50 --days 7 --out tmp/night/ligne-jeu-retours-050.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-057",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 57 --days 7 --out tmp/night/ligne-jeu-retours-057.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-064",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 64 --days 7 --out tmp/night/ligne-jeu-retours-064.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ligne-jeu-retours-071",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 71 --days 6 --out tmp/night/ligne-jeu-retours-071.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-jeu-retours-077",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 77 --days 6 --out tmp/night/ligne-jeu-retours-077.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-jeu-retours-083",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 83 --days 6 --out tmp/night/ligne-jeu-retours-083.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-jeu-retours-089",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 89 --days 6 --out tmp/night/ligne-jeu-retours-089.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-jeu-retours-095",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 95 --days 6 --out tmp/night/ligne-jeu-retours-095.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-jeu-retours-reunion",
+      "command": "node scripts/line-rollout.js --plan retours --short 30 --from 1 --days 100 --merge tmp/night/ligne-jeu-retours-001.jsonl tmp/night/ligne-jeu-retours-008.jsonl tmp/night/ligne-jeu-retours-015.jsonl tmp/night/ligne-jeu-retours-022.jsonl tmp/night/ligne-jeu-retours-029.jsonl tmp/night/ligne-jeu-retours-036.jsonl tmp/night/ligne-jeu-retours-043.jsonl tmp/night/ligne-jeu-retours-050.jsonl tmp/night/ligne-jeu-retours-057.jsonl tmp/night/ligne-jeu-retours-064.jsonl tmp/night/ligne-jeu-retours-071.jsonl tmp/night/ligne-jeu-retours-077.jsonl tmp/night/ligne-jeu-retours-083.jsonl tmp/night/ligne-jeu-retours-089.jsonl tmp/night/ligne-jeu-retours-095.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ligne-jeu-retours-001",
+        "ligne-jeu-retours-008",
+        "ligne-jeu-retours-015",
+        "ligne-jeu-retours-022",
+        "ligne-jeu-retours-029",
+        "ligne-jeu-retours-036",
+        "ligne-jeu-retours-043",
+        "ligne-jeu-retours-050",
+        "ligne-jeu-retours-057",
+        "ligne-jeu-retours-064",
+        "ligne-jeu-retours-071",
+        "ligne-jeu-retours-077",
+        "ligne-jeu-retours-083",
+        "ligne-jeu-retours-089",
+        "ligne-jeu-retours-095"
+      ]
     }
   ]
 }

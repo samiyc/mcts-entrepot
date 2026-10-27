@@ -72,6 +72,17 @@
   ],
   "versions": [
     {
+      "version": "0.25",
+      "title": "Des mesures de nuit qui disent où elles en sont",
+      "date": "27/10",
+      "items": [
+        "Chaque mesure lancée par la file de la machine dit où elle en est (« journée 12/30, fin vers 10:20 ») et écrit ses résultats au fil de l'eau : un job arrêté garde ce qu'il a calculé.",
+        "Les mesures longues se coupent en tranches d'une demi-heure au plus, réunies ensuite en un seul tableau. Une réunion à qui il manque une tranche le dit, et finit en échec.",
+        "Les fichiers de la nuit (night.json, night-rollout.json) sont écrits par un script, avec des estimations tirées de ce que la nuit du 26 au 27/10 a coûté."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.24",
       "title": "Ce que gagne la recherche avec le chargeur",
       "date": "27/10",

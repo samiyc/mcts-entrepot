@@ -1,91 +1,444 @@
 {
-  "about": "Les mesures de nuit de l'entrepôt (Sami, 23/10/2026) : la recherche contre les règles, 100 journées par plan, aux réglages par défaut (allée bloquée 80 % du temps). Une par plan, un fil chacune : mcts-backlog --add-file mcts-entrepot/night.json, puis mcts-backlog. La ligne cadencée (26/10/2026) : la recherche contre les règles de la ligne, 100 heures par plan.",
+  "about": "Les mesures de nuit (Sami, 23/10/2026, écrites par npm run night) : la recherche contre les règles, 100 journées par plan de l'entrepôt aux réglages par défaut, 100 heures par ligne, l'usine ; en tranches d'une demi-heure au plus, réunies par un job après elles (mcts-commun, 27/10). mcts-backlog --add-file mcts-entrepot/night.json, puis mcts-backlog.",
   "jobs": [
     {
       "id": "ent-petit",
-      "command": "npm run compare -- --plan petit --days 100 --search",
-      "estimate": "8 min"
+      "command": "node scripts/compare.js --plan petit --search --from 1 --days 100 --out tmp/night/ent-petit.jsonl",
+      "estimate": "10 min",
+      "limit": 30
     },
     {
-      "id": "ent-sami",
-      "command": "npm run compare -- --plan sami --days 100 --search",
-      "estimate": "25 min"
+      "id": "ent-sami-001",
+      "command": "node scripts/compare.js --plan sami --search --from 1 --days 25 --out tmp/night/ent-sami-001.jsonl",
+      "estimate": "20 min",
+      "limit": 60
     },
     {
-      "id": "ent-quais",
-      "command": "npm run compare -- --plan quais --days 100 --search",
-      "estimate": "25 min"
+      "id": "ent-sami-026",
+      "command": "node scripts/compare.js --plan sami --search --from 26 --days 25 --out tmp/night/ent-sami-026.jsonl",
+      "estimate": "20 min",
+      "limit": 60
     },
     {
-      "id": "ent-couloirs",
-      "command": "npm run compare -- --plan couloirs --days 100 --search",
-      "estimate": "6 min"
+      "id": "ent-sami-051",
+      "command": "node scripts/compare.js --plan sami --search --from 51 --days 25 --out tmp/night/ent-sami-051.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "ent-sami-076",
+      "command": "node scripts/compare.js --plan sami --search --from 76 --days 25 --out tmp/night/ent-sami-076.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "ent-sami-reunion",
+      "command": "node scripts/compare.js --plan sami --search --from 1 --days 100 --merge tmp/night/ent-sami-001.jsonl tmp/night/ent-sami-026.jsonl tmp/night/ent-sami-051.jsonl tmp/night/ent-sami-076.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ent-sami-001",
+        "ent-sami-026",
+        "ent-sami-051",
+        "ent-sami-076"
+      ]
+    },
+    {
+      "id": "ent-quais-001",
+      "command": "node scripts/compare.js --plan quais --search --from 1 --days 7 --out tmp/night/ent-quais-001.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-008",
+      "command": "node scripts/compare.js --plan quais --search --from 8 --days 7 --out tmp/night/ent-quais-008.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-015",
+      "command": "node scripts/compare.js --plan quais --search --from 15 --days 7 --out tmp/night/ent-quais-015.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-022",
+      "command": "node scripts/compare.js --plan quais --search --from 22 --days 7 --out tmp/night/ent-quais-022.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-029",
+      "command": "node scripts/compare.js --plan quais --search --from 29 --days 7 --out tmp/night/ent-quais-029.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-036",
+      "command": "node scripts/compare.js --plan quais --search --from 36 --days 7 --out tmp/night/ent-quais-036.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-043",
+      "command": "node scripts/compare.js --plan quais --search --from 43 --days 7 --out tmp/night/ent-quais-043.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-050",
+      "command": "node scripts/compare.js --plan quais --search --from 50 --days 7 --out tmp/night/ent-quais-050.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-057",
+      "command": "node scripts/compare.js --plan quais --search --from 57 --days 7 --out tmp/night/ent-quais-057.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-064",
+      "command": "node scripts/compare.js --plan quais --search --from 64 --days 7 --out tmp/night/ent-quais-064.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "ent-quais-071",
+      "command": "node scripts/compare.js --plan quais --search --from 71 --days 6 --out tmp/night/ent-quais-071.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-quais-077",
+      "command": "node scripts/compare.js --plan quais --search --from 77 --days 6 --out tmp/night/ent-quais-077.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-quais-083",
+      "command": "node scripts/compare.js --plan quais --search --from 83 --days 6 --out tmp/night/ent-quais-083.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-quais-089",
+      "command": "node scripts/compare.js --plan quais --search --from 89 --days 6 --out tmp/night/ent-quais-089.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-quais-095",
+      "command": "node scripts/compare.js --plan quais --search --from 95 --days 6 --out tmp/night/ent-quais-095.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-quais-reunion",
+      "command": "node scripts/compare.js --plan quais --search --from 1 --days 100 --merge tmp/night/ent-quais-001.jsonl tmp/night/ent-quais-008.jsonl tmp/night/ent-quais-015.jsonl tmp/night/ent-quais-022.jsonl tmp/night/ent-quais-029.jsonl tmp/night/ent-quais-036.jsonl tmp/night/ent-quais-043.jsonl tmp/night/ent-quais-050.jsonl tmp/night/ent-quais-057.jsonl tmp/night/ent-quais-064.jsonl tmp/night/ent-quais-071.jsonl tmp/night/ent-quais-077.jsonl tmp/night/ent-quais-083.jsonl tmp/night/ent-quais-089.jsonl tmp/night/ent-quais-095.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ent-quais-001",
+        "ent-quais-008",
+        "ent-quais-015",
+        "ent-quais-022",
+        "ent-quais-029",
+        "ent-quais-036",
+        "ent-quais-043",
+        "ent-quais-050",
+        "ent-quais-057",
+        "ent-quais-064",
+        "ent-quais-071",
+        "ent-quais-077",
+        "ent-quais-083",
+        "ent-quais-089",
+        "ent-quais-095"
+      ]
+    },
+    {
+      "id": "ent-couloirs-001",
+      "command": "node scripts/compare.js --plan couloirs --search --from 1 --days 25 --out tmp/night/ent-couloirs-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-couloirs-026",
+      "command": "node scripts/compare.js --plan couloirs --search --from 26 --days 25 --out tmp/night/ent-couloirs-026.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-couloirs-051",
+      "command": "node scripts/compare.js --plan couloirs --search --from 51 --days 25 --out tmp/night/ent-couloirs-051.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-couloirs-076",
+      "command": "node scripts/compare.js --plan couloirs --search --from 76 --days 25 --out tmp/night/ent-couloirs-076.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-couloirs-reunion",
+      "command": "node scripts/compare.js --plan couloirs --search --from 1 --days 100 --merge tmp/night/ent-couloirs-001.jsonl tmp/night/ent-couloirs-026.jsonl tmp/night/ent-couloirs-051.jsonl tmp/night/ent-couloirs-076.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ent-couloirs-001",
+        "ent-couloirs-026",
+        "ent-couloirs-051",
+        "ent-couloirs-076"
+      ]
+    },
+    {
+      "id": "ent-flux-001",
+      "command": "node scripts/compare.js --plan flux --search --from 1 --days 17 --out tmp/night/ent-flux-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-flux-018",
+      "command": "node scripts/compare.js --plan flux --search --from 18 --days 17 --out tmp/night/ent-flux-018.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-flux-035",
+      "command": "node scripts/compare.js --plan flux --search --from 35 --days 17 --out tmp/night/ent-flux-035.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-flux-052",
+      "command": "node scripts/compare.js --plan flux --search --from 52 --days 17 --out tmp/night/ent-flux-052.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-flux-069",
+      "command": "node scripts/compare.js --plan flux --search --from 69 --days 16 --out tmp/night/ent-flux-069.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-flux-085",
+      "command": "node scripts/compare.js --plan flux --search --from 85 --days 16 --out tmp/night/ent-flux-085.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-flux-reunion",
+      "command": "node scripts/compare.js --plan flux --search --from 1 --days 100 --merge tmp/night/ent-flux-001.jsonl tmp/night/ent-flux-018.jsonl tmp/night/ent-flux-035.jsonl tmp/night/ent-flux-052.jsonl tmp/night/ent-flux-069.jsonl tmp/night/ent-flux-085.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ent-flux-001",
+        "ent-flux-018",
+        "ent-flux-035",
+        "ent-flux-052",
+        "ent-flux-069",
+        "ent-flux-085"
+      ]
+    },
+    {
+      "id": "ent-assemblage-001",
+      "command": "node scripts/compare.js --plan assemblage --search --from 1 --days 15 --out tmp/night/ent-assemblage-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-assemblage-016",
+      "command": "node scripts/compare.js --plan assemblage --search --from 16 --days 15 --out tmp/night/ent-assemblage-016.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ent-assemblage-031",
+      "command": "node scripts/compare.js --plan assemblage --search --from 31 --days 14 --out tmp/night/ent-assemblage-031.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-assemblage-045",
+      "command": "node scripts/compare.js --plan assemblage --search --from 45 --days 14 --out tmp/night/ent-assemblage-045.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-assemblage-059",
+      "command": "node scripts/compare.js --plan assemblage --search --from 59 --days 14 --out tmp/night/ent-assemblage-059.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-assemblage-073",
+      "command": "node scripts/compare.js --plan assemblage --search --from 73 --days 14 --out tmp/night/ent-assemblage-073.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-assemblage-087",
+      "command": "node scripts/compare.js --plan assemblage --search --from 87 --days 14 --out tmp/night/ent-assemblage-087.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ent-assemblage-reunion",
+      "command": "node scripts/compare.js --plan assemblage --search --from 1 --days 100 --merge tmp/night/ent-assemblage-001.jsonl tmp/night/ent-assemblage-016.jsonl tmp/night/ent-assemblage-031.jsonl tmp/night/ent-assemblage-045.jsonl tmp/night/ent-assemblage-059.jsonl tmp/night/ent-assemblage-073.jsonl tmp/night/ent-assemblage-087.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ent-assemblage-001",
+        "ent-assemblage-016",
+        "ent-assemblage-031",
+        "ent-assemblage-045",
+        "ent-assemblage-059",
+        "ent-assemblage-073",
+        "ent-assemblage-087"
+      ]
     },
     {
       "id": "ligne-petite",
-      "command": "npm run line -- --plan petite --days 100 --search",
-      "estimate": "5 min"
+      "command": "node scripts/line-compare.js --plan petite --search --from 1 --days 100 --out tmp/night/ligne-petite.jsonl",
+      "estimate": "5 min",
+      "limit": 30
     },
     {
       "id": "ligne-sami",
-      "command": "npm run line -- --plan sami --days 100 --search",
-      "estimate": "20 min"
+      "command": "node scripts/line-compare.js --plan sami --search --from 1 --days 100 --out tmp/night/ligne-sami.jsonl",
+      "estimate": "20 min",
+      "limit": 60
     },
     {
       "id": "ligne-seul",
-      "command": "npm run line -- --plan seul --days 100 --search",
-      "estimate": "15 min"
+      "command": "node scripts/line-compare.js --plan seul --search --from 1 --days 100 --out tmp/night/ligne-seul.jsonl",
+      "estimate": "15 min",
+      "limit": 45
     },
     {
       "id": "ligne-etroite",
-      "command": "npm run line -- --plan etroite --days 100 --search",
-      "estimate": "8 min"
+      "command": "node scripts/line-compare.js --plan etroite --search --from 1 --days 100 --out tmp/night/ligne-etroite.jsonl",
+      "estimate": "8 min",
+      "limit": 30
     },
     {
-      "id": "ligne-retours",
-      "command": "npm run line -- --plan retours --days 100 --search",
-      "estimate": "45 min"
+      "id": "ligne-retours-001",
+      "command": "node scripts/line-compare.js --plan retours --search --from 1 --days 50 --out tmp/night/ligne-retours-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ligne-retours-051",
+      "command": "node scripts/line-compare.js --plan retours --search --from 51 --days 50 --out tmp/night/ligne-retours-051.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "ligne-retours-reunion",
+      "command": "node scripts/line-compare.js --plan retours --search --from 1 --days 100 --merge tmp/night/ligne-retours-001.jsonl tmp/night/ligne-retours-051.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ligne-retours-001",
+        "ligne-retours-051"
+      ]
     },
     {
       "id": "ligne-tournee",
-      "command": "npm run line -- --plan tournee --days 100 --search",
-      "estimate": "15 min"
+      "command": "node scripts/line-compare.js --plan tournee --search --from 1 --days 100 --out tmp/night/ligne-tournee.jsonl",
+      "estimate": "15 min",
+      "limit": 45
     },
     {
       "id": "ligne-melange",
-      "command": "npm run line -- --plan melange --days 100 --search",
-      "estimate": "10 min"
+      "command": "node scripts/line-compare.js --plan melange --search --from 1 --days 100 --out tmp/night/ligne-melange.jsonl",
+      "estimate": "10 min",
+      "limit": 30
+    },
+    {
+      "id": "ligne-supermarche-001",
+      "command": "node scripts/line-compare.js --plan supermarche --search --from 1 --days 34 --out tmp/night/ligne-supermarche-001.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "ligne-supermarche-035",
+      "command": "node scripts/line-compare.js --plan supermarche --search --from 35 --days 33 --out tmp/night/ligne-supermarche-035.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "ligne-supermarche-068",
+      "command": "node scripts/line-compare.js --plan supermarche --search --from 68 --days 33 --out tmp/night/ligne-supermarche-068.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "ligne-supermarche-reunion",
+      "command": "node scripts/line-compare.js --plan supermarche --search --from 1 --days 100 --merge tmp/night/ligne-supermarche-001.jsonl tmp/night/ligne-supermarche-035.jsonl tmp/night/ligne-supermarche-068.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "ligne-supermarche-001",
+        "ligne-supermarche-035",
+        "ligne-supermarche-068"
+      ]
     },
     {
       "id": "ligne-cariste",
-      "command": "node scripts/line-drivers.js --days 100",
-      "estimate": "15 min"
-    },
-    {
-      "id": "ligne-supermarche",
-      "command": "npm run line -- --plan supermarche --days 100 --search",
-      "estimate": "1 h"
-    },
-    {
-      "id": "ent-flux",
-      "command": "npm run compare -- --plan flux --days 100 --search",
-      "estimate": "30 min"
+      "command": "node scripts/line-drivers.js --from 1 --days 100 --out tmp/night/ligne-cariste.jsonl",
+      "estimate": "15 min",
+      "limit": 45
     },
     {
       "id": "usine",
-      "command": "npm run plant -- --days 100",
-      "estimate": "15 min"
+      "command": "node scripts/plant-compare.js --plan usine --from 1 --days 100 --out tmp/night/usine.jsonl",
+      "estimate": "15 min",
+      "limit": 45
     },
     {
       "id": "usine-train",
-      "command": "npm run plant -- --plan train --days 100",
-      "estimate": "10 min"
+      "command": "node scripts/plant-compare.js --plan train --from 1 --days 100 --out tmp/night/usine-train.jsonl",
+      "estimate": "10 min",
+      "limit": 30
     },
     {
-      "id": "usine-train-recherche",
-      "command": "npm run plant -- --plan train --days 100 --robots 1 --search",
-      "estimate": "45 min",
-      "limit": 120
+      "id": "usine-train-recherche-001",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --from 1 --days 25 --out tmp/night/usine-train-recherche-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "usine-train-recherche-026",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --from 26 --days 25 --out tmp/night/usine-train-recherche-026.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "usine-train-recherche-051",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --from 51 --days 25 --out tmp/night/usine-train-recherche-051.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "usine-train-recherche-076",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --from 76 --days 25 --out tmp/night/usine-train-recherche-076.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "usine-train-recherche-reunion",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --from 1 --days 100 --merge tmp/night/usine-train-recherche-001.jsonl tmp/night/usine-train-recherche-026.jsonl tmp/night/usine-train-recherche-051.jsonl tmp/night/usine-train-recherche-076.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "usine-train-recherche-001",
+        "usine-train-recherche-026",
+        "usine-train-recherche-051",
+        "usine-train-recherche-076"
+      ]
     }
   ]
 }
