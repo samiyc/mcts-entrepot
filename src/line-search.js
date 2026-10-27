@@ -16,7 +16,7 @@ import { drawBlockages } from "./simulate.js";
  * cover 11 minutes, 15 minutes see what a choice costs), by `rollout` beyond the tree, and scored on the turns the line
  * stood still against the same rule's from the same point.
  */
-export const LINE_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 180, rollout: "nearest", calm: false });
+export const LINE_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 180, rollout: "nearest", calm: true, earlyStop: true });
 
 /** The shortages of a world: those seen go on a drawn while, those to come are drawn again after now. */
 function worldShortages(state, rng) {
@@ -98,7 +98,8 @@ function baseOf(state, rng, rule, runs = 4) {
  * The search as a rule (line.js's signature, reading `context.state`): a single open request is taken at once;
  * otherwise `budget` iterations, seeded from the turn and the robot. With `calm` (Sami, 26/10/2026: the search is
  * slow on well-fed lines and gains nothing there), when the rollout rule stops the line in none of the worlds drawn for
- * the base, there is nothing to win: the rule's choice, without a tree. `earlyStop` and `onSearch` as in search.js.
+ * the base, there is nothing to win: the rule's choice, without a tree; on by default since 27/10/2026 (no line worse
+ * over 100 hours, up to 92 % fewer searches). `earlyStop` and `onSearch` as in search.js.
  * @param {Record<string, any> & import("./types.js").SearchHooks} [options]
  * @returns {import("./types.js").Rule}
  */

@@ -15,7 +15,8 @@ import { advance, choose, cloneDay, drawBlockages, measuresOf, nextChoice } from
  * A world is scored against the list order's day from the same point: ½ for the same finish, a turn earlier
  * or later worth `1 / spread` per truck, so that a few turns weigh in the tree as they do in the warehouse.
  */
-export const SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1 });
+// earlyStop on since 27/10/2026 (Sami): the same days to the turn on every plan, a search up to a third shorter.
+export const SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, earlyStop: true });
 
 /** A world consistent with what the robots know at this choice. */
 export function drawWorld(state, rng) {
@@ -83,8 +84,8 @@ function baseOf(state, rng, runs = 4) {
 
 /**
  * The search as a rule (simulate.js's signature, reading `context.state`): a single open order is taken at
- * once; otherwise `budget` iterations, seeded from the turn and the robot. `earlyStop` (off: mcts-commun, 27/10/2026)
- * stops a search once its leader cannot be caught; `onSearch(found, depth)` sees each result (scripts/searches.js).
+ * once; otherwise `budget` iterations, seeded from the turn and the robot. `earlyStop` (mcts-commun, 27/10/2026, on
+ * by default) stops a search once its leader cannot be caught; `onSearch(found, depth)` sees each result (scripts/searches.js).
  * @param {Record<string, any> & import("./types.js").SearchHooks} [options]
  * @returns {import("./types.js").Rule}
  */

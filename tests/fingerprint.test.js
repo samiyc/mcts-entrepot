@@ -20,7 +20,8 @@ const EXPECTED = {
   rules: "f4246396d157eb59",
   variants: "f4a686a4a04ed798",
   search: "5e85a8ef85c3bcc5",
-  line: "85e28c2d2b6d0b86",
+  // 27/10/2026: calm on by default, its short hour of the search plays the rule where nothing is to win.
+  line: "eca391e5b795329c",
   plant: "e05d63d3eb8ac964",
   kits: "191d9cd342d57a27",
 };

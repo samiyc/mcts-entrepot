@@ -72,6 +72,17 @@
   ],
   "versions": [
     {
+      "version": "0.29",
+      "title": "L'arrêt anticipé et calm par défaut",
+      "date": "27/10",
+      "items": [
+        "La recherche s'arrête dès que son coup en tête ne peut plus être rattrapé : les mêmes journées et les mêmes heures partout, jusqu'à un tiers de temps en moins (le flux, les trois quais).",
+        "Sur la ligne, la recherche laisse la règle jouer quand rien n'est à gagner : aucune ligne n'y perd, et elle coûte de 27 à 93 % de moins.",
+        "Chercher deux fois plus longtemps n'est pas retenu : un gain net à l'assemblage, une perte chaque journée sur le plan de Sami."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.28",
       "title": "L'arrêt anticipé de la recherche, mesuré",
       "date": "27/10",

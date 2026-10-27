@@ -14,7 +14,7 @@ import { drawWorld } from "./search.js";
  * stood still against the rollout's from the same point. When the rollout stops the line in none of the worlds drawn
  * for that base, there is nothing to win: the rollout's choice, without a tree.
  */
-export const PLANT_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 360, lineRule: "kanban", rollout: "list" });
+export const PLANT_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 360, lineRule: "kanban", rollout: "list", earlyStop: true });
 
 /** A plant consistent with what the robots know at this choice: the warehouse's, the line's, played up to `limit`. */
 export function drawPlantWorld(plant, rng, limit) {

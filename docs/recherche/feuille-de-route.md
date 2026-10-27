@@ -130,11 +130,12 @@ Reste :
   couverture devant la plus proche sur les quatre lignes où le robot manque, et nulle part derrière
   ([../modele-ligne.md](../modele-ligne.md)). Reste à en faire le défaut (les empreintes changent) ; l'option `calm` n'est
   pas mesurée ;
-- **l'arrêt anticipé de la recherche** (`earlyStop` de mcts-commun, 27/10 au soir) : mesuré par paires sur 100 heures
-  des tournées, du bord étroit et des bacs vides, il rend les mêmes heures pour un quart de temps de recherche en moins,
-  et ne bougerait aucune empreinte ([../modele-ligne.md](../modele-ligne.md)). En faire le défaut est à Sami, comme pour
-  la couverture. `diagnose` désigne ensuite `calm` sur les lignes bien servies, et plus d'itérations là où le robot
-  manque ;
+- ~~l'arrêt anticipé, `calm`, plus d'itérations~~ : **mesurés la nuit du 27/10** (119 jobs, par paires,
+  [../modele-ligne.md](../modele-ligne.md)). L'arrêt anticipé est adopté dans les trois recherches : les mêmes résultats
+  partout, jusqu'à un tiers de temps en moins. `calm` est adopté sur la ligne : aucune ligne n'y perd, et la recherche
+  y coûte de 27 à 93 % de moins. 128 itérations ne sont pas adoptées : elles gagnent à l'assemblage et perdent chaque
+  journée du plan de Sami. Reste à comprendre pourquoi chercher plus y joue moins bien (le score), et à décider d'un
+  budget propre à l'assemblage ;
 - ~~relier l'entrepôt au supermarché~~ : **fait le 26/10**, l'usine (`src/plant.js`, onglet Usine,
   [../modele-ligne.md](../modele-ligne.md)). Il en reste les replays de l'usine ;
 - ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la

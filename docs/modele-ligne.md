@@ -466,3 +466,55 @@ complète sont ici.)
    quarts de celles des lignes bien servies ;
 3. **plus d'itérations là où `fewIterations` domine**, avec le temps gagné par les deux premières, mesurées par paires
    sur les tournées et la ligne à un robot.
+
+## Les trois décisions, adoptées ou non (27/10, la nuit)
+
+Sami (27/10) : « lance des tests pour valider les trois décisions (earlyStop, calm, itérations) ; si c'est ok, on les
+adopte par défaut ». 119 jobs `decisions-2026-10-27` (`decisions.json`), tous finis sans échec. Chaque variante est
+mesurée par paires sur la recherche d'avant (`--variant`), sur les mêmes unités :
+- la ligne : `calm` avec l'arrêt anticipé, puis 128 itérations par-dessus, 100 heures de chaque ligne ;
+- l'entrepôt : l'arrêt anticipé, puis 128 itérations, 30 journées de chaque plan ;
+- l'usine : pareil, 50 heures de la navette à heure fixe.
+
+**1. L'arrêt anticipé : adopté** (`earlyStop: true` dans les trois recherches). Aucune journée de l'entrepôt ne
+diffère, sur aucun plan, ni aucune heure de l'usine. La ligne l'avait montré sur 300 heures. Les empreintes ne bougent
+pas. Le temps d'une décision gagné : 33 % au flux, 27 % aux trois quais, 18 % à l'assemblage, 11 % au plan de Sami, 4 % à
+l'usine. Rien au petit entrepôt ni aux couloirs : l'arrêt ne s'y déclenche jamais, il y a trop de coups à la racine
+pour qu'un coup en tête soit acquis.
+
+**2. `calm` sur la ligne : adopté** (`calm: true`). Aucune ligne n'y perd :
+
+| Ligne | `calm` sur la recherche (tours d'arrêt évités par heure) | Décisions cherchées | Temps de recherche |
+|---|---|---|---|
+| petite | −0,2 (−1,8 à 1,3) | 974 → 82 | 391 s → 33 s (−92 %) |
+| ligne de Sami | 0,3 (−0,4 à 1,0) | 3 102 → 293 | 3 276 s → 240 s (−93 %) |
+| supermarché | −0,0 (−0,1 à 0,0) | 2 335 → 702 | 2 697 s → 525 s (−81 %) |
+| mélange | 4,5 (−3,3 à 12,4) | 4 288 → 1 083 | 1 612 s → 342 s (−79 %) |
+| un robot | 4,0 (−4,1 à 12,1) | 5 024 → 2 937 | 1 723 s → 769 s (−55 %) |
+| bacs vides | 0,4 (−3,8 à 4,6) | 4 871 → 3 525 | 6 025 s → 3 553 s (−41 %) |
+| tournées | 0,4 (−4,6 à 5,4) | 4 666 → 3 569 | 1 815 s → 1 074 s (−41 %) |
+| bord étroit | 0,0 (identique) | 505 → 500 | 305 s → 223 s (−27 %) |
+
+Le temps compte l'arrêt anticipé avec `calm`. Les décisions que `calm` laisse à la règle sont celles où la règle n'arrête
+la ligne dans aucun monde : `flatScore` y tombe de 70 à 80 % des décisions à 20 % environ (49 % sur la petite ligne). L'empreinte de la ligne
+change, puisque son heure courte de recherche saute ces décisions : `85e28c2d2b6d0b86` devient `eca391e5b795329c`.
+
+**3. 128 itérations : pas adopté.** Le budget reste à 64. Par paires sur la variante d'avant :
+
+| Plan | 128 itérations sur 64 | Unités gagnées / perdues |
+|---|---|---|
+| assemblage (attente des camions) | **16,1 (8,0 à 24,2)** | 27 / 3 |
+| flux | 5,4 (−2,1 à 12,9) | 7 / 3 |
+| plan de Sami | **−2,8 (−4,4 à −1,2)** | 0 / 30 |
+| petit, couloirs, trois quais, usine | 0 (identique) | — |
+| lignes (tours d'arrêt) | de −5,2 (tournées, −13,3 à 3,0) à 2,3 (un robot, −4,9 à 9,5), rien de net | — |
+
+- Elles gagnent nettement à l'assemblage, mais perdent chaque journée du plan de Sami, et ne font rien ailleurs. Elles
+  coûtent 1,7 à 2 fois le temps.
+- Une recherche qui joue moins bien en cherchant plus regarde sans doute un mauvais score : sur le plan de Sami, son
+  écart à la moyenne de la liste, divisé par `spread`, ne serait pas la bonne mesure. C'est la piste à suivre avant de
+  donner plus d'itérations.
+- Un budget propre à l'assemblage serait un réglage du plan : il est à décider.
+
+Avec `diagnose` corrigé (mcts-commun `a2c66bd`, qui juge `closeCall` sur l'écart mesuré par paires), ces jobs ont tourné
+pour partie avant et après la correction : leurs comptes de codes ne se comparent pas à ceux de la section d'avant.
