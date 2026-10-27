@@ -72,6 +72,16 @@
   ],
   "versions": [
     {
+      "version": "0.28",
+      "title": "L'arrêt anticipé de la recherche, mesuré",
+      "date": "27/10",
+      "items": [
+        "L'arrêt anticipé rend exactement les mêmes 300 heures de ligne (tournées, bord étroit, bacs vides) que la recherche complète, pour 21 à 28 % d'itérations et de temps en moins ; les empreintes ne bougeraient pas. Le mettre par défaut est à décider.",
+        "Ce que voit la recherche : trop peu d'itérations par coup là où le robot manque, des coups qui se valent tous là où la ligne est bien servie, presque jamais un arbre trop court."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.27",
       "title": "Le correctif d'A* de mcts-commun, et ce que voit la recherche",
       "date": "27/10",

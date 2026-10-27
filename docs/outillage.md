@@ -186,7 +186,10 @@ Lire un résultat ne change rien à la recherche : les mesures avec `--diagnose`
 - `earlyStop` sur 100 heures des tournées, du bord étroit et des bacs vides, en tranches de 25 min au plus ;
 - `diagnose` sur 20 heures des cinq autres lignes et de l'usine, et sur 10 journées de chaque plan de l'entrepôt.
 
-Les sorties vont dans `tmp/essais/`. Leurs résultats : [modele-ligne.md](modele-ligne.md), quand ils seront là.
+Les sorties vont dans `tmp/essais/`. Les 25 ont fini à 19:52, sans incident, et souvent plus vite qu'estimé (l'entrepôt
+en 4 à 6 min pour 8 à 18 annoncées). Leurs résultats sont dans [modele-ligne.md](modele-ligne.md), « L'arrêt anticipé, et ce
+que voit la recherche » : l'arrêt anticipé rend les mêmes 300 heures pour un quart de temps de recherche en moins, et
+`fewIterations` domine là où le robot manque.
 
 **Les robots se gênent-ils assez pour PIBT ?** (la question de mcts-commun, `recherche.md` § 3 et 4) Pas encore :
 - **attendre** coûte de 1,3 à 10 % des pas dans l'entrepôt, et 2 % à la ligne. Le plus haut est le plan de Sami sous

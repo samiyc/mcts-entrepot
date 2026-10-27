@@ -408,3 +408,61 @@ Les tours d'arrêt évités par heure sur la meilleure règle, par paires, même
 
 **Le coût** : de 0,05 min par heure de ligne (le bord étroit) à 0,8 (les bacs vides) pour une mesure, et jusqu'à 2,3
 pour la campagne aux bacs vides, 18 fils occupés. `scripts/night.js` les a repris.
+
+## L'arrêt anticipé, et ce que voit la recherche (27/10, le soir)
+
+Les essais demandés par mcts-commun ([../outillage.md](../outillage.md)) : 25 jobs `essais-commun-2026-10-27`, de
+18:02 à 19:52, tous finis, sans incident.
+
+**L'arrêt anticipé** (`earlyStop`, `line-compare --early`) arrête une recherche dès que son coup en tête ne peut plus
+être rattrapé. Il est comparé par paires à la recherche, sur les mêmes 100 heures :
+
+| Ligne | Arrêt, les deux recherches | Heures qui diffèrent | Itérations par décision | Temps par décision |
+|---|---|---|---|---|
+| tournées | 105,4 | 0 sur 100 | 64 → 47,3 (−26 %) | 332 → 239 ms (−28 %) |
+| bord étroit | 136,3 | 0 sur 100 | 64 → 47,0 (−27 %) | 508 → 373 ms (−27 %) |
+| bacs vides | 85,0 | 0 sur 100 | 64 → 50,6 (−21 %) | 844 → 646 ms (−23 %) |
+
+- **Les mêmes heures, au tour près, pour un quart de temps de recherche en moins.** Il rend le même coup, comme
+  promis. Et le hasard qu'il ne consomme pas ne change rien ensuite : chaque décision tire sa propre graine (le tour,
+  le robot), au lieu de suivre la précédente.
+- **Les empreintes ne bougeraient pas** : passées une fois avec `earlyStop` dans les deux recherches qu'elles jouent,
+  elles restent les mêmes.
+- La recherche redonne au passage les chiffres de la journée : 59,3 aux tournées, 3,8 au bord étroit, −38,9 aux bacs
+  vides, sur la meilleure règle.
+- **En faire le défaut est à Sami.** Rien ne bougerait que le temps.
+
+**Ce que dit `diagnose`**, en part des décisions (une décision peut porter plusieurs codes) :
+
+| Plan | Décisions | `fewIterations` | `closeCall` | `flatScore` | `shallow` |
+|---|---|---|---|---|---|
+| ligne à un robot (20 h) | 960 | **88 %** | 65 % | 13 % | 2 % |
+| tournées (100 h) | 4 666 | **81 %** | 68 % | 11 % | 2 % |
+| bacs vides (100 h) | 4 871 | **75 %** | 72 % | 18 % | 2 % |
+| mélange (20 h) | 832 | 64 % | **73 %** | 19 % | 2 % |
+| bord étroit (100 h) | 505 | 1 % | **87 %** | 9 % | 0 |
+| petite ligne (20 h) | 175 | 15 % | 27 % | **72 %** | 2 % |
+| ligne de Sami (20 h) | 661 | 13 % | 23 % | **75 %** | 1 % |
+| supermarché (20 h) | 486 | 9 % | 23 % | **70 %** | 1 % |
+| usine, navette à heure fixe (20 h) | 67 | **61 %** | 45 % | 55 % | 0 |
+
+(Pour l'arrêt anticipé, `fewIterations` compte aussi les recherches arrêtées exprès : seuls les codes de la recherche
+complète sont ici.)
+
+- **Là où le robot manque, `fewIterations` domine** : 64 itérations pour 4 coups ou plus à la racine, moins de 20 par
+  coup. C'est là que la recherche gagne, et c'est là qu'elle en voudrait plus.
+- **Là où la ligne est bien servie, `flatScore`** : tous les coups valent pareil, la ligne ne s'arrête dans aucun
+  monde. C'est exactement ce que saute `calm` (la règle de jeu, sans arbre), encore jamais mesurée.
+- **Au bord étroit et au mélange, `closeCall`** : les deux premiers coups se valent au bruit près.
+- **`shallow` reste à 2 % au plus** : l'arbre atteint ses 2 niveaux, et `widening` n'a pas de prise.
+- **L'entrepôt** (10 journées par plan, `compare --diagnose`) : `fewIterations` domine sur le plan de Sami (82 %), aux
+  trois quais (82 %), aux deux couloirs (71 %, avec `flatScore` 71 %) et au petit entrepôt (60 %, `flatScore` 60 %).
+  `closeCall` domine à l'assemblage (87 %) et au flux (72 %). Une décision d'entrepôt coûte 0,5 s au petit entrepôt,
+  2 à 3,3 s ailleurs, 5,9 s aux trois quais.
+
+**Les pistes, dans l'ordre** :
+1. **l'arrêt anticipé par défaut** : les mêmes résultats, un quart de temps en moins ;
+2. **`calm` par défaut, mesurée par paires** : elle ne jouerait plus les décisions à `flatScore`, un tiers à trois
+   quarts de celles des lignes bien servies ;
+3. **plus d'itérations là où `fewIterations` domine**, avec le temps gagné par les deux premières, mesurées par paires
+   sur les tournées et la ligne à un robot.
