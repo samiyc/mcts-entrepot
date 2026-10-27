@@ -29,7 +29,10 @@ function jobsOf({ id, script, args, cost }) {
   return [...slices.map(({ from, units }, i) => job(ids[i], command(from, units, ids[i]), units)), merge];
 }
 
-/** The minutes of a unit, measured on the night of 26 to 27/10 (the warehouse with the dock loader), else estimated. */
+/**
+ * The minutes of a unit: the warehouse's on the night of 26 to 27/10 (with the dock loader), the line's on 27/10 by day (the
+ * longest slice of each, 18 threads busy).
+ */
 const NIGHT = [
   { id: "ent-petit", script: "compare.js", args: "--plan petit --search", cost: 0.1 },
   { id: "ent-sami", script: "compare.js", args: "--plan sami --search", cost: 0.8 },
@@ -37,15 +40,15 @@ const NIGHT = [
   { id: "ent-couloirs", script: "compare.js", args: "--plan couloirs --search", cost: 0.92 },
   { id: "ent-flux", script: "compare.js", args: "--plan flux --search", cost: 1.3 },
   { id: "ent-assemblage", script: "compare.js", args: "--plan assemblage --search", cost: 1.5 },
-  ...["petite", "sami", "seul", "etroite", "retours", "tournee", "melange", "supermarche"].map((plan, i) => ({ id: `ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search`, cost: [0.05, 0.2, 0.15, 0.08, 0.45, 0.15, 0.1, 0.6][i] })),
-  { id: "ligne-cariste", script: "line-drivers.js", args: "", cost: 0.15 },
+  ...["petite", "sami", "seul", "etroite", "retours", "tournee", "melange", "supermarche"].map((plan, i) => ({ id: `ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search`, cost: [0.06, 0.62, 0.3, 0.05, 0.78, 0.25, 0.21, 0.48][i] })),
+  { id: "ligne-cariste", script: "line-drivers.js", args: "", cost: 0.05 },
   { id: "usine", script: "plant-compare.js", args: "--plan usine", cost: 0.15 },
   { id: "usine-train", script: "plant-compare.js", args: "--plan train", cost: 0.1 },
   { id: "usine-train-recherche", script: "plant-compare.js", args: "--plan train --robots 1 --search", cost: 0.9 },
 ];
 
-/** The rollout campaign (26/10): an hour of each line, its rules and both searches; retours did not end in 300 min. */
-const ROLLOUT = [["petite", 0.06], ["etroite", 0.04], ["seul", 0.49], ["melange", 0.37], ["tournee", 0.48], ["sami", 2.97], ["retours", 3.5]]
+/** The rollout campaign (26/10, measured again on 27/10 by day): an hour of each line, its rules and both searches. */
+const ROLLOUT = [["petite", 0.11], ["etroite", 0.08], ["seul", 0.58], ["melange", 0.54], ["tournee", 0.52], ["sami", 1.38], ["retours", 2.33]]
   .map(([plan, cost]) => ({ id: `ligne-jeu-${plan}`, script: "line-rollout.js", args: `--plan ${plan} --short 30`, cost }));
 
 const write = (file, about, measures) => writeFileSync(new URL(file, ROOT), `${JSON.stringify({ about, jobs: measures.flatMap(jobsOf) }, null, 2)}\n`);

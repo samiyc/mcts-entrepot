@@ -133,6 +133,9 @@ Puis sur la vraie file, à la demande de Sami (27/10, 11:42 à 11:52) : 12 jobs 
   de Sami redonnent les chiffres de la nuit (la liste 232,2, la recherche 229,0).
 - Un job ne disait rien avant la fin de sa première unité, parfois plusieurs minutes. Il annonce maintenant « journée
   0/8 » dès son départ.
+- Le même jour, la mesure de la ligne de Sami (100 heures d'un seul job) allait dépasser sa limite : 0,6 min par
+  heure, et non 0,2. Annulée à 17 heures, elle les a gardées (`--out`). Les heures 18 à 100 sont parties en 4 tranches,
+  et la réunion a pris le fichier du job annulé avec les tranches : « 5 morceaux, heures 1 à 100 ».
 - Les tranches ont pris 2 à 4 fois moins que leur estimation : les coûts de `scripts/night.js` viennent d'une nuit où
   18 jobs tournaient ensemble. La file apprend ensuite les durées des commandes déjà passées.
 

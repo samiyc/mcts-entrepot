@@ -126,8 +126,10 @@ Fait :
 Les chiffres sont dans [../modele-ligne.md](../modele-ligne.md).
 
 Reste :
-- **la règle de jeu de la recherche** : la couverture plutôt que la plus proche (campagne `night-rollout.json` en
-  cours), décidée avec l'option `calm` ;
+- **la règle de jeu de la recherche** : la campagne `night-rollout.json`, faite le 27/10 sur 100 heures, donne la
+  couverture devant la plus proche sur les quatre lignes où le robot manque, et nulle part derrière
+  ([../modele-ligne.md](../modele-ligne.md)). Reste à en faire le défaut (les empreintes changent) ; l'option `calm` n'est
+  pas mesurée ;
 - ~~relier l'entrepôt au supermarché~~ : **fait le 26/10**, l'usine (`src/plant.js`, onglet Usine,
   [../modele-ligne.md](../modele-ligne.md)). Il en reste les replays de l'usine ;
 - ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la

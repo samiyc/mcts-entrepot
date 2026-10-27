@@ -100,7 +100,8 @@ parenthèses, l'arrêt gagné sur le kanban, par paires, avec son intervalle à 
   cause des nombreuses demandes et des quatre allées.
 - **Sur le bord étroit, elle bat la meilleure règle**, de peu mais nettement.
 - **Sur la ligne à un seul robot, elle est devant** (−18 % d'arrêt sur la plus proche), mais l'intervalle contient
-  encore 0 sur 20 heures : les mesures de nuit (`night.json`, 100 heures par plan) diront si l'écart tient.
+  encore 0 sur 20 heures. Sur 100 heures, l'écart ne tient pas (+5,0, −5,5 à 15,5), sauf si la recherche joue ses
+  mondes par la couverture : +26,1 (« La recherche sur 100 heures », plus bas).
 - **Ce n'est pas la règle de jeu qui la retient** sur la ligne de Sami à deux robots : jouer ses mondes au kanban plutôt
   qu'à la plus proche donne exactement les mêmes 17,2 tours d'arrêt sur 5 heures (le kanban seul : 14,6). Piste pour
   la suite : une ligne bien servie s'arrête surtout sur une rupture fournisseur, que personne ne peut prévoir ; la
@@ -237,7 +238,7 @@ pour de bon. Ce que ça montre (20 heures) :
 **Une recherche plus calme** (`lineSearchRule({ calm: true })`) : quand la règle de jeu n'arrête la ligne dans aucun
 des mondes tirés pour sa référence, la recherche rend le choix de la règle sans construire d'arbre. Sur 10 heures par
 plan, rien de perdu, et un peu de temps gagné (la ligne à un robot de 18 à 12 s par heure, les tournées de 16 à 13). Elle
-reste coupée par défaut tant que la campagne sur la règle de jeu tourne : les deux se décideront ensemble.
+reste coupée par défaut : la campagne sur la règle de jeu, faite le 27/10 (plus bas), ne l'a pas mesurée.
 
 ## L'usine : la ligne et l'entrepôt joués ensemble (26/10, la nuit)
 
@@ -360,3 +361,50 @@ sa palette au quai en un tour, et un chargeur la met sur la navette en 90 s. Mê
 
   Le constat d'avant tient : un seul choix d'entrepôt ne déplace pas l'arrêt de la ligne.
 - Le chargeur met 90 s par palette sur la navette comme dans un camion : Q21 reste ouverte.
+
+## La recherche sur 100 heures, et sa règle de jeu (27/10, en journée)
+
+Mesurées dans la file de la machine, en journée (Sami), 100 heures par ligne, sur le modèle du soir du 26/10 (80 %
+d'hybrides, la séquence reséquencée) :
+- `night.json`, la partie ligne : chaque ligne sous ses règles et la recherche, jouée par la plus proche (le défaut) ;
+- `night-rollout.json`, la campagne sur la règle de jeu : la recherche jouée par la plus proche, puis par la
+  couverture la plus courte. La campagne avait tourné le 26/10 à 15:16, avant le mélange et le reséquencement, et
+  `retours` n'avait pas fini en 300 min : elle est refaite, en tranches.
+
+Les tours d'arrêt évités par heure sur la meilleure règle, par paires, mêmes heures :
+
+| Ligne | la meilleure règle | recherche jouée par la plus proche | jouée par la couverture | la couverture sur la plus proche |
+|---|---|---|---|---|
+| petite | le kanban, 2,0 | −0,5 (−1,3 à 0,4) | −0,7 (−1,7 à 0,3) | −0,3 (−0,9 à 0,4) |
+| sami | le kanban, 2,6 | −1,0 (−2,1 à 0,1) | −0,9 (−1,9 à 0,1) | 0,1 (−0,6 à 0,9) |
+| supermarche | la plus proche, 70,7 | 0,6 (0,0 à 1,1) | — | — |
+| etroite | la couverture, 140,0 | **3,8 (0,6 à 6,9)** | **3,8 (0,6 à 6,9)** | 0,0 |
+| seul | la plus proche, 77,1 | 5,0 (−5,5 à 15,5) | **26,1 (15,7 à 36,6)** | **21,1 (12,8 à 29,5)** |
+| melange | la couverture, 33,5 | 2,0 (−6,1 à 10,1) | **13,4 (6,0 à 20,8)** | **11,4 (4,0 à 18,8)** |
+| tournee | la plus proche, 164,7 | **59,3 (48,9 à 69,6)** | **75,1 (64,4 à 85,8)** | **15,8 (6,8 à 24,8)** |
+| retours | le kanban, 46,2 | **−38,9 (−44,9 à −32,8)** | 2,1 (−3,8 à 8,0) | **41,0 (34,3 à 47,6)** |
+
+- **La couverture est la meilleure règle de jeu.** Elle fait mieux que la plus proche sur les quatre lignes où le robot
+  manque, et n'est nettement pire nulle part.
+- **Jouée par la plus proche, la recherche se trompe aux bacs vides** (`retours`) : elle perd 38,9 tours par heure sur
+  le kanban, 89 heures sur 100. Une explication probable : la plus proche y est la pire des règles (132,8 tours
+  d'arrêt), et la recherche juge ses coups sur des mondes joués par elle. Jouée par la couverture, elle fait comme le
+  kanban.
+- **La ligne à un robot** : jouée par la plus proche, la recherche n'est pas nettement devant la plus proche ; jouée
+  par la couverture, elle évite 26 tours d'arrêt par heure, un tiers de l'arrêt.
+- **Les lignes bien servies n'ont rien à gagner** (petite, sami, supermarche : moins d'un tour par heure d'écart).
+- **30 heures ne contredisent jamais les 100**, mêmes signes partout, mais elles ratent le mélange (14,7, −2,3 à 31,8
+  sur 30 heures). Un essai court écarte une idée, il n'en promeut pas.
+- **Ce qui reste à décider** : jouer la recherche de la ligne par la couverture par défaut. Ça change le modèle, et ses
+  empreintes ; `calm` reste coupée, la campagne ne l'a pas mesurée.
+
+**Le cariste sur la ligne** (`line-drivers.js`, 100 heures, la plus proche) :
+- **le cariste qui aide** évite l'arrêt là où le robot manque. Aux bacs vides, 122,3 tours par heure (114,6 à 130,0) ;
+  aux tournées, 125,0 ; sur la ligne à un robot, 27,5 ; au mélange, 17,6 ; sur la petite ligne, 4,0. Il ne change
+  rien aux lignes bien servies ;
+- **sur le bord étroit, il coûte** 24,9 tours par heure (−29,9 à −19,8), et ne porte presque rien (0,2 bac par heure) :
+  à comprendre ;
+- **le cariste au hasard** coûte partout, de 2,1 à 42,1 tours par heure.
+
+**Le coût** : de 0,05 min par heure de ligne (le bord étroit) à 0,8 (les bacs vides) pour une mesure, et jusqu'à 2,3
+pour la campagne aux bacs vides, 18 fils occupés. `scripts/night.js` les a repris.

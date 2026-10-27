@@ -72,6 +72,18 @@
   ],
   "versions": [
     {
+      "version": "0.26",
+      "title": "La règle de jeu de la ligne, sur 100 heures",
+      "date": "27/10",
+      "items": [
+        "La recherche de la ligne mesurée sur 100 heures par ligne. Elle gagne nettement aux tournées (59 tours d'arrêt par heure de moins que la meilleure règle) et au bord étroit, et ne trouve rien sur les lignes bien servies.",
+        "Jouée par la couverture plutôt que par la plus proche, elle fait mieux sur les quatre lignes où le robot manque : 26 tours d'arrêt par heure évités sur la ligne à un robot, et plus de perte aux bacs vides, où la plus proche lui en faisait perdre 39.",
+        "Le cariste qui aide évite jusqu'à 125 tours d'arrêt par heure là où le robot manque ; au hasard, il coûte partout.",
+        "Une mesure trop longue, arrêtée en route, a gardé ses heures, et ses tranches sont reparties de là."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.25",
       "title": "Des mesures de nuit qui disent où elles en sont",
       "date": "27/10",
