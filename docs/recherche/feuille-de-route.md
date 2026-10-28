@@ -140,8 +140,10 @@ Reste :
   chemins que des robots garés pour de bon rendent impossibles. Il ne change aucun résultat, et le temps d'A* baisse de
   7 à 16 %. Les vérifications de baie se font en un seul passage, jusqu'à 7 % de temps en moins. L'horizon des
   chemins des mondes de la recherche (`legHorizon`) est mesuré par paires dans la file (`horizon.json`), les lenteurs
-  d'A* sont signalées à `mcts-commun`, et les nouveaux coûts des jobs, mesurés, sont adoptés. Reste à trancher
-  l'horizon quand les jobs auront fini ;
+  d'A* sont signalées à `mcts-commun`, et les nouveaux coûts des jobs, mesurés, sont adoptés. Le soir, la nouvelle lib
+  (A* deux fois plus rapide chez nous) et Node 24 : le filtre ne rapporte plus et il est retiré, `copy` et `direct`
+  sont essayés sans gain qui vaille. `legHorizon` à 40 tours donne les mêmes journées, pour 1 à 4 % de temps en
+  moins : reste à décider si ses 50 jobs valent encore la file ;
 - ~~relier l'entrepôt au supermarché~~ : **fait le 26/10**, l'usine (`src/plant.js`, onglet Usine,
   [../modele-ligne.md](../modele-ligne.md)). Il en reste les replays de l'usine ;
 - ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la

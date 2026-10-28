@@ -10,85 +10,85 @@
     {
       "id": "diagnose-ligne-sami",
       "command": "node scripts/line-compare.js --plan sami --search --diagnose --from 1 --days 20 --out tmp/diagnose/diagnose-ligne-sami.jsonl",
-      "estimate": "4 min",
+      "estimate": "3 min",
       "limit": 30
     },
     {
       "id": "diagnose-ligne-seul",
       "command": "node scripts/line-compare.js --plan seul --search --diagnose --from 1 --days 20 --out tmp/diagnose/diagnose-ligne-seul.jsonl",
-      "estimate": "5 min",
+      "estimate": "3 min",
       "limit": 30
     },
     {
       "id": "diagnose-ligne-etroite",
       "command": "node scripts/line-compare.js --plan etroite --search --diagnose --from 1 --days 20 --out tmp/diagnose/diagnose-ligne-etroite.jsonl",
-      "estimate": "2 min",
+      "estimate": "1 min",
       "limit": 30
     },
     {
       "id": "diagnose-ligne-retours",
       "command": "node scripts/line-compare.js --plan retours --search --diagnose --from 1 --days 20 --out tmp/diagnose/diagnose-ligne-retours.jsonl",
-      "estimate": "11 min",
-      "limit": 33
+      "estimate": "4 min",
+      "limit": 30
     },
     {
       "id": "diagnose-ligne-tournee",
       "command": "node scripts/line-compare.js --plan tournee --search --diagnose --from 1 --days 20 --out tmp/diagnose/diagnose-ligne-tournee.jsonl",
-      "estimate": "5 min",
+      "estimate": "3 min",
       "limit": 30
     },
     {
       "id": "diagnose-ligne-melange",
       "command": "node scripts/line-compare.js --plan melange --search --diagnose --from 1 --days 20 --out tmp/diagnose/diagnose-ligne-melange.jsonl",
-      "estimate": "3 min",
+      "estimate": "2 min",
       "limit": 30
     },
     {
       "id": "diagnose-ligne-supermarche",
       "command": "node scripts/line-compare.js --plan supermarche --search --diagnose --from 1 --days 20 --out tmp/diagnose/diagnose-ligne-supermarche.jsonl",
-      "estimate": "4 min",
+      "estimate": "3 min",
       "limit": 30
     },
     {
       "id": "diagnose-usine",
       "command": "node scripts/plant-compare.js --plan train --robots 1 --search --diagnose --from 1 --days 20 --out tmp/diagnose/diagnose-usine.jsonl",
-      "estimate": "6 min",
+      "estimate": "4 min",
       "limit": 30
     },
     {
       "id": "diagnose-entrepot-petit",
       "command": "node scripts/compare.js --plan petit --search --diagnose --from 1 --days 10 --out tmp/diagnose/diagnose-entrepot-petit.jsonl",
-      "estimate": "2 min",
+      "estimate": "1 min",
       "limit": 30
     },
     {
       "id": "diagnose-entrepot-sami",
       "command": "node scripts/compare.js --plan sami --search --diagnose --from 1 --days 10 --out tmp/diagnose/diagnose-entrepot-sami.jsonl",
-      "estimate": "5 min",
+      "estimate": "3 min",
       "limit": 30
     },
     {
       "id": "diagnose-entrepot-quais",
       "command": "node scripts/compare.js --plan quais --search --diagnose --from 1 --days 10 --out tmp/diagnose/diagnose-entrepot-quais.jsonl",
-      "estimate": "11 min",
-      "limit": 33
+      "estimate": "5 min",
+      "limit": 30
     },
     {
       "id": "diagnose-entrepot-couloirs",
       "command": "node scripts/compare.js --plan couloirs --search --diagnose --from 1 --days 10 --out tmp/diagnose/diagnose-entrepot-couloirs.jsonl",
-      "estimate": "4 min",
+      "estimate": "2 min",
       "limit": 30
     },
     {
       "id": "diagnose-entrepot-flux",
       "command": "node scripts/compare.js --plan flux --search --diagnose --from 1 --days 10 --out tmp/diagnose/diagnose-entrepot-flux.jsonl",
-      "estimate": "4 min",
+      "estimate": "2 min",
       "limit": 30
     },
     {
       "id": "diagnose-entrepot-assemblage",
       "command": "node scripts/compare.js --plan assemblage --search --diagnose --from 1 --days 10 --out tmp/diagnose/diagnose-entrepot-assemblage.jsonl",
-      "estimate": "6 min",
+      "estimate": "4 min",
       "limit": 30
     }
   ]

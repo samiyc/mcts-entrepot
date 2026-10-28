@@ -33,6 +33,17 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.31</span> La nouvelle bibliothèque et Node 24 <span class="date">28/10</span></h3>
+        <ul>
+          <li>La recherche de chemins de la bibliothèque commune est deux fois plus rapide chez nous, avec les mêmes journées à l'octet près ; avec Node 24, une mesure prend de 0,3 à 0,6 fois son temps du matin.</li>
+          <li>Le filtre de ce matin avant A* ne rapporte plus rien : il est retiré, les journées restent les mêmes.</li>
+          <li>La copie des mondes de la recherche et le trajet direct de la bibliothèque ont été essayés, sans gain qui vaille : ils ne sont pas adoptés.</li>
+          <li>Les durées estimées des mesures de nuit sont refaites sur ces nouveaux temps.</li>
+        </ul>
+        <p class="commits"></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.30</span> Moins de chemins cherchés pour rien <span class="date">28/10</span></h3>
         <ul>
           <li>Avant de chercher un chemin, l'entrepôt regarde si des robots garés pour de bon le rendent impossible : les mêmes journées, et jusqu'à 16 % de temps en moins dans A*, la recherche de chemins.</li>

@@ -4,184 +4,121 @@
     {
       "id": "choix-ligne-petite",
       "command": "node scripts/line-compare.js --plan petite --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --out tmp/choix/choix-ligne-petite.jsonl",
-      "estimate": "16 min",
-      "limit": 48
+      "estimate": "10 min",
+      "limit": 30
     },
     {
       "id": "choix-ligne-sami-001",
-      "command": "node scripts/line-compare.js --plan sami --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 34 --out tmp/choix/choix-ligne-sami-001.jsonl",
-      "estimate": "22 min",
-      "limit": 66
+      "command": "node scripts/line-compare.js --plan sami --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 50 --out tmp/choix/choix-ligne-sami-001.jsonl",
+      "estimate": "20 min",
+      "limit": 60
     },
     {
-      "id": "choix-ligne-sami-035",
-      "command": "node scripts/line-compare.js --plan sami --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 35 --days 33 --out tmp/choix/choix-ligne-sami-035.jsonl",
-      "estimate": "21 min",
-      "limit": 63
-    },
-    {
-      "id": "choix-ligne-sami-068",
-      "command": "node scripts/line-compare.js --plan sami --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 68 --days 33 --out tmp/choix/choix-ligne-sami-068.jsonl",
-      "estimate": "21 min",
-      "limit": 63
+      "id": "choix-ligne-sami-051",
+      "command": "node scripts/line-compare.js --plan sami --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 51 --days 50 --out tmp/choix/choix-ligne-sami-051.jsonl",
+      "estimate": "20 min",
+      "limit": 60
     },
     {
       "id": "choix-ligne-sami-reunion",
-      "command": "node scripts/line-compare.js --plan sami --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-sami-001.jsonl tmp/choix/choix-ligne-sami-035.jsonl tmp/choix/choix-ligne-sami-068.jsonl",
+      "command": "node scripts/line-compare.js --plan sami --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-sami-001.jsonl tmp/choix/choix-ligne-sami-051.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "choix-ligne-sami-001",
-        "choix-ligne-sami-035",
-        "choix-ligne-sami-068"
+        "choix-ligne-sami-051"
       ]
     },
     {
       "id": "choix-ligne-seul-001",
-      "command": "node scripts/line-compare.js --plan seul --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 34 --out tmp/choix/choix-ligne-seul-001.jsonl",
-      "estimate": "25 min",
-      "limit": 75
+      "command": "node scripts/line-compare.js --plan seul --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 50 --out tmp/choix/choix-ligne-seul-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
     },
     {
-      "id": "choix-ligne-seul-035",
-      "command": "node scripts/line-compare.js --plan seul --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 35 --days 33 --out tmp/choix/choix-ligne-seul-035.jsonl",
-      "estimate": "24 min",
-      "limit": 72
-    },
-    {
-      "id": "choix-ligne-seul-068",
-      "command": "node scripts/line-compare.js --plan seul --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 68 --days 33 --out tmp/choix/choix-ligne-seul-068.jsonl",
-      "estimate": "24 min",
-      "limit": 72
+      "id": "choix-ligne-seul-051",
+      "command": "node scripts/line-compare.js --plan seul --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 51 --days 50 --out tmp/choix/choix-ligne-seul-051.jsonl",
+      "estimate": "23 min",
+      "limit": 69
     },
     {
       "id": "choix-ligne-seul-reunion",
-      "command": "node scripts/line-compare.js --plan seul --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-seul-001.jsonl tmp/choix/choix-ligne-seul-035.jsonl tmp/choix/choix-ligne-seul-068.jsonl",
+      "command": "node scripts/line-compare.js --plan seul --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-seul-001.jsonl tmp/choix/choix-ligne-seul-051.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "choix-ligne-seul-001",
-        "choix-ligne-seul-035",
-        "choix-ligne-seul-068"
+        "choix-ligne-seul-051"
       ]
     },
     {
       "id": "choix-ligne-etroite",
       "command": "node scripts/line-compare.js --plan etroite --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --out tmp/choix/choix-ligne-etroite.jsonl",
-      "estimate": "23 min",
-      "limit": 69
+      "estimate": "16 min",
+      "limit": 48
     },
     {
       "id": "choix-ligne-retours-001",
-      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 13 --out tmp/choix/choix-ligne-retours-001.jsonl",
+      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 34 --out tmp/choix/choix-ligne-retours-001.jsonl",
       "estimate": "23 min",
       "limit": 69
     },
     {
-      "id": "choix-ligne-retours-014",
-      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 14 --days 13 --out tmp/choix/choix-ligne-retours-014.jsonl",
-      "estimate": "23 min",
-      "limit": 69
-    },
-    {
-      "id": "choix-ligne-retours-027",
-      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 27 --days 13 --out tmp/choix/choix-ligne-retours-027.jsonl",
-      "estimate": "23 min",
-      "limit": 69
-    },
-    {
-      "id": "choix-ligne-retours-040",
-      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 40 --days 13 --out tmp/choix/choix-ligne-retours-040.jsonl",
-      "estimate": "23 min",
-      "limit": 69
-    },
-    {
-      "id": "choix-ligne-retours-053",
-      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 53 --days 12 --out tmp/choix/choix-ligne-retours-053.jsonl",
+      "id": "choix-ligne-retours-035",
+      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 35 --days 33 --out tmp/choix/choix-ligne-retours-035.jsonl",
       "estimate": "22 min",
       "limit": 66
     },
     {
-      "id": "choix-ligne-retours-065",
-      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 65 --days 12 --out tmp/choix/choix-ligne-retours-065.jsonl",
-      "estimate": "22 min",
-      "limit": 66
-    },
-    {
-      "id": "choix-ligne-retours-077",
-      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 77 --days 12 --out tmp/choix/choix-ligne-retours-077.jsonl",
-      "estimate": "22 min",
-      "limit": 66
-    },
-    {
-      "id": "choix-ligne-retours-089",
-      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 89 --days 12 --out tmp/choix/choix-ligne-retours-089.jsonl",
+      "id": "choix-ligne-retours-068",
+      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 68 --days 33 --out tmp/choix/choix-ligne-retours-068.jsonl",
       "estimate": "22 min",
       "limit": 66
     },
     {
       "id": "choix-ligne-retours-reunion",
-      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-retours-001.jsonl tmp/choix/choix-ligne-retours-014.jsonl tmp/choix/choix-ligne-retours-027.jsonl tmp/choix/choix-ligne-retours-040.jsonl tmp/choix/choix-ligne-retours-053.jsonl tmp/choix/choix-ligne-retours-065.jsonl tmp/choix/choix-ligne-retours-077.jsonl tmp/choix/choix-ligne-retours-089.jsonl",
+      "command": "node scripts/line-compare.js --plan retours --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-retours-001.jsonl tmp/choix/choix-ligne-retours-035.jsonl tmp/choix/choix-ligne-retours-068.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "choix-ligne-retours-001",
-        "choix-ligne-retours-014",
-        "choix-ligne-retours-027",
-        "choix-ligne-retours-040",
-        "choix-ligne-retours-053",
-        "choix-ligne-retours-065",
-        "choix-ligne-retours-077",
-        "choix-ligne-retours-089"
+        "choix-ligne-retours-035",
+        "choix-ligne-retours-068"
       ]
     },
     {
       "id": "choix-ligne-tournee-001",
-      "command": "node scripts/line-compare.js --plan tournee --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 25 --out tmp/choix/choix-ligne-tournee-001.jsonl",
-      "estimate": "20 min",
-      "limit": 60
-    },
-    {
-      "id": "choix-ligne-tournee-026",
-      "command": "node scripts/line-compare.js --plan tournee --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 26 --days 25 --out tmp/choix/choix-ligne-tournee-026.jsonl",
-      "estimate": "20 min",
-      "limit": 60
+      "command": "node scripts/line-compare.js --plan tournee --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 50 --out tmp/choix/choix-ligne-tournee-001.jsonl",
+      "estimate": "25 min",
+      "limit": 75
     },
     {
       "id": "choix-ligne-tournee-051",
-      "command": "node scripts/line-compare.js --plan tournee --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 51 --days 25 --out tmp/choix/choix-ligne-tournee-051.jsonl",
-      "estimate": "20 min",
-      "limit": 60
-    },
-    {
-      "id": "choix-ligne-tournee-076",
-      "command": "node scripts/line-compare.js --plan tournee --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 76 --days 25 --out tmp/choix/choix-ligne-tournee-076.jsonl",
-      "estimate": "20 min",
-      "limit": 60
+      "command": "node scripts/line-compare.js --plan tournee --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 51 --days 50 --out tmp/choix/choix-ligne-tournee-051.jsonl",
+      "estimate": "25 min",
+      "limit": 75
     },
     {
       "id": "choix-ligne-tournee-reunion",
-      "command": "node scripts/line-compare.js --plan tournee --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-tournee-001.jsonl tmp/choix/choix-ligne-tournee-026.jsonl tmp/choix/choix-ligne-tournee-051.jsonl tmp/choix/choix-ligne-tournee-076.jsonl",
+      "command": "node scripts/line-compare.js --plan tournee --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-tournee-001.jsonl tmp/choix/choix-ligne-tournee-051.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "choix-ligne-tournee-001",
-        "choix-ligne-tournee-026",
-        "choix-ligne-tournee-051",
-        "choix-ligne-tournee-076"
+        "choix-ligne-tournee-051"
       ]
     },
     {
       "id": "choix-ligne-melange-001",
       "command": "node scripts/line-compare.js --plan melange --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 50 --out tmp/choix/choix-ligne-melange-001.jsonl",
-      "estimate": "25 min",
-      "limit": 75
+      "estimate": "15 min",
+      "limit": 45
     },
     {
       "id": "choix-ligne-melange-051",
       "command": "node scripts/line-compare.js --plan melange --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 51 --days 50 --out tmp/choix/choix-ligne-melange-051.jsonl",
-      "estimate": "25 min",
-      "limit": 75
+      "estimate": "15 min",
+      "limit": 45
     },
     {
       "id": "choix-ligne-melange-reunion",
@@ -195,218 +132,137 @@
     },
     {
       "id": "choix-ligne-supermarche-001",
-      "command": "node scripts/line-compare.js --plan supermarche --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 34 --out tmp/choix/choix-ligne-supermarche-001.jsonl",
-      "estimate": "22 min",
-      "limit": 66
+      "command": "node scripts/line-compare.js --plan supermarche --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 50 --out tmp/choix/choix-ligne-supermarche-001.jsonl",
+      "estimate": "20 min",
+      "limit": 60
     },
     {
-      "id": "choix-ligne-supermarche-035",
-      "command": "node scripts/line-compare.js --plan supermarche --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 35 --days 33 --out tmp/choix/choix-ligne-supermarche-035.jsonl",
-      "estimate": "21 min",
-      "limit": 63
-    },
-    {
-      "id": "choix-ligne-supermarche-068",
-      "command": "node scripts/line-compare.js --plan supermarche --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 68 --days 33 --out tmp/choix/choix-ligne-supermarche-068.jsonl",
-      "estimate": "21 min",
-      "limit": 63
+      "id": "choix-ligne-supermarche-051",
+      "command": "node scripts/line-compare.js --plan supermarche --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 51 --days 50 --out tmp/choix/choix-ligne-supermarche-051.jsonl",
+      "estimate": "20 min",
+      "limit": 60
     },
     {
       "id": "choix-ligne-supermarche-reunion",
-      "command": "node scripts/line-compare.js --plan supermarche --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-supermarche-001.jsonl tmp/choix/choix-ligne-supermarche-035.jsonl tmp/choix/choix-ligne-supermarche-068.jsonl",
+      "command": "node scripts/line-compare.js --plan supermarche --search --variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128 --from 1 --days 100 --merge tmp/choix/choix-ligne-supermarche-001.jsonl tmp/choix/choix-ligne-supermarche-051.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "choix-ligne-supermarche-001",
-        "choix-ligne-supermarche-035",
-        "choix-ligne-supermarche-068"
+        "choix-ligne-supermarche-051"
       ]
     },
     {
       "id": "choix-entrepot-petit",
       "command": "node scripts/compare.js --plan petit --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --out tmp/choix/choix-entrepot-petit.jsonl",
-      "estimate": "16 min",
-      "limit": 48
+      "estimate": "10 min",
+      "limit": 30
     },
     {
       "id": "choix-entrepot-sami-001",
-      "command": "node scripts/compare.js --plan sami --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 10 --out tmp/choix/choix-entrepot-sami-001.jsonl",
-      "estimate": "19 min",
-      "limit": 57
+      "command": "node scripts/compare.js --plan sami --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 15 --out tmp/choix/choix-entrepot-sami-001.jsonl",
+      "estimate": "18 min",
+      "limit": 54
     },
     {
-      "id": "choix-entrepot-sami-011",
-      "command": "node scripts/compare.js --plan sami --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 11 --days 10 --out tmp/choix/choix-entrepot-sami-011.jsonl",
-      "estimate": "19 min",
-      "limit": 57
-    },
-    {
-      "id": "choix-entrepot-sami-021",
-      "command": "node scripts/compare.js --plan sami --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 21 --days 10 --out tmp/choix/choix-entrepot-sami-021.jsonl",
-      "estimate": "19 min",
-      "limit": 57
+      "id": "choix-entrepot-sami-016",
+      "command": "node scripts/compare.js --plan sami --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 16 --days 15 --out tmp/choix/choix-entrepot-sami-016.jsonl",
+      "estimate": "18 min",
+      "limit": 54
     },
     {
       "id": "choix-entrepot-sami-reunion",
-      "command": "node scripts/compare.js --plan sami --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --merge tmp/choix/choix-entrepot-sami-001.jsonl tmp/choix/choix-entrepot-sami-011.jsonl tmp/choix/choix-entrepot-sami-021.jsonl",
+      "command": "node scripts/compare.js --plan sami --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --merge tmp/choix/choix-entrepot-sami-001.jsonl tmp/choix/choix-entrepot-sami-016.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "choix-entrepot-sami-001",
-        "choix-entrepot-sami-011",
-        "choix-entrepot-sami-021"
+        "choix-entrepot-sami-016"
       ]
     },
     {
       "id": "choix-entrepot-quais-001",
-      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 5 --out tmp/choix/choix-entrepot-quais-001.jsonl",
-      "estimate": "22 min",
-      "limit": 66
-    },
-    {
-      "id": "choix-entrepot-quais-006",
-      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 6 --days 5 --out tmp/choix/choix-entrepot-quais-006.jsonl",
-      "estimate": "22 min",
-      "limit": 66
+      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 10 --out tmp/choix/choix-entrepot-quais-001.jsonl",
+      "estimate": "19 min",
+      "limit": 57
     },
     {
       "id": "choix-entrepot-quais-011",
-      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 11 --days 5 --out tmp/choix/choix-entrepot-quais-011.jsonl",
-      "estimate": "22 min",
-      "limit": 66
-    },
-    {
-      "id": "choix-entrepot-quais-016",
-      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 16 --days 5 --out tmp/choix/choix-entrepot-quais-016.jsonl",
-      "estimate": "22 min",
-      "limit": 66
+      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 11 --days 10 --out tmp/choix/choix-entrepot-quais-011.jsonl",
+      "estimate": "19 min",
+      "limit": 57
     },
     {
       "id": "choix-entrepot-quais-021",
-      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 21 --days 5 --out tmp/choix/choix-entrepot-quais-021.jsonl",
-      "estimate": "22 min",
-      "limit": 66
-    },
-    {
-      "id": "choix-entrepot-quais-026",
-      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 26 --days 5 --out tmp/choix/choix-entrepot-quais-026.jsonl",
-      "estimate": "22 min",
-      "limit": 66
+      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 21 --days 10 --out tmp/choix/choix-entrepot-quais-021.jsonl",
+      "estimate": "19 min",
+      "limit": 57
     },
     {
       "id": "choix-entrepot-quais-reunion",
-      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --merge tmp/choix/choix-entrepot-quais-001.jsonl tmp/choix/choix-entrepot-quais-006.jsonl tmp/choix/choix-entrepot-quais-011.jsonl tmp/choix/choix-entrepot-quais-016.jsonl tmp/choix/choix-entrepot-quais-021.jsonl tmp/choix/choix-entrepot-quais-026.jsonl",
+      "command": "node scripts/compare.js --plan quais --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --merge tmp/choix/choix-entrepot-quais-001.jsonl tmp/choix/choix-entrepot-quais-011.jsonl tmp/choix/choix-entrepot-quais-021.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "choix-entrepot-quais-001",
-        "choix-entrepot-quais-006",
         "choix-entrepot-quais-011",
-        "choix-entrepot-quais-016",
-        "choix-entrepot-quais-021",
-        "choix-entrepot-quais-026"
+        "choix-entrepot-quais-021"
       ]
     },
     {
-      "id": "choix-entrepot-couloirs-001",
-      "command": "node scripts/compare.js --plan couloirs --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 15 --out tmp/choix/choix-entrepot-couloirs-001.jsonl",
+      "id": "choix-entrepot-couloirs",
+      "command": "node scripts/compare.js --plan couloirs --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --out tmp/choix/choix-entrepot-couloirs.jsonl",
+      "estimate": "14 min",
+      "limit": 42
+    },
+    {
+      "id": "choix-entrepot-flux",
+      "command": "node scripts/compare.js --plan flux --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --out tmp/choix/choix-entrepot-flux.jsonl",
       "estimate": "22 min",
       "limit": 66
-    },
-    {
-      "id": "choix-entrepot-couloirs-016",
-      "command": "node scripts/compare.js --plan couloirs --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 16 --days 15 --out tmp/choix/choix-entrepot-couloirs-016.jsonl",
-      "estimate": "22 min",
-      "limit": 66
-    },
-    {
-      "id": "choix-entrepot-couloirs-reunion",
-      "command": "node scripts/compare.js --plan couloirs --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --merge tmp/choix/choix-entrepot-couloirs-001.jsonl tmp/choix/choix-entrepot-couloirs-016.jsonl",
-      "estimate": "1 min",
-      "limit": 10,
-      "after": [
-        "choix-entrepot-couloirs-001",
-        "choix-entrepot-couloirs-016"
-      ]
-    },
-    {
-      "id": "choix-entrepot-flux-001",
-      "command": "node scripts/compare.js --plan flux --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 15 --out tmp/choix/choix-entrepot-flux-001.jsonl",
-      "estimate": "22 min",
-      "limit": 66
-    },
-    {
-      "id": "choix-entrepot-flux-016",
-      "command": "node scripts/compare.js --plan flux --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 16 --days 15 --out tmp/choix/choix-entrepot-flux-016.jsonl",
-      "estimate": "22 min",
-      "limit": 66
-    },
-    {
-      "id": "choix-entrepot-flux-reunion",
-      "command": "node scripts/compare.js --plan flux --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --merge tmp/choix/choix-entrepot-flux-001.jsonl tmp/choix/choix-entrepot-flux-016.jsonl",
-      "estimate": "1 min",
-      "limit": 10,
-      "after": [
-        "choix-entrepot-flux-001",
-        "choix-entrepot-flux-016"
-      ]
     },
     {
       "id": "choix-entrepot-assemblage-001",
-      "command": "node scripts/compare.js --plan assemblage --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 10 --out tmp/choix/choix-entrepot-assemblage-001.jsonl",
-      "estimate": "24 min",
-      "limit": 72
+      "command": "node scripts/compare.js --plan assemblage --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 15 --out tmp/choix/choix-entrepot-assemblage-001.jsonl",
+      "estimate": "19 min",
+      "limit": 57
     },
     {
-      "id": "choix-entrepot-assemblage-011",
-      "command": "node scripts/compare.js --plan assemblage --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 11 --days 10 --out tmp/choix/choix-entrepot-assemblage-011.jsonl",
-      "estimate": "24 min",
-      "limit": 72
-    },
-    {
-      "id": "choix-entrepot-assemblage-021",
-      "command": "node scripts/compare.js --plan assemblage --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 21 --days 10 --out tmp/choix/choix-entrepot-assemblage-021.jsonl",
-      "estimate": "24 min",
-      "limit": 72
+      "id": "choix-entrepot-assemblage-016",
+      "command": "node scripts/compare.js --plan assemblage --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 16 --days 15 --out tmp/choix/choix-entrepot-assemblage-016.jsonl",
+      "estimate": "19 min",
+      "limit": 57
     },
     {
       "id": "choix-entrepot-assemblage-reunion",
-      "command": "node scripts/compare.js --plan assemblage --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --merge tmp/choix/choix-entrepot-assemblage-001.jsonl tmp/choix/choix-entrepot-assemblage-011.jsonl tmp/choix/choix-entrepot-assemblage-021.jsonl",
+      "command": "node scripts/compare.js --plan assemblage --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 30 --merge tmp/choix/choix-entrepot-assemblage-001.jsonl tmp/choix/choix-entrepot-assemblage-016.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "choix-entrepot-assemblage-001",
-        "choix-entrepot-assemblage-011",
-        "choix-entrepot-assemblage-021"
+        "choix-entrepot-assemblage-016"
       ]
     },
     {
       "id": "choix-usine-001",
-      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 17 --out tmp/choix/choix-usine-001.jsonl",
-      "estimate": "20 min",
-      "limit": 60
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 25 --out tmp/choix/choix-usine-001.jsonl",
+      "estimate": "18 min",
+      "limit": 54
     },
     {
-      "id": "choix-usine-018",
-      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 18 --days 17 --out tmp/choix/choix-usine-018.jsonl",
-      "estimate": "20 min",
-      "limit": 60
-    },
-    {
-      "id": "choix-usine-035",
-      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 35 --days 16 --out tmp/choix/choix-usine-035.jsonl",
+      "id": "choix-usine-026",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 26 --days 25 --out tmp/choix/choix-usine-026.jsonl",
       "estimate": "18 min",
       "limit": 54
     },
     {
       "id": "choix-usine-reunion",
-      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 50 --merge tmp/choix/choix-usine-001.jsonl tmp/choix/choix-usine-018.jsonl tmp/choix/choix-usine-035.jsonl",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant earlyStop=1 --variant earlyStop=1,budget=128 --from 1 --days 50 --merge tmp/choix/choix-usine-001.jsonl tmp/choix/choix-usine-026.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "choix-usine-001",
-        "choix-usine-018",
-        "choix-usine-035"
+        "choix-usine-026"
       ]
     }
   ]

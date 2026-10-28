@@ -33,14 +33,15 @@ function jobsOf({ id, script, args, cost, days = DAYS, folder = "night" }) {
  * A unit's minutes as measured on 28/10/2026 (earlyStop and calm on, the screen before A*): the rules and the search,
  * eighteen measures run together, twice over for a night's load; the higher of that and what the same measure took
  * on 27/10 in the queue, a tenth off for the screen. docs/outillage.md has the table; every measure below takes them
- * (Sami, 28/10/2026), the rollout campaign's aside.
+ * (Sami, 28/10/2026), the rollout campaign's aside. The same evening, mcts-commun's faster A* (2f5554f) and Node 24:
+ * each cost times what the same measure now takes against the morning's (0.29 to 0.62), 0.6 where none was taken.
  */
 const COSTS = {
-  entrepot: { petit: 0.13, sami: 0.47, quais: 1.08, couloirs: 0.36, flux: 0.36, assemblage: 0.59 },
-  ligne: { petite: 0.05, sami: 0.19, seul: 0.22, etroite: 0.07, retours: 0.54, tournee: 0.24, melange: 0.15, supermarche: 0.19 },
-  usine: 0.28,
-  plantRules: { usine: 0.11, train: 0.1 },
-  forklift: 0.12,
+  entrepot: { petit: 0.08, sami: 0.29, quais: 0.47, couloirs: 0.11, flux: 0.18, assemblage: 0.31 },
+  ligne: { petite: 0.03, sami: 0.12, seul: 0.14, etroite: 0.05, retours: 0.2, tournee: 0.15, melange: 0.09, supermarche: 0.12 },
+  usine: 0.18,
+  plantRules: { usine: 0.07, train: 0.06 },
+  forklift: 0.08,
 };
 
 const NIGHT = [

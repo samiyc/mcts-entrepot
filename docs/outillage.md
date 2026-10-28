@@ -223,7 +223,7 @@ recherche (`--cpu-prof`, puis les compteurs de la trace), réglages par défaut 
 - **Un chemin non trouvé coûte cher**, jusqu'à 7,6 fois un chemin trouvé. La plupart des échecs explorent autant de
   nœuds que le plan a de cases avant qu'A* ne s'en aperçoive.
 
-**Le filtre avant A\*** (`src/day-reach.js`, commit `9d28496`). Un robot garé pour de bon, au plus tard au tour suivant,
+**Le filtre avant A\*** (`src/day-reach.js`, commit `9d28496`, **retiré le soir même** : voir la section suivante). Un robot garé pour de bon, au plus tard au tour suivant,
 est un mur à tout instant après. Si un parcours en largeur autour de ces murs n'atteint pas la cible, aucun chemin dans
 le temps ne l'atteindra non plus : `planLeg` ne demande rien à A*. Le filtre laisse passer plus qu'un chemin ne peut
 (il ignore les palettes), jamais moins : il ne fait que rejeter.
@@ -283,6 +283,51 @@ par défaut. Les chemins des mondes tirés sont alors planifiés moins loin que 
 - **La portée des déroulés** de la ligne et de l'usine (180 et 360 tours) : un changement de modèle, à ouvrir après
   les résultats de `legHorizon`.
 - **Le reste** (le clonage des mondes et des réservations) ne pèse pas 1 %.
+
+## La nouvelle lib et Node 24 (28/10 au soir)
+
+`mcts-commun` a repris les pistes du profil (`2f5554f` : A* voit tôt une cible hors d'atteinte, clés numériques,
+presque plus d'allocations) et ajouté `problem.copy` et `direct` (`684c3ad`). Sami a installé Node 24.22.1 sur la
+machine. La liste à suivre est `mcts-commun/docs/projets.md`.
+
+**Comment on a comparé.** Une copie de l'entrepôt sur l'ancienne lib (`5fb458b`, par `git archive`) contre le code
+actuel, toutes deux sous Node 24, sur 7 mesures avec la recherche : 3 journées d'assemblage, du plan de Sami, des
+couloirs et du flux, 2 des trois quais, 5 heures d'usine et 3 heures des bacs vides. Les temps sont pris dans le
+créneau (`--slot 1 -- bash -c …`), 18 mesures à la fois, chaque variante à côté des autres, trois fois.
+
+- **Les mêmes journées à l'octet près** sur les 7 mesures, entre l'ancienne lib et la nouvelle, et avec celles de ce
+  matin sous Node 20. `npm run check` passe sous Node 24, les empreintes ne bougent pas.
+- **La trace** : aucune case réservée deux fois (`grid.overbooked`) et aucune erreur, avant comme après.
+- **Le gain** : le temps d'A* est divisé par deux environ, dans la trace (sous charge). Une mesure passe de 0,53 à
+  0,84 fois son temps sur l'ancienne lib, 0,29 à 0,62 fois celui de ce matin sous Node 20. A* ne prend plus que 14
+  à 46 % du temps, contre 48 à 71 % ce matin.
+
+**Le filtre avant A\* est retiré.** Avec la nouvelle lib, il épargne encore 1 à 10 % du temps d'A*, mais il coûte
+lui-même 1,5 à 2 % du temps total (profil) : sans lui, les mesures prennent de 0,97 à 1,03 fois leur temps
+(médianes, trois tours), et les journées sont les mêmes à l'octet près. La règle de `projets.md` : gardé s'il
+rapporte, retiré sinon.
+
+**`problem.copy` n'est pas adopté.** Une copie fidèle des trois mondes (entrepôt, ligne, usine) a été écrite et
+testée : le monde joué laisse sa copie intacte, et la copie de la copie finit pareil ; le test attrape une copie qui
+partage le journal, les réclamations, le cariste ou les commandes en route. Les journées sont les mêmes à l'octet
+près. Mais le profil ne montre aucun gain : tirer un monde, c'est surtout le cloner, et la copie clone autant. La
+part du tirage des mondes communs passe de 0,9–6,1 % à 1,0–7,8 % avec la copie. Sami ne l'a voulue que si elle
+rapporte vraiment.
+
+**`direct` n'est pas adopté.** `directPath` suit les distances du sol sans relire le `passable` de l'appel ; chez
+nous, il change d'un trajet à l'autre (une allée fermée, une palette sur le dos, les cases camion). Il n'a donc été
+essayé que sur les trajets simples, sur un sol sans les cases camion (la cible exceptée). Il sert à 21 à 48 % des
+appels, les journées restent les mêmes sur 5 mesures sur 6 (les bacs vides changent), et les mesures vont 1 à 5 %
+plus vite. On est loin du « 4 fois plus vite » demandé par Sami.
+
+**`legHorizon`, remesuré en court** (3 journées d'assemblage et du plan de Sami, 2 des quais, 3 heures des bacs vides,
+5 heures d'usine) : à 40 tours (48 sur la ligne et l'usine), les mêmes journées partout, et 1 à 4 % de temps en moins
+par décision. À 24 tours (36), quelques journées changent, et le plan de Sami en perd 3 sur 3 d'un tour. Les 50 jobs
+de `horizon.json` mesureraient donc un gain de quelques pour cent au plus : à Sami de dire s'ils valent la file.
+
+**Les coûts des jobs** sont refaits (`scripts/night.js`) : chaque coût fois ce que la même mesure prend maintenant
+contre ce matin (de 0,29 aux couloirs à 0,62 à l'usine), 0,6 là où rien n'a été mesuré. `night.json` passe de 541 à
+281 minutes estimées, `decisions.json` de 985 à 522, `horizon.json` de 787 à 413, `diagnose.json` de 73 à 41.
 
 ## mcts-commun
 

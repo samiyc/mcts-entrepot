@@ -4,14 +4,14 @@
     {
       "id": "essai-arret-tournee-001",
       "command": "node scripts/line-compare.js --plan tournee --search --early --from 1 --days 50 --out tmp/essais/essai-arret-tournee-001.jsonl",
-      "estimate": "21 min",
-      "limit": 63
+      "estimate": "13 min",
+      "limit": 39
     },
     {
       "id": "essai-arret-tournee-051",
       "command": "node scripts/line-compare.js --plan tournee --search --early --from 51 --days 50 --out tmp/essais/essai-arret-tournee-051.jsonl",
-      "estimate": "21 min",
-      "limit": 63
+      "estimate": "13 min",
+      "limit": 39
     },
     {
       "id": "essai-arret-tournee-reunion",
@@ -26,43 +26,29 @@
     {
       "id": "essai-arret-etroite",
       "command": "node scripts/line-compare.js --plan etroite --search --early --from 1 --days 100 --out tmp/essais/essai-arret-etroite.jsonl",
-      "estimate": "12 min",
-      "limit": 36
+      "estimate": "9 min",
+      "limit": 30
     },
     {
       "id": "essai-arret-retours-001",
-      "command": "node scripts/line-compare.js --plan retours --search --early --from 1 --days 25 --out tmp/essais/essai-arret-retours-001.jsonl",
-      "estimate": "24 min",
-      "limit": 72
-    },
-    {
-      "id": "essai-arret-retours-026",
-      "command": "node scripts/line-compare.js --plan retours --search --early --from 26 --days 25 --out tmp/essais/essai-arret-retours-026.jsonl",
-      "estimate": "24 min",
-      "limit": 72
+      "command": "node scripts/line-compare.js --plan retours --search --early --from 1 --days 50 --out tmp/essais/essai-arret-retours-001.jsonl",
+      "estimate": "18 min",
+      "limit": 54
     },
     {
       "id": "essai-arret-retours-051",
-      "command": "node scripts/line-compare.js --plan retours --search --early --from 51 --days 25 --out tmp/essais/essai-arret-retours-051.jsonl",
-      "estimate": "24 min",
-      "limit": 72
-    },
-    {
-      "id": "essai-arret-retours-076",
-      "command": "node scripts/line-compare.js --plan retours --search --early --from 76 --days 25 --out tmp/essais/essai-arret-retours-076.jsonl",
-      "estimate": "24 min",
-      "limit": 72
+      "command": "node scripts/line-compare.js --plan retours --search --early --from 51 --days 50 --out tmp/essais/essai-arret-retours-051.jsonl",
+      "estimate": "18 min",
+      "limit": 54
     },
     {
       "id": "essai-arret-retours-reunion",
-      "command": "node scripts/line-compare.js --plan retours --search --early --from 1 --days 100 --merge tmp/essais/essai-arret-retours-001.jsonl tmp/essais/essai-arret-retours-026.jsonl tmp/essais/essai-arret-retours-051.jsonl tmp/essais/essai-arret-retours-076.jsonl",
+      "command": "node scripts/line-compare.js --plan retours --search --early --from 1 --days 100 --merge tmp/essais/essai-arret-retours-001.jsonl tmp/essais/essai-arret-retours-051.jsonl",
       "estimate": "1 min",
       "limit": 10,
       "after": [
         "essai-arret-retours-001",
-        "essai-arret-retours-026",
-        "essai-arret-retours-051",
-        "essai-arret-retours-076"
+        "essai-arret-retours-051"
       ]
     },
     {
@@ -74,67 +60,67 @@
     {
       "id": "essai-diagnose-sami",
       "command": "node scripts/line-compare.js --plan sami --search --diagnose --from 1 --days 20 --out tmp/essais/essai-diagnose-sami.jsonl",
-      "estimate": "4 min",
+      "estimate": "3 min",
       "limit": 30
     },
     {
       "id": "essai-diagnose-seul",
       "command": "node scripts/line-compare.js --plan seul --search --diagnose --from 1 --days 20 --out tmp/essais/essai-diagnose-seul.jsonl",
-      "estimate": "5 min",
+      "estimate": "3 min",
       "limit": 30
     },
     {
       "id": "essai-diagnose-melange",
       "command": "node scripts/line-compare.js --plan melange --search --diagnose --from 1 --days 20 --out tmp/essais/essai-diagnose-melange.jsonl",
-      "estimate": "3 min",
+      "estimate": "2 min",
       "limit": 30
     },
     {
       "id": "essai-diagnose-supermarche",
       "command": "node scripts/line-compare.js --plan supermarche --search --diagnose --from 1 --days 20 --out tmp/essais/essai-diagnose-supermarche.jsonl",
-      "estimate": "4 min",
+      "estimate": "3 min",
       "limit": 30
     },
     {
       "id": "essai-diagnose-usine",
       "command": "node scripts/plant-compare.js --plan train --robots 1 --search --diagnose --from 1 --days 20 --out tmp/essais/essai-diagnose-usine.jsonl",
-      "estimate": "6 min",
+      "estimate": "4 min",
       "limit": 30
     },
     {
       "id": "essai-diagnose-petit-jour",
       "command": "node scripts/compare.js --plan petit --search --diagnose --from 1 --days 10 --out tmp/essais/essai-diagnose-petit-jour.jsonl",
-      "estimate": "2 min",
+      "estimate": "1 min",
       "limit": 30
     },
     {
       "id": "essai-diagnose-sami-jour",
       "command": "node scripts/compare.js --plan sami --search --diagnose --from 1 --days 10 --out tmp/essais/essai-diagnose-sami-jour.jsonl",
-      "estimate": "5 min",
+      "estimate": "3 min",
       "limit": 30
     },
     {
       "id": "essai-diagnose-quais-jour",
       "command": "node scripts/compare.js --plan quais --search --diagnose --from 1 --days 10 --out tmp/essais/essai-diagnose-quais-jour.jsonl",
-      "estimate": "11 min",
-      "limit": 33
+      "estimate": "5 min",
+      "limit": 30
     },
     {
       "id": "essai-diagnose-couloirs-jour",
       "command": "node scripts/compare.js --plan couloirs --search --diagnose --from 1 --days 10 --out tmp/essais/essai-diagnose-couloirs-jour.jsonl",
-      "estimate": "4 min",
+      "estimate": "2 min",
       "limit": 30
     },
     {
       "id": "essai-diagnose-flux-jour",
       "command": "node scripts/compare.js --plan flux --search --diagnose --from 1 --days 10 --out tmp/essais/essai-diagnose-flux-jour.jsonl",
-      "estimate": "4 min",
+      "estimate": "2 min",
       "limit": 30
     },
     {
       "id": "essai-diagnose-assemblage-jour",
       "command": "node scripts/compare.js --plan assemblage --search --diagnose --from 1 --days 10 --out tmp/essais/essai-diagnose-assemblage-jour.jsonl",
-      "estimate": "6 min",
+      "estimate": "4 min",
       "limit": 30
     }
   ]

@@ -72,6 +72,18 @@
   ],
   "versions": [
     {
+      "version": "0.31",
+      "title": "La nouvelle bibliothèque et Node 24",
+      "date": "28/10",
+      "items": [
+        "La recherche de chemins de la bibliothèque commune est deux fois plus rapide chez nous, avec les mêmes journées à l'octet près ; avec Node 24, une mesure prend de 0,3 à 0,6 fois son temps du matin.",
+        "Le filtre de ce matin avant A* ne rapporte plus rien : il est retiré, les journées restent les mêmes.",
+        "La copie des mondes de la recherche et le trajet direct de la bibliothèque ont été essayés, sans gain qui vaille : ils ne sont pas adoptés.",
+        "Les durées estimées des mesures de nuit sont refaites sur ces nouveaux temps."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.30",
       "title": "Moins de chemins cherchés pour rien",
       "date": "28/10",
