@@ -143,7 +143,7 @@ Reste :
   d'A* sont signalées à `mcts-commun`, et les nouveaux coûts des jobs, mesurés, sont adoptés. Le soir, la nouvelle lib
   (A* deux fois plus rapide chez nous) et Node 24 : le filtre ne rapporte plus et il est retiré, `copy` et `direct`
   sont essayés sans gain qui vaille. `legHorizon` à 40 tours donne les mêmes journées, pour 1 à 4 % de temps en
-  moins : reste à décider si ses 50 jobs valent encore la file ;
+  moins : ses 50 jobs sont annulés (Sami, 28/10), l'option reste éteinte par défaut ;
 - ~~relier l'entrepôt au supermarché~~ : **fait le 26/10**, l'usine (`src/plant.js`, onglet Usine,
   [../modele-ligne.md](../modele-ligne.md)). Il en reste les replays de l'usine ;
 - ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la

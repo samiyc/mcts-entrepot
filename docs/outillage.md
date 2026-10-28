@@ -323,7 +323,8 @@ plus vite. On est loin du « 4 fois plus vite » demandé par Sami.
 **`legHorizon`, remesuré en court** (3 journées d'assemblage et du plan de Sami, 2 des quais, 3 heures des bacs vides,
 5 heures d'usine) : à 40 tours (48 sur la ligne et l'usine), les mêmes journées partout, et 1 à 4 % de temps en moins
 par décision. À 24 tours (36), quelques journées changent, et le plan de Sami en perd 3 sur 3 d'un tour. Les 50 jobs
-de `horizon.json` mesureraient donc un gain de quelques pour cent au plus : à Sami de dire s'ils valent la file.
+de `horizon.json` mesureraient donc un gain de quelques pour cent au plus. **Sami les a annulés le 28/10** ;
+`legHorizon` reste une option éteinte par défaut.
 
 **Les coûts des jobs** sont refaits (`scripts/night.js`) : chaque coût fois ce que la même mesure prend maintenant
 contre ce matin (de 0,29 aux couloirs à 0,62 à l'usine), 0,6 là où rien n'a été mesuré. `night.json` passe de 541 à
