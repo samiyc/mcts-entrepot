@@ -359,6 +359,50 @@ paires contre la recherche d'aujourd'hui (A) :
 - **L'essai** (2 journées du plan de Sami, 3 heures de la ligne à un robot, 3 heures d'usine) ne tranche rien : trop
   peu d'unités. À l'usine, le coup joué est toujours le premier de la liste, et aucune variante ne change rien.
 
+**Les résultats** (les 60 jobs, de 22 h 14 à 22 h 41, sans échec). Ce sont les tours gagnés sur A par paires, avec
+l'intervalle à 95 % et les journées ou heures gagnées / perdues. Plus, c'est mieux : moins d'attente des camions à
+l'entrepôt, moins d'arrêt de la ligne. Les cases à 0 sont des journées identiques.
+
+| Plan | B, budget ×4 | C, 8 à la racine | D, profondeur 3 | E, tout |
+|---|---|---|---|---|
+| petit, couloirs | 0 | 0 | 0 | 0 |
+| sami | −4,0 (−6,8 à −1,2), 0/30 | −2,7 (−4,2 à −1,3), 0/30 | −2,0, 0/30 | −2,0, 0/30 |
+| quais | 0 | −2,9 (−5,4 à −0,3), 5/25 | **36,4 (29,6 à 43,2), 29/1** | **9,8 (7,2 à 12,4), 29/1** |
+| flux | 5,4 (−2,1 à 12,9), 7/3 | 0 | 5,4 (−2,1 à 12,9), 7/3 | 5,4 (−2,1 à 12,9), 7/3 |
+| assemblage | **16,7 (8,3 à 25,0), 26/4** | −8,3 (−26,6 à 10,0) | −0,8 (−4,8 à 3,1) | **9,7 (0,1 à 19,3), 22/8** |
+| ligne seul | 3,6 (−6,7 à 14,0) | −7,0 (−20,4 à 6,4) | 8,1 (−7,0 à 23,3) | 10,3 (−3,2 à 23,8) |
+| ligne melange | 3,8 (−5,9 à 13,4) | 0,6 (−1,1 à 2,4) | 5,6 (−3,3 à 14,5) | 0,7 (−8,4 à 9,9) |
+| ligne tournee | −6,0 (−22,3 à 10,3) | −4,4 (−23,1 à 14,4) | −3,4 (−19,4 à 12,7) | 0,9 (−17,0 à 18,8) |
+| ligne retours | −3,2 (−15,7 à 9,2) | −0,4 (−8,2 à 7,4) | −1,7 (−12,6 à 9,2) | −0,5 (−11,7 à 10,8) |
+| ligne etroite | 0,6 (−0,2 à 1,3), 2/0 | 0 | 0,3 (−0,3 à 0,8), 1/0 | 0,6 (−0,2 à 1,3), 2/0 |
+| ligne petite | 0 | 0 | 0 | 2,2 (−2,1 à 6,5), 1/0 |
+| ligne supermarche | −0,4 (−1,0 à 0,2) | 0 | −0,1 (−0,7 à 0,5) | −0,4 (−1,7 à 0,8) |
+| ligne sami, usine | 0 | 0 | 0 | 0 |
+
+- **Une décision, contre A** : B 2,9 à 4 fois, C 1 à 1,1 fois, D 1,7 à 2 fois, E 3,3 à 4 fois. Cela confirme l'essai.
+- **Le diagnostic** : avec B, D et E, `fewIterations` disparaît et les `closeCall` tranchés montent (plan de Sami :
+  37 % chez A, 74 % chez B). À l'entrepôt, plus de budget fait jouer plus souvent un autre coup que le premier de la
+  liste (plan de Sami : le 1er dans 67 % des décisions chez A, 34 % chez B). Sur les lignes, le rang ne bouge presque
+  pas.
+- **Une réserve, les journées du plan de Sami et des quais varient peu** :
+  - sur le plan de Sami, A finit au tour 229 les 30 jours, et les variantes au 231 de la liste presque chaque jour ;
+  - aux quais, 20 journées sur 30 donnent les mêmes attentes (A 426, D 384, E 418).
+
+  L'intervalle compte 30 journées, mais c'est presque une seule situation répétée : l'écart y est sûr, pas sa
+  généralité. L'assemblage, le flux et les lignes ont des journées variées.
+- **La lecture** :
+  - aucune variante ne gagne partout, donc rien ne change par défaut ;
+  - deux candidates par plan : D aux quais (E y gagne moins pour deux fois le temps), et B à l'assemblage (E y gagne
+    moins pour le même temps) ;
+  - C seul ne gagne nulle part, et il perd aux quais et sur le plan de Sami ;
+  - sur les lignes et à l'usine, rien n'est prouvé : la recherche n'y est pas limitée par son budget ;
+  - le plan de Sami confirme que chercher plus y joue moins bien (128 itérations, le 27/10). On sait maintenant que
+    c'est un seul cas répété : une journée rejouée suffira à trouver le choix qui diffère.
+- **La suite**, à décider par Sami :
+  1. rejouer une journée du plan de Sami, A contre B ;
+  2. confirmer D aux quais et B à l'assemblage sur des journées plus variées, avant tout réglage propre à un plan ;
+  3. le bilan du palier pour `mcts-commun`.
+
 ## mcts-commun
 
 L'entrepôt en dépend par `"mcts-commun": "file:../mcts-commun"` : `node_modules/mcts-commun` est un lien vers le

@@ -144,6 +144,11 @@ Reste :
   (A* deux fois plus rapide chez nous) et Node 24 : le filtre ne rapporte plus et il est retiré, `copy` et `direct`
   sont essayés sans gain qui vaille. `legHorizon` à 40 tours donne les mêmes journées, pour 1 à 4 % de temps en
   moins : ses 50 jobs sont annulés (Sami, 28/10), l'option reste éteinte par défaut ;
+- **le palier de réglages** (28/10 au soir, [../outillage.md](../outillage.md)) : un budget ×4, 8 coups à la racine,
+  une profondeur de 3, et tout ensemble, mesurés par paires contre la recherche d'aujourd'hui. Aucune variante ne
+  gagne partout, donc rien ne change par défaut. La profondeur 3 gagne aux quais, et le budget ×4 à l'assemblage. Rien
+  n'est prouvé sur les lignes ni à l'usine. Sur le plan de Sami, toutes les variantes perdent, mais c'est une seule
+  situation répétée chaque jour. Restent une journée à rejouer, et une confirmation sur des journées plus variées ;
 - ~~relier l'entrepôt au supermarché~~ : **fait le 26/10**, l'usine (`src/plant.js`, onglet Usine,
   [../modele-ligne.md](../modele-ligne.md)). Il en reste les replays de l'usine ;
 - ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la

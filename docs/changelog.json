@@ -72,6 +72,17 @@
   ],
   "versions": [
     {
+      "version": "0.33",
+      "title": "Le palier de réglages mesuré",
+      "date": "28/10",
+      "items": [
+        "Quatre réglages plus forts ont été mesurés par paires contre ceux d'aujourd'hui. Aucun ne gagne partout, donc rien ne change par défaut.",
+        "Une profondeur de 3 gagne nettement aux quais, et quatre fois plus d'itérations gagnent à l'assemblage. Sur les lignes et à l'usine, rien n'est prouvé.",
+        "Sur le plan de Sami, chercher plus joue un peu moins bien. Mais ses journées se ressemblent presque toutes : c'est une seule situation, à rejouer pour comprendre."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.32",
       "title": "Un palier de réglages à mesurer",
       "date": "28/10",
