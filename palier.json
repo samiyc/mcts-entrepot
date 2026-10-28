@@ -1,0 +1,436 @@
+{
+  "about": "Le palier de réglages à mesurer (Sami, 28/10/2026, écrit par npm run night ; mcts-commun docs/reglages.md) : la recherche d'aujourd'hui contre un budget ×4, 8 coups à la racine, une profondeur de 3 à budget ×2, et tout ensemble, par paires avec diagnose ; 30 journées par plan de l'entrepôt, 30 heures par ligne, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/palier.json --tag palier-AAAA-MM-JJ.",
+  "jobs": [
+    {
+      "id": "palier-entrepot-petit-001",
+      "command": "node scripts/compare.js --plan petit --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 15 --out tmp/palier/palier-entrepot-petit-001.jsonl",
+      "estimate": "15 min",
+      "limit": 45
+    },
+    {
+      "id": "palier-entrepot-petit-016",
+      "command": "node scripts/compare.js --plan petit --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 16 --days 15 --out tmp/palier/palier-entrepot-petit-016.jsonl",
+      "estimate": "15 min",
+      "limit": 45
+    },
+    {
+      "id": "palier-entrepot-petit-reunion",
+      "command": "node scripts/compare.js --plan petit --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-entrepot-petit-001.jsonl tmp/palier/palier-entrepot-petit-016.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-entrepot-petit-001",
+        "palier-entrepot-petit-016"
+      ]
+    },
+    {
+      "id": "palier-entrepot-sami-001",
+      "command": "node scripts/compare.js --plan sami --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 6 --out tmp/palier/palier-entrepot-sami-001.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "palier-entrepot-sami-007",
+      "command": "node scripts/compare.js --plan sami --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 7 --days 6 --out tmp/palier/palier-entrepot-sami-007.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "palier-entrepot-sami-013",
+      "command": "node scripts/compare.js --plan sami --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 13 --days 6 --out tmp/palier/palier-entrepot-sami-013.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "palier-entrepot-sami-019",
+      "command": "node scripts/compare.js --plan sami --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 19 --days 6 --out tmp/palier/palier-entrepot-sami-019.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "palier-entrepot-sami-025",
+      "command": "node scripts/compare.js --plan sami --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 25 --days 6 --out tmp/palier/palier-entrepot-sami-025.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "palier-entrepot-sami-reunion",
+      "command": "node scripts/compare.js --plan sami --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-entrepot-sami-001.jsonl tmp/palier/palier-entrepot-sami-007.jsonl tmp/palier/palier-entrepot-sami-013.jsonl tmp/palier/palier-entrepot-sami-019.jsonl tmp/palier/palier-entrepot-sami-025.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-entrepot-sami-001",
+        "palier-entrepot-sami-007",
+        "palier-entrepot-sami-013",
+        "palier-entrepot-sami-019",
+        "palier-entrepot-sami-025"
+      ]
+    },
+    {
+      "id": "palier-entrepot-quais-001",
+      "command": "node scripts/compare.js --plan quais --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 4 --out tmp/palier/palier-entrepot-quais-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-quais-005",
+      "command": "node scripts/compare.js --plan quais --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 5 --days 4 --out tmp/palier/palier-entrepot-quais-005.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-quais-009",
+      "command": "node scripts/compare.js --plan quais --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 9 --days 4 --out tmp/palier/palier-entrepot-quais-009.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-quais-013",
+      "command": "node scripts/compare.js --plan quais --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 13 --days 4 --out tmp/palier/palier-entrepot-quais-013.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-quais-017",
+      "command": "node scripts/compare.js --plan quais --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 17 --days 4 --out tmp/palier/palier-entrepot-quais-017.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-quais-021",
+      "command": "node scripts/compare.js --plan quais --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 21 --days 4 --out tmp/palier/palier-entrepot-quais-021.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-quais-025",
+      "command": "node scripts/compare.js --plan quais --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 25 --days 3 --out tmp/palier/palier-entrepot-quais-025.jsonl",
+      "estimate": "17 min",
+      "limit": 51
+    },
+    {
+      "id": "palier-entrepot-quais-028",
+      "command": "node scripts/compare.js --plan quais --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 28 --days 3 --out tmp/palier/palier-entrepot-quais-028.jsonl",
+      "estimate": "17 min",
+      "limit": 51
+    },
+    {
+      "id": "palier-entrepot-quais-reunion",
+      "command": "node scripts/compare.js --plan quais --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-entrepot-quais-001.jsonl tmp/palier/palier-entrepot-quais-005.jsonl tmp/palier/palier-entrepot-quais-009.jsonl tmp/palier/palier-entrepot-quais-013.jsonl tmp/palier/palier-entrepot-quais-017.jsonl tmp/palier/palier-entrepot-quais-021.jsonl tmp/palier/palier-entrepot-quais-025.jsonl tmp/palier/palier-entrepot-quais-028.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-entrepot-quais-001",
+        "palier-entrepot-quais-005",
+        "palier-entrepot-quais-009",
+        "palier-entrepot-quais-013",
+        "palier-entrepot-quais-017",
+        "palier-entrepot-quais-021",
+        "palier-entrepot-quais-025",
+        "palier-entrepot-quais-028"
+      ]
+    },
+    {
+      "id": "palier-entrepot-couloirs-001",
+      "command": "node scripts/compare.js --plan couloirs --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 15 --out tmp/palier/palier-entrepot-couloirs-001.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "palier-entrepot-couloirs-016",
+      "command": "node scripts/compare.js --plan couloirs --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 16 --days 15 --out tmp/palier/palier-entrepot-couloirs-016.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "palier-entrepot-couloirs-reunion",
+      "command": "node scripts/compare.js --plan couloirs --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-entrepot-couloirs-001.jsonl tmp/palier/palier-entrepot-couloirs-016.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-entrepot-couloirs-001",
+        "palier-entrepot-couloirs-016"
+      ]
+    },
+    {
+      "id": "palier-entrepot-flux-001",
+      "command": "node scripts/compare.js --plan flux --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 10 --out tmp/palier/palier-entrepot-flux-001.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-entrepot-flux-011",
+      "command": "node scripts/compare.js --plan flux --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 11 --days 10 --out tmp/palier/palier-entrepot-flux-011.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-entrepot-flux-021",
+      "command": "node scripts/compare.js --plan flux --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 21 --days 10 --out tmp/palier/palier-entrepot-flux-021.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-entrepot-flux-reunion",
+      "command": "node scripts/compare.js --plan flux --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-entrepot-flux-001.jsonl tmp/palier/palier-entrepot-flux-011.jsonl tmp/palier/palier-entrepot-flux-021.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-entrepot-flux-001",
+        "palier-entrepot-flux-011",
+        "palier-entrepot-flux-021"
+      ]
+    },
+    {
+      "id": "palier-entrepot-assemblage-001",
+      "command": "node scripts/compare.js --plan assemblage --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 6 --out tmp/palier/palier-entrepot-assemblage-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-assemblage-007",
+      "command": "node scripts/compare.js --plan assemblage --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 7 --days 6 --out tmp/palier/palier-entrepot-assemblage-007.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-assemblage-013",
+      "command": "node scripts/compare.js --plan assemblage --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 13 --days 6 --out tmp/palier/palier-entrepot-assemblage-013.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-assemblage-019",
+      "command": "node scripts/compare.js --plan assemblage --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 19 --days 6 --out tmp/palier/palier-entrepot-assemblage-019.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-assemblage-025",
+      "command": "node scripts/compare.js --plan assemblage --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 25 --days 6 --out tmp/palier/palier-entrepot-assemblage-025.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "palier-entrepot-assemblage-reunion",
+      "command": "node scripts/compare.js --plan assemblage --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-entrepot-assemblage-001.jsonl tmp/palier/palier-entrepot-assemblage-007.jsonl tmp/palier/palier-entrepot-assemblage-013.jsonl tmp/palier/palier-entrepot-assemblage-019.jsonl tmp/palier/palier-entrepot-assemblage-025.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-entrepot-assemblage-001",
+        "palier-entrepot-assemblage-007",
+        "palier-entrepot-assemblage-013",
+        "palier-entrepot-assemblage-019",
+        "palier-entrepot-assemblage-025"
+      ]
+    },
+    {
+      "id": "palier-ligne-petite",
+      "command": "node scripts/line-compare.js --plan petite --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --out tmp/palier/palier-ligne-petite.jsonl",
+      "estimate": "11 min",
+      "limit": 33
+    },
+    {
+      "id": "palier-ligne-sami-001",
+      "command": "node scripts/line-compare.js --plan sami --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 15 --out tmp/palier/palier-ligne-sami-001.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-ligne-sami-016",
+      "command": "node scripts/line-compare.js --plan sami --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 16 --days 15 --out tmp/palier/palier-ligne-sami-016.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-ligne-sami-reunion",
+      "command": "node scripts/line-compare.js --plan sami --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-ligne-sami-001.jsonl tmp/palier/palier-ligne-sami-016.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-ligne-sami-001",
+        "palier-ligne-sami-016"
+      ]
+    },
+    {
+      "id": "palier-ligne-seul-001",
+      "command": "node scripts/line-compare.js --plan seul --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 10 --out tmp/palier/palier-ligne-seul-001.jsonl",
+      "estimate": "17 min",
+      "limit": 51
+    },
+    {
+      "id": "palier-ligne-seul-011",
+      "command": "node scripts/line-compare.js --plan seul --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 11 --days 10 --out tmp/palier/palier-ligne-seul-011.jsonl",
+      "estimate": "17 min",
+      "limit": 51
+    },
+    {
+      "id": "palier-ligne-seul-021",
+      "command": "node scripts/line-compare.js --plan seul --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 21 --days 10 --out tmp/palier/palier-ligne-seul-021.jsonl",
+      "estimate": "17 min",
+      "limit": 51
+    },
+    {
+      "id": "palier-ligne-seul-reunion",
+      "command": "node scripts/line-compare.js --plan seul --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-ligne-seul-001.jsonl tmp/palier/palier-ligne-seul-011.jsonl tmp/palier/palier-ligne-seul-021.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-ligne-seul-001",
+        "palier-ligne-seul-011",
+        "palier-ligne-seul-021"
+      ]
+    },
+    {
+      "id": "palier-ligne-etroite",
+      "command": "node scripts/line-compare.js --plan etroite --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --out tmp/palier/palier-ligne-etroite.jsonl",
+      "estimate": "18 min",
+      "limit": 54
+    },
+    {
+      "id": "palier-ligne-retours-001",
+      "command": "node scripts/line-compare.js --plan retours --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 10 --out tmp/palier/palier-ligne-retours-001.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "palier-ligne-retours-011",
+      "command": "node scripts/line-compare.js --plan retours --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 11 --days 10 --out tmp/palier/palier-ligne-retours-011.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "palier-ligne-retours-021",
+      "command": "node scripts/line-compare.js --plan retours --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 21 --days 10 --out tmp/palier/palier-ligne-retours-021.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "palier-ligne-retours-reunion",
+      "command": "node scripts/line-compare.js --plan retours --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-ligne-retours-001.jsonl tmp/palier/palier-ligne-retours-011.jsonl tmp/palier/palier-ligne-retours-021.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-ligne-retours-001",
+        "palier-ligne-retours-011",
+        "palier-ligne-retours-021"
+      ]
+    },
+    {
+      "id": "palier-ligne-tournee-001",
+      "command": "node scripts/line-compare.js --plan tournee --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 10 --out tmp/palier/palier-ligne-tournee-001.jsonl",
+      "estimate": "18 min",
+      "limit": 54
+    },
+    {
+      "id": "palier-ligne-tournee-011",
+      "command": "node scripts/line-compare.js --plan tournee --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 11 --days 10 --out tmp/palier/palier-ligne-tournee-011.jsonl",
+      "estimate": "18 min",
+      "limit": 54
+    },
+    {
+      "id": "palier-ligne-tournee-021",
+      "command": "node scripts/line-compare.js --plan tournee --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 21 --days 10 --out tmp/palier/palier-ligne-tournee-021.jsonl",
+      "estimate": "18 min",
+      "limit": 54
+    },
+    {
+      "id": "palier-ligne-tournee-reunion",
+      "command": "node scripts/line-compare.js --plan tournee --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-ligne-tournee-001.jsonl tmp/palier/palier-ligne-tournee-011.jsonl tmp/palier/palier-ligne-tournee-021.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-ligne-tournee-001",
+        "palier-ligne-tournee-011",
+        "palier-ligne-tournee-021"
+      ]
+    },
+    {
+      "id": "palier-ligne-melange-001",
+      "command": "node scripts/line-compare.js --plan melange --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 15 --out tmp/palier/palier-ligne-melange-001.jsonl",
+      "estimate": "17 min",
+      "limit": 51
+    },
+    {
+      "id": "palier-ligne-melange-016",
+      "command": "node scripts/line-compare.js --plan melange --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 16 --days 15 --out tmp/palier/palier-ligne-melange-016.jsonl",
+      "estimate": "17 min",
+      "limit": 51
+    },
+    {
+      "id": "palier-ligne-melange-reunion",
+      "command": "node scripts/line-compare.js --plan melange --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-ligne-melange-001.jsonl tmp/palier/palier-ligne-melange-016.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-ligne-melange-001",
+        "palier-ligne-melange-016"
+      ]
+    },
+    {
+      "id": "palier-ligne-supermarche-001",
+      "command": "node scripts/line-compare.js --plan supermarche --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 15 --out tmp/palier/palier-ligne-supermarche-001.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-ligne-supermarche-016",
+      "command": "node scripts/line-compare.js --plan supermarche --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 16 --days 15 --out tmp/palier/palier-ligne-supermarche-016.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-ligne-supermarche-reunion",
+      "command": "node scripts/line-compare.js --plan supermarche --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 30 --merge tmp/palier/palier-ligne-supermarche-001.jsonl tmp/palier/palier-ligne-supermarche-016.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-ligne-supermarche-001",
+        "palier-ligne-supermarche-016"
+      ]
+    },
+    {
+      "id": "palier-usine-001",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 10 --out tmp/palier/palier-usine-001.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-usine-011",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 11 --days 10 --out tmp/palier/palier-usine-011.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-usine-021",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 21 --days 10 --out tmp/palier/palier-usine-021.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-usine-031",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 31 --days 10 --out tmp/palier/palier-usine-031.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-usine-041",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 41 --days 10 --out tmp/palier/palier-usine-041.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "palier-usine-reunion",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1 --from 1 --days 50 --merge tmp/palier/palier-usine-001.jsonl tmp/palier/palier-usine-011.jsonl tmp/palier/palier-usine-021.jsonl tmp/palier/palier-usine-031.jsonl tmp/palier/palier-usine-041.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "palier-usine-001",
+        "palier-usine-011",
+        "palier-usine-021",
+        "palier-usine-031",
+        "palier-usine-041"
+      ]
+    }
+  ]
+}

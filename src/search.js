@@ -18,7 +18,9 @@ import { advance, choose, cloneDay, drawBlockages, measuresOf, nextChoice } from
  */
 // earlyStop on since 27/10/2026 (Sami): the same days to the turn on every plan, a search up to a third shorter.
 // legHorizon (28/10/2026, measured by pairs): the legs of the worlds drawn planned that many turns ahead, null for LEG_HORIZON.
-export const SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, earlyStop: true, legHorizon: null });
+// rootWidth and widening (28/10/2026, the step up mcts-commun's docs/reglages.md measures): the moves kept at the root, null
+// for width, and mcts-commun's progressive widening below it, 0 for none.
+export const SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, earlyStop: true, legHorizon: null, rootWidth: null, widening: 0 });
 
 /** A world consistent with what the robots know at this choice. */
 export function drawWorld(state, rng) {
@@ -59,12 +61,12 @@ function shortlistOf(world, moves, width) {
   return [...new Map(ranked.map((move) => [move.key, move])).values()].slice(0, width);
 }
 
-function problemFor(base, { width, spread }) {
+function problemFor(base, { width, rootWidth, spread }) {
   return {
     sample: drawWorld,
     actor: () => "robots",
     moves: (world) => world.choice.open.map((order) => ({ id: order.id, order, key: `${world.choice.robot.id}>${order.id}` })),
-    shortlist: (world, moves) => shortlistOf(world, moves, width),
+    shortlist: (world, moves, where) => shortlistOf(world, moves, (where?.root && rootWidth) || width),
     key: (move) => move.key,
     play(world, move) {
       choose(world, world.choice, move.id);
@@ -88,18 +90,20 @@ function baseOf(state, rng, runs = 4) {
  * The search as a rule (simulate.js's signature, reading `context.state`): a single open order is taken at
  * once; otherwise `budget` iterations, seeded from the turn and the robot. `earlyStop` (mcts-commun, 27/10/2026, on
  * by default) stops a search once its leader cannot be caught; `legHorizon` plans the legs of the worlds drawn that many turns
- * ahead, lighter than LEG_HORIZON (28/10/2026, off by default); `onSearch(found, depth)` sees each result (scripts/searches.js).
+ * ahead, lighter than LEG_HORIZON (28/10/2026, off by default); `rootWidth` keeps more moves at the root than `width`
+ * below it, `widening` widens below it progressively (28/10/2026, off by default); `onSearch(found, depth)` sees each
+ * result (scripts/searches.js).
  * @param {Record<string, any> & import("./types.js").SearchHooks} [options]
  * @returns {import("./types.js").Rule}
  */
 export function searchRule(options = {}) {
-  const { budget, depth, explore, width, spread, seed, earlyStop, legHorizon, onSearch } = { ...SEARCH_SETTINGS, ...options };
+  const { budget, depth, explore, width, rootWidth, widening, spread, seed, earlyStop, legHorizon, onSearch } = { ...SEARCH_SETTINGS, ...options };
   return (robot, open, context) => {
     if (open.length === 1) return open[0];
     const state = withLegHorizon(context.state, legHorizon);
     const rng = createRng((Math.imul(seed, 0x9e3779b1) + state.t * 131 + robot.id * 7 + open.length) >>> 0);
     // The trucks' waits add up: the scale grows with them, or every world of a three-truck day scores 0 or 1.
-    const found = search(state, problemFor(baseOf(state, rng), { width, spread: spread * state.trucks.length }), { budget, rng, depth, explore, common: true, earlyStop });
+    const found = search(state, problemFor(baseOf(state, rng), { width, rootWidth, spread: spread * state.trucks.length }), { budget, rng, depth, explore, common: true, widening, earlyStop });
     onSearch?.(found, depth);
     return open.find((order) => order.id === found.move?.id) ?? RULES.list(robot, open);
   };

@@ -330,6 +330,30 @@ de `horizon.json` mesureraient donc un gain de quelques pour cent au plus. **Sam
 contre ce matin (de 0,29 aux couloirs à 0,62 à l'usine), 0,6 là où rien n'a été mesuré. `night.json` passe de 541 à
 281 minutes estimées, `decisions.json` de 985 à 522, `horizon.json` de 787 à 413, `diagnose.json` de 73 à 41.
 
+## Le palier de réglages (28/10 au soir)
+
+Sami trouve les réglages de la recherche très bas face à lopin : 64 itérations, profondeur 2 et 5 coups, contre
+2 000, 5 et 8 chez lopin. `mcts-commun` propose un palier à mesurer (`docs/reglages.md`, « Le palier à mesurer »), par
+paires contre la recherche d'aujourd'hui (A) :
+
+| Variante | `--variant` | Une décision, contre A (essai) |
+|---|---|---|
+| B, budget ×4 | `budget=256` | 3 à 3,9 fois |
+| C, 8 coups à la racine | `rootWidth=8` | 0,9 à 1 fois |
+| D, profondeur 3, budget ×2 | `budget=128,depth=3` | 1,6 à 1,9 fois |
+| E, tout ensemble | `budget=256,rootWidth=8,width=6,depth=3,widening=1` | 3 à 3,7 fois |
+
+- **Ce qui a été ajouté**, éteint par défaut (aucune empreinte ne bouge) :
+  - deux options des trois recherches : `rootWidth`, les coups gardés à la racine (le `{ root }` du `shortlist` de
+    `mcts-commun` `ef28dfd`), et `widening`, l'élargissement progressif de la lib ;
+  - dans `--diagnose`, le rang du coup joué dans la liste de la racine (1er, 2e, 3e et plus), et les `closeCall` que
+    `earlyStop` a tranchés comptés à part (« closeCall tranché »).
+- **Les jobs** (`palier.json`, tag `palier-2026-10-28`) : 30 journées par plan de l'entrepôt, 30 heures par ligne et 50
+  heures de l'usine. Cela fait 60 jobs et 979 minutes de fil, environ 54 minutes de la machine entière. Un job coûte
+  12 fois une unité d'aujourd'hui (l'essai : 1 + 3,9 + 1 + 1,9 + 3,7 recherches, et les règles).
+- **L'essai** (2 journées du plan de Sami, 3 heures de la ligne à un robot, 3 heures d'usine) ne tranche rien : trop
+  peu d'unités. À l'usine, le coup joué est toujours le premier de la liste, et aucune variante ne change rien.
+
 ## mcts-commun
 
 L'entrepôt en dépend par `"mcts-commun": "file:../mcts-commun"` : `node_modules/mcts-commun` est un lien vers le

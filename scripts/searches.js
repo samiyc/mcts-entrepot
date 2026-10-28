@@ -9,7 +9,15 @@ import { fixed, interval } from "./format.js";
  * result changes nothing the search does.
  */
 
-const fresh = () => ({ searches: 0, iterations: 0, ms: 0, codes: {} });
+const fresh = () => ({ searches: 0, iterations: 0, ms: 0, codes: {}, ranks: {} });
+
+/** `counts` plus one of `key`. */
+const add = (counts, key, count = 1) => {
+  counts[key] = (counts[key] ?? 0) + count;
+};
+
+/** A code's name as counted: a close call `earlyStop` settled apart (mcts-commun ef28dfd, 28/10/2026). */
+const codeOf = (hint) => (hint.code === "closeCall" && hint.settled ? "closeCall tranché" : hint.code);
 
 /** `onSearch` for a search rule, and `take`, what it saw since the last `take`. */
 export function watcherOf() {
@@ -19,7 +27,9 @@ export function watcherOf() {
       seen.searches += 1;
       seen.iterations += found.iterations;
       seen.ms += found.ms;
-      for (const { code } of diagnose(found, { depth })) seen.codes[code] = (seen.codes[code] ?? 0) + 1;
+      for (const hint of diagnose(found, { depth })) add(seen.codes, codeOf(hint));
+      // The played move's rank in the root's shortlist (1 its first), and of how many.
+      if (found.rank) add(seen.ranks, `${found.rank.played}/${found.rank.of}`);
     },
     take() {
       const taken = seen;
@@ -36,16 +46,27 @@ export function sumOf(all) {
     sum.searches += one.searches;
     sum.iterations += one.iterations;
     sum.ms += one.ms;
-    for (const [code, count] of Object.entries(one.codes)) sum.codes[code] = (sum.codes[code] ?? 0) + count;
+    for (const [code, count] of Object.entries(one.codes)) add(sum.codes, code, count);
+    for (const [rank, count] of Object.entries(one.ranks ?? {})) add(sum.ranks, rank, count);
   }
   return sum;
+}
+
+/** The played moves' ranks in the root's shortlist, the first ones apart, by share: `1er 70 %, 2e 20 %, 3e et plus 10 %`. */
+function rankShares(ranks, per) {
+  const names = ["1er", "2e", "3e et plus"];
+  const by = { "1er": 0, "2e": 0, "3e et plus": 0 };
+  for (const [rank, count] of Object.entries(ranks ?? {})) by[names[Math.min(3, Number(rank.split("/")[0])) - 1]] += count;
+  return Object.entries(by).filter(([, count]) => count > 0).map(([name, count]) => `${name} ${fixed(100 * per(count), 0)} %`).join(", ");
 }
 
 /** A line of what `label`'s searches saw: the decisions, their iterations and time each, each code's share. */
 export function searchesLine(label, seen) {
   const per = (value) => (seen.searches ? value / seen.searches : 0);
   const codes = Object.entries(seen.codes).sort((a, b) => b[1] - a[1]).map(([code, count]) => `${code} ${fixed(100 * per(count), 0)} %`);
-  return `${label} : ${seen.searches} décisions, ${fixed(per(seen.iterations))} itérations et ${fixed(per(seen.ms), 0)} ms chacune ; diagnose : ${codes.join(", ") || "rien"}`;
+  const shares = rankShares(seen.ranks, per);
+  const ranks = shares ? ` ; rang du coup joué : ${shares}` : "";
+  return `${label} : ${seen.searches} décisions, ${fixed(per(seen.iterations))} itérations et ${fixed(per(seen.ms), 0)} ms chacune ; diagnose : ${codes.join(", ") || "rien"}${ranks}`;
 }
 
 /** The watchers of the searches `names` (`--diagnose`, `--early`), none when the measure asked for neither. */

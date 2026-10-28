@@ -111,6 +111,22 @@ const DIAGNOSE = [
   ...Object.entries(COSTS.entrepot).map(([plan, cost]) => ({ id: `diagnose-entrepot-${plan}`, script: "compare.js", args: `--plan ${plan} --search --diagnose`, cost, days: 10 })),
 ].map((measure) => ({ ...measure, folder: "diagnose" }));
 
+/**
+ * The step up to measure (Sami, 28/10/2026, mcts-commun docs/reglages.md « Le palier à mesurer »): today's search (A)
+ * against four times its budget (B), 8 moves at the root (C), a tree of 3 with twice the budget (D), and all of them
+ * with one more move below and the progressive widening (E), by pairs, with diagnose. Each measure costs `PALIER_COST`
+ * times a unit of today's (the trial of 28/10 evening); 30 days a warehouse plan, 30 hours a line, 50 of the plant:
+ * an hour of the whole machine at most.
+ */
+const PALIER_COST = 12;
+const PALIER_VARIANTS = "--diagnose --variant budget=256 --variant rootWidth=8 --variant budget=128,depth=3 --variant budget=256,rootWidth=8,width=6,depth=3,widening=1";
+const step = (cost) => Math.round(100 * PALIER_COST * cost) / 100;
+const PALIER = [
+  ...Object.entries(COSTS.entrepot).map(([plan, cost]) => ({ id: `palier-entrepot-${plan}`, script: "compare.js", args: `--plan ${plan} --search ${PALIER_VARIANTS}`, cost: step(cost), days: 30 })),
+  ...Object.entries(COSTS.ligne).map(([plan, cost]) => ({ id: `palier-ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search ${PALIER_VARIANTS}`, cost: step(cost), days: 30 })),
+  { id: "palier-usine", script: "plant-compare.js", args: `--plan train --robots 1 --search ${PALIER_VARIANTS}`, cost: step(COSTS.usine), days: 50 },
+].map((measure) => ({ ...measure, folder: "palier" }));
+
 const write = (file, about, measures) => writeFileSync(new URL(file, ROOT), `${JSON.stringify({ about, jobs: measures.flatMap(jobsOf) }, null, 2)}\n`);
 write("night.json", "Les mesures de nuit (Sami, 23/10/2026, écrites par npm run night) : la recherche contre les règles, 100 journées par plan de l'entrepôt aux réglages par défaut, 100 heures par ligne, l'usine ; en tranches d'une demi-heure au plus, réunies par un job après elles (mcts-commun, 27/10). mcts-backlog --add-file mcts-entrepot/night.json, puis mcts-backlog.", NIGHT);
 write("night-rollout.json", "La règle de jeu de la recherche de la ligne (Sami, 26/10/2026, écrit par npm run night) : jouée par la plus proche ou par la couverture, sur les mêmes 100 heures par plan, et ce qu'en disent les 30 premières (scripts/line-rollout.js) ; en tranches d'une demi-heure au plus. mcts-backlog --add-file mcts-entrepot/night-rollout.json, puis mcts-backlog.", ROLLOUT);
@@ -118,4 +134,5 @@ write("essais-commun.json", "Les essais demandés par mcts-commun (27/10/2026 au
 write("decisions.json", "Les trois décisions à adopter (Sami, 27/10/2026, écrites par npm run night) : l'arrêt anticipé, calm et 128 itérations, chacun par paires sur la recherche d'aujourd'hui ; 100 heures par ligne, 30 journées par plan de l'entrepôt, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/decisions.json --tag decisions-AAAA-MM-JJ.", DECISIONS);
 write("horizon.json", "Des mondes plus légers pour la recherche (Sami, 28/10/2026, écrits par npm run night) : les chemins des mondes tirés planifiés moins loin, deux horizons par paires sur la recherche d'aujourd'hui ; 30 journées par plan de l'entrepôt, 100 heures par ligne, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/horizon.json --tag horizon-AAAA-MM-JJ.", HORIZON);
 write("diagnose.json", "Ce que dit diagnose de la recherche telle qu'elle joue aujourd'hui (Sami, 28/10/2026, écrit par npm run night) : le diagnose corrigé de mcts-commun (a2c66bd), avec earlyStop et calm par défaut ; 20 heures par ligne et de l'usine, 10 journées par plan de l'entrepôt. mcts-backlog --add-file mcts-entrepot/diagnose.json --tag diagnose-AAAA-MM-JJ.", DIAGNOSE);
-console.log("night.json, night-rollout.json, essais-commun.json, decisions.json, horizon.json, diagnose.json");
+write("palier.json", "Le palier de réglages à mesurer (Sami, 28/10/2026, écrit par npm run night ; mcts-commun docs/reglages.md) : la recherche d'aujourd'hui contre un budget ×4, 8 coups à la racine, une profondeur de 3 à budget ×2, et tout ensemble, par paires avec diagnose ; 30 journées par plan de l'entrepôt, 30 heures par ligne, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/palier.json --tag palier-AAAA-MM-JJ.", PALIER);
+console.log("night.json, night-rollout.json, essais-commun.json, decisions.json, horizon.json, diagnose.json, palier.json");

@@ -17,7 +17,7 @@ import { drawBlockages } from "./simulate.js";
  * cover 11 minutes, 15 minutes see what a choice costs), by `rollout` beyond the tree, and scored on the turns the line
  * stood still against the same rule's from the same point.
  */
-export const LINE_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 180, rollout: "nearest", calm: true, earlyStop: true, legHorizon: null });
+export const LINE_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 180, rollout: "nearest", calm: true, earlyStop: true, legHorizon: null, rootWidth: null, widening: 0 });
 
 /** The shortages of a world: those seen go on a drawn while, those to come are drawn again after now. */
 function worldShortages(state, rng) {
@@ -70,12 +70,12 @@ function shortlistOf(world, moves, width) {
   return [...new Map(ranked.map((move) => [move.key, move])).values()].slice(0, width);
 }
 
-function problemFor(base, { width, spread, rule }) {
+function problemFor(base, { width, rootWidth, spread, rule }) {
   return {
     sample: (state, rng) => drawLineWorld(state, rng, state.limit),
     actor: () => "robots",
     moves: (world) => world.choice.open.map((order) => ({ id: order.id, order, key: `${world.choice.robot.id}>${order.id}` })),
-    shortlist: (world, moves) => shortlistOf(world, moves, width),
+    shortlist: (world, moves, where) => shortlistOf(world, moves, (where?.root && rootWidth) || width),
     key: (move) => move.key,
     play(world, move) {
       choose(world, world.choice, move.id);
@@ -100,12 +100,12 @@ function baseOf(state, rng, rule, runs = 4) {
  * otherwise `budget` iterations, seeded from the turn and the robot. With `calm` (Sami, 26/10/2026: the search is
  * slow on well-fed lines and gains nothing there), when the rollout rule stops the line in none of the worlds drawn for
  * the base, there is nothing to win: the rule's choice, without a tree; on by default since 27/10/2026 (no line worse
- * over 100 hours, up to 92 % fewer searches). `earlyStop`, `legHorizon` and `onSearch` as in search.js.
+ * over 100 hours, up to 92 % fewer searches). `earlyStop`, `legHorizon`, `rootWidth`, `widening` and `onSearch` as in search.js.
  * @param {Record<string, any> & import("./types.js").SearchHooks} [options]
  * @returns {import("./types.js").Rule}
  */
 export function lineSearchRule(options = {}) {
-  const { budget, depth, explore, width, spread, seed, lookahead, rollout, calm, earlyStop, legHorizon, onSearch } = { ...LINE_SEARCH_SETTINGS, ...options };
+  const { budget, depth, explore, width, rootWidth, widening, spread, seed, lookahead, rollout, calm, earlyStop, legHorizon, onSearch } = { ...LINE_SEARCH_SETTINGS, ...options };
   const rule = LINE_RULES[rollout];
   return (robot, open, context) => {
     // An hour of the line, not a warehouse's day: the rule's types know only the warehouse's.
@@ -115,7 +115,7 @@ export function lineSearchRule(options = {}) {
     const root = { ...withLegHorizon(state, legHorizon), limit: Math.min(state.setup.horizon, state.t + lookahead) };
     const base = baseOf(root, rng, rule);
     if (calm && base === state.stopped) return rule(robot, open, /** @type {any} */ (context));
-    const found = search(root, problemFor(base, { width, spread, rule }), { budget, rng, depth, explore, common: true, earlyStop });
+    const found = search(root, problemFor(base, { width, rootWidth, spread, rule }), { budget, rng, depth, explore, common: true, widening, earlyStop });
     onSearch?.(found, depth);
     return open.find((order) => order.id === found.move?.id) ?? open[0];
   };

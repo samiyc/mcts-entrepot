@@ -9,12 +9,13 @@ describe("what the searches of a measure saw (scripts/searches.js)", () => {
   it("counts each decision's iterations, time and diagnose codes, unit by unit", () => {
     const watchers = watchersOf(["search"]);
     watchers.search.onSearch(found, 2);
-    watchers.search.onSearch({ ...found, iterations: 44 }, 2);
+    watchers.search.onSearch({ ...found, iterations: 44, rank: { played: 2, of: 5 } }, 2);
     const first = takeAll(watchers).search;
-    assert.deepEqual(first, { searches: 2, iterations: 64, ms: 6, codes: { fewIterations: 1, flatScore: 2, shallow: 2 } });
+    assert.deepEqual(first, { searches: 2, iterations: 64, ms: 6, codes: { fewIterations: 1, flatScore: 2, shallow: 2 }, ranks: { "2/5": 1 } });
     // Taken, the next unit starts from nothing.
-    assert.deepEqual(takeAll(watchers).search, { searches: 0, iterations: 0, ms: 0, codes: {} });
+    assert.deepEqual(takeAll(watchers).search, { searches: 0, iterations: 0, ms: 0, codes: {}, ranks: {} });
     assert.deepEqual(sumOf([first, first]).codes, { fewIterations: 2, flatScore: 4, shallow: 4 });
+    assert.deepEqual(sumOf([first, first]).ranks, { "2/5": 2 });
   });
 
   it("reads the variants asked, and pairs each on the search and on the one before", () => {
@@ -31,5 +32,8 @@ describe("what the searches of a measure saw (scripts/searches.js)", () => {
     const seen = { searches: 2, iterations: 64, ms: 6, codes: { flatScore: 2 } };
     const lines = searchesLines([{ searches: { search: seen } }, { searches: { search: seen } }, {}], { search: "recherche" });
     assert.deepEqual(lines, ["recherche : 4 décisions, 32,0 itérations et 3 ms chacune ; diagnose : flatScore 100 %"]);
+    // The played move's rank, the first ones apart (a record from before 28/10 has none).
+    const ranked = { ...seen, ranks: { "1/5": 1, "4/5": 1 } };
+    assert.match(searchesLines([{ searches: { search: ranked } }], { search: "recherche" })[0], / ; rang du coup joué : 1er 50 %, 3e et plus 50 %$/);
   });
 });

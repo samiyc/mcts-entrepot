@@ -72,6 +72,17 @@
   ],
   "versions": [
     {
+      "version": "0.32",
+      "title": "Un palier de réglages à mesurer",
+      "date": "28/10",
+      "items": [
+        "La recherche peut garder plus de coups à sa racine qu'en dessous, et s'élargir peu à peu : deux réglages éteints par défaut, les journées ne changent pas.",
+        "Le diagnostic des recherches dit aussi le rang du coup joué dans la liste de départ, et quand l'arrêt anticipé a départagé deux coups presque égaux.",
+        "Quatre réglages plus forts (plus d'itérations, plus de coups, plus de profondeur, tout ensemble) sont mis en file, par paires contre ceux d'aujourd'hui, en moins d'une heure de la machine."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.31",
       "title": "La nouvelle bibliothèque et Node 24",
       "date": "28/10",

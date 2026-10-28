@@ -15,7 +15,7 @@ import { drawWorld } from "./search.js";
  * stood still against the rollout's from the same point. When the rollout stops the line in none of the worlds drawn
  * for that base, there is nothing to win: the rollout's choice, without a tree.
  */
-export const PLANT_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 360, lineRule: "kanban", rollout: "list", earlyStop: true, legHorizon: null });
+export const PLANT_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 360, lineRule: "kanban", rollout: "list", earlyStop: true, legHorizon: null, rootWidth: null, widening: 0 });
 
 /** A plant consistent with what the robots know at this choice: the warehouse's, the line's, played up to `limit`. */
 export function drawPlantWorld(plant, rng, limit) {
@@ -47,12 +47,12 @@ function shortlistOf(world, moves, width) {
   return [...new Map(ranked.map((move) => [move.key, move])).values()].slice(0, width);
 }
 
-function problemFor(base, { width, spread, lineRule, rule }) {
+function problemFor(base, { width, rootWidth, spread, lineRule, rule }) {
   return {
     sample: (plant, rng) => drawPlantWorld(plant, rng, plant.limit),
     actor: () => "robots",
     moves: (world) => world.choice.open.map((order) => ({ id: order.id, order, key: `${world.choice.robot.id}>${order.id}` })),
-    shortlist: (world, moves) => shortlistOf(world, moves, width),
+    shortlist: (world, moves, where) => shortlistOf(world, moves, (where?.root && rootWidth) || width),
     key: (move) => move.key,
     play(world, move) {
       choosePlant(world, world.choice, move.id);
@@ -74,13 +74,13 @@ function baseOf(root, rng, rules, runs = 4) {
 
 /**
  * The search as a warehouse rule in the plant (plant.js gives it the plant, `context.plant`): a single open order is
- * taken at once; otherwise `budget` iterations, seeded from the turn and the robot. `earlyStop`, `legHorizon` and
- * `onSearch` as in search.js.
+ * taken at once; otherwise `budget` iterations, seeded from the turn and the robot. `earlyStop`, `legHorizon`, `rootWidth`,
+ * `widening` and `onSearch` as in search.js.
  * @param {Record<string, any> & import("./types.js").SearchHooks} [options]
  * @returns {import("./types.js").Rule}
  */
 export function plantSearchRule(options = {}) {
-  const { budget, depth, explore, width, spread, seed, lookahead, lineRule, rollout, earlyStop, legHorizon, onSearch } = { ...PLANT_SEARCH_SETTINGS, ...options };
+  const { budget, depth, explore, width, rootWidth, widening, spread, seed, lookahead, lineRule, rollout, earlyStop, legHorizon, onSearch } = { ...PLANT_SEARCH_SETTINGS, ...options };
   const rules = { lineRule: LINE_RULES[lineRule], rule: WAREHOUSE_RULES[rollout] };
   return (robot, open, context) => {
     // The plant, not a warehouse's day: the rule's types know only the warehouse's.
@@ -91,7 +91,7 @@ export function plantSearchRule(options = {}) {
     const root = { ...plant, warehouse: withLegHorizon(plant.warehouse, legHorizon), line: withLegHorizon(plant.line, legHorizon), limit: Math.min(plant.line.setup.horizon, plant.t + lookahead) };
     const base = baseOf(root, rng, rules);
     if (base === plant.line.stopped) return rules.rule(robot, open, context);
-    const found = search(root, problemFor(base, { width, spread, ...rules }), { budget, rng, depth, explore, common: true, earlyStop });
+    const found = search(root, problemFor(base, { width, rootWidth, spread, ...rules }), { budget, rng, depth, explore, common: true, widening, earlyStop });
     onSearch?.(found, depth);
     return open.find((order) => order.id === found.move?.id) ?? rules.rule(robot, open, context);
   };

@@ -35,4 +35,14 @@ describe("the search (src/search.js)", () => {
     assert.deepEqual(runDay(setup, seed, searchRule({ budget: 16 })).measures, measures);
     assert.ok(measures.finish <= runDay(setup, seed, RULES.list).measures.finish + 4);
   });
+
+  it("keeps `rootWidth` moves at the root, `width` without it", () => {
+    const widest = (options) => {
+      let most = 0;
+      runDay(PLANS.sami, 1, searchRule({ budget: 8, width: 3, ...options, onSearch: (found) => (most = Math.max(most, found.rank?.of ?? 0)) }));
+      return most;
+    };
+    assert.equal(widest({}), 3);
+    assert.equal(widest({ rootWidth: 6, widening: 1 }), 6);
+  });
 });

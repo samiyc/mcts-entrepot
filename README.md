@@ -30,7 +30,7 @@ au terrain, sont dans [`docs/recherche/hypotheses.md`](docs/recherche/hypotheses
 | `npm run compare -- [--plan sami] [--search]` | les règles de l'entrepôt, et la recherche, sur les mêmes journées |
 | `npm run line -- [--plan tournee] [--search] [--diagnose] [--early]` | les règles de la ligne, et la recherche, sur les mêmes heures ; ce que voient ses recherches, et l'arrêt anticipé par paires |
 | `node scripts/line-drivers.js` | ce que le cariste apporte à la ligne, ou ce qu'il coûte |
-| `npm run night` | `night.json`, `night-rollout.json`, `essais-commun.json`, `decisions.json`, `horizon.json` et `diagnose.json`, les mesures longues pour la file, en tranches d'une demi-heure au plus |
+| `npm run night` | `night.json`, `night-rollout.json`, `essais-commun.json`, `decisions.json`, `horizon.json`, `diagnose.json` et `palier.json`, les mesures longues pour la file, en tranches d'une demi-heure au plus |
 | `npm run check` | le lint, les types et les tests ; le hook le relance avant chaque commit |
 
 Les mesures longues passent par la file de la machine (`mcts-backlog --add-file mcts-entrepot/night.json`). Chaque
