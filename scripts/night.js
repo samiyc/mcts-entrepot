@@ -98,10 +98,23 @@ const HORIZON = [
   { id: "horizon-usine", script: "plant-compare.js", args: `--plan train --robots 1 --search ${horizons(48, 36)}`, cost: Math.round(280 * COSTS.usine) / 100, days: 50 },
 ].map((measure) => ({ ...measure, folder: "horizon" }));
 
+/**
+ * What diagnose says of the search as it plays today (Sami, 28/10/2026): the count of 27/10 mixed the diagnose before
+ * and after mcts-commun a2c66bd (a close call judged on the margin, too few iterations silent once the early stop
+ * settled), and its searches ran without earlyStop and calm. Every line over 20 hours, the plant over 20, each
+ * warehouse plan over 10 days.
+ */
+const DIAGNOSE = [
+  ...Object.entries(COSTS.ligne).map(([plan, cost]) => ({ id: `diagnose-ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search --diagnose`, cost, days: 20 })),
+  { id: "diagnose-usine", script: "plant-compare.js", args: "--plan train --robots 1 --search --diagnose", cost: COSTS.usine, days: 20 },
+  ...Object.entries(COSTS.entrepot).map(([plan, cost]) => ({ id: `diagnose-entrepot-${plan}`, script: "compare.js", args: `--plan ${plan} --search --diagnose`, cost, days: 10 })),
+].map((measure) => ({ ...measure, folder: "diagnose" }));
+
 const write = (file, about, measures) => writeFileSync(new URL(file, ROOT), `${JSON.stringify({ about, jobs: measures.flatMap(jobsOf) }, null, 2)}\n`);
 write("night.json", "Les mesures de nuit (Sami, 23/10/2026, écrites par npm run night) : la recherche contre les règles, 100 journées par plan de l'entrepôt aux réglages par défaut, 100 heures par ligne, l'usine ; en tranches d'une demi-heure au plus, réunies par un job après elles (mcts-commun, 27/10). mcts-backlog --add-file mcts-entrepot/night.json, puis mcts-backlog.", NIGHT);
 write("night-rollout.json", "La règle de jeu de la recherche de la ligne (Sami, 26/10/2026, écrit par npm run night) : jouée par la plus proche ou par la couverture, sur les mêmes 100 heures par plan, et ce qu'en disent les 30 premières (scripts/line-rollout.js) ; en tranches d'une demi-heure au plus. mcts-backlog --add-file mcts-entrepot/night-rollout.json, puis mcts-backlog.", ROLLOUT);
 write("essais-commun.json", "Les essais demandés par mcts-commun (27/10/2026 au soir, écrits par npm run night) : earlyStop par paires sur la recherche, 100 heures des tournées, du bord étroit et des bacs vides ; ce que dit diagnose des autres lignes, de l'usine et des plans de l'entrepôt. mcts-backlog --add-file mcts-entrepot/essais-commun.json --tag essais-commun-AAAA-MM-JJ.", ESSAIS);
 write("decisions.json", "Les trois décisions à adopter (Sami, 27/10/2026, écrites par npm run night) : l'arrêt anticipé, calm et 128 itérations, chacun par paires sur la recherche d'aujourd'hui ; 100 heures par ligne, 30 journées par plan de l'entrepôt, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/decisions.json --tag decisions-AAAA-MM-JJ.", DECISIONS);
 write("horizon.json", "Des mondes plus légers pour la recherche (Sami, 28/10/2026, écrits par npm run night) : les chemins des mondes tirés planifiés moins loin, deux horizons par paires sur la recherche d'aujourd'hui ; 30 journées par plan de l'entrepôt, 100 heures par ligne, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/horizon.json --tag horizon-AAAA-MM-JJ.", HORIZON);
-console.log("night.json, night-rollout.json, essais-commun.json, decisions.json, horizon.json");
+write("diagnose.json", "Ce que dit diagnose de la recherche telle qu'elle joue aujourd'hui (Sami, 28/10/2026, écrit par npm run night) : le diagnose corrigé de mcts-commun (a2c66bd), avec earlyStop et calm par défaut ; 20 heures par ligne et de l'usine, 10 journées par plan de l'entrepôt. mcts-backlog --add-file mcts-entrepot/diagnose.json --tag diagnose-AAAA-MM-JJ.", DIAGNOSE);
+console.log("night.json, night-rollout.json, essais-commun.json, decisions.json, horizon.json, diagnose.json");
