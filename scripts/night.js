@@ -30,21 +30,26 @@ function jobsOf({ id, script, args, cost, days = DAYS, folder = "night" }) {
 }
 
 /**
- * The minutes of a unit: the warehouse's on the night of 26 to 27/10 (with the dock loader), the line's on 27/10 by day (the
- * longest slice of each, 18 threads busy).
+ * A unit's minutes as measured on 28/10/2026 (earlyStop and calm on, the screen before A*): the rules and the search,
+ * eighteen measures run together, twice over for a night's load; the higher of that and what the same measure took
+ * on 27/10 in the queue, a tenth off for the screen. docs/outillage.md has the table; every measure below takes them
+ * (Sami, 28/10/2026), the rollout campaign's aside.
  */
+const COSTS = {
+  entrepot: { petit: 0.13, sami: 0.47, quais: 1.08, couloirs: 0.36, flux: 0.36, assemblage: 0.59 },
+  ligne: { petite: 0.05, sami: 0.19, seul: 0.22, etroite: 0.07, retours: 0.54, tournee: 0.24, melange: 0.15, supermarche: 0.19 },
+  usine: 0.28,
+  plantRules: { usine: 0.11, train: 0.1 },
+  forklift: 0.12,
+};
+
 const NIGHT = [
-  { id: "ent-petit", script: "compare.js", args: "--plan petit --search", cost: 0.1 },
-  { id: "ent-sami", script: "compare.js", args: "--plan sami --search", cost: 0.8 },
-  { id: "ent-quais", script: "compare.js", args: "--plan quais --search", cost: 3.5 },
-  { id: "ent-couloirs", script: "compare.js", args: "--plan couloirs --search", cost: 0.92 },
-  { id: "ent-flux", script: "compare.js", args: "--plan flux --search", cost: 1.3 },
-  { id: "ent-assemblage", script: "compare.js", args: "--plan assemblage --search", cost: 1.5 },
-  ...["petite", "sami", "seul", "etroite", "retours", "tournee", "melange", "supermarche"].map((plan, i) => ({ id: `ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search`, cost: [0.06, 0.62, 0.3, 0.05, 0.78, 0.25, 0.21, 0.48][i] })),
-  { id: "ligne-cariste", script: "line-drivers.js", args: "", cost: 0.05 },
-  { id: "usine", script: "plant-compare.js", args: "--plan usine", cost: 0.15 },
-  { id: "usine-train", script: "plant-compare.js", args: "--plan train", cost: 0.1 },
-  { id: "usine-train-recherche", script: "plant-compare.js", args: "--plan train --robots 1 --search", cost: 0.9 },
+  ...Object.entries(COSTS.entrepot).map(([plan, cost]) => ({ id: `ent-${plan}`, script: "compare.js", args: `--plan ${plan} --search`, cost })),
+  ...Object.entries(COSTS.ligne).map(([plan, cost]) => ({ id: `ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search`, cost })),
+  { id: "ligne-cariste", script: "line-drivers.js", args: "", cost: COSTS.forklift },
+  { id: "usine", script: "plant-compare.js", args: "--plan usine", cost: COSTS.plantRules.usine },
+  { id: "usine-train", script: "plant-compare.js", args: "--plan train", cost: COSTS.plantRules.train },
+  { id: "usine-train-recherche", script: "plant-compare.js", args: "--plan train --robots 1 --search", cost: COSTS.usine },
 ];
 
 /** The rollout campaign (26/10, measured again on 27/10 by day): an hour of each line, its rules and both searches. */
@@ -55,15 +60,13 @@ const ROLLOUT = [["petite", 0.11], ["etroite", 0.08], ["seul", 0.58], ["melange"
  * The trials mcts-commun asked of the warehouse (27/10/2026 evening, its docs/essais-projets.md): `earlyStop` paired on
  * the search over 100 hours of the lines where the search wins (tours, the narrow edge, the empties; the search twice,
  * the early one about three quarters of the other), and what `diagnose` says of the other lines, the plant and the
- * warehouse's plans. The costs are those of 27/10 by day, three quarters more where the search runs twice.
+ * warehouse's plans. Three quarters more where the search runs twice.
  */
-const WAREHOUSE_COSTS = { petit: 0.1, sami: 0.8, couloirs: 0.92, flux: 1.3, assemblage: 1.5, quais: 3.5 };
-const LINE_COSTS = { petite: 0.06, sami: 0.62, seul: 0.3, etroite: 0.05, retours: 0.78, tournee: 0.25, melange: 0.21, supermarche: 0.48 };
 const ESSAIS = [
-  ...["tournee", "etroite", "retours"].map((plan) => ({ id: `essai-arret-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search --early`, cost: Math.round(175 * LINE_COSTS[plan]) / 100 })),
-  ...["petite", "sami", "seul", "melange", "supermarche"].map((plan) => ({ id: `essai-diagnose-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search --diagnose`, cost: LINE_COSTS[plan], days: 20 })),
-  { id: "essai-diagnose-usine", script: "plant-compare.js", args: "--plan train --robots 1 --search --diagnose", cost: 0.9, days: 20 },
-  ...Object.entries(WAREHOUSE_COSTS)
+  ...["tournee", "etroite", "retours"].map((plan) => ({ id: `essai-arret-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search --early`, cost: Math.round(175 * COSTS.ligne[plan]) / 100 })),
+  ...["petite", "sami", "seul", "melange", "supermarche"].map((plan) => ({ id: `essai-diagnose-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search --diagnose`, cost: COSTS.ligne[plan], days: 20 })),
+  { id: "essai-diagnose-usine", script: "plant-compare.js", args: "--plan train --robots 1 --search --diagnose", cost: COSTS.usine, days: 20 },
+  ...Object.entries(COSTS.entrepot)
     .map(([plan, cost]) => ({ id: `essai-diagnose-${plan}-jour`, script: "compare.js", args: `--plan ${plan} --search --diagnose`, cost, days: 10 })),
 ].map((measure) => ({ ...measure, folder: "essais" }));
 
@@ -78,21 +81,10 @@ const ESSAIS = [
 const LINE_VARIANTS = "--variant calm=1,earlyStop=1 --variant calm=1,earlyStop=1,budget=128";
 const WAREHOUSE_VARIANTS = "--variant earlyStop=1 --variant earlyStop=1,budget=128";
 const DECISIONS = [
-  ...Object.entries(LINE_COSTS).map(([plan, cost]) => ({ id: `choix-ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search ${LINE_VARIANTS}`, cost: Math.round(325 * cost) / 100 })),
-  ...Object.entries(WAREHOUSE_COSTS).map(([plan, cost]) => ({ id: `choix-entrepot-${plan}`, script: "compare.js", args: `--plan ${plan} --search ${WAREHOUSE_VARIANTS}`, cost: 4 * cost, days: 30 })),
-  { id: "choix-usine", script: "plant-compare.js", args: `--plan train --robots 1 --search ${WAREHOUSE_VARIANTS}`, cost: 3.6, days: 50 },
+  ...Object.entries(COSTS.ligne).map(([plan, cost]) => ({ id: `choix-ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search ${LINE_VARIANTS}`, cost: Math.round(325 * cost) / 100 })),
+  ...Object.entries(COSTS.entrepot).map(([plan, cost]) => ({ id: `choix-entrepot-${plan}`, script: "compare.js", args: `--plan ${plan} --search ${WAREHOUSE_VARIANTS}`, cost: 4 * cost, days: 30 })),
+  { id: "choix-usine", script: "plant-compare.js", args: `--plan train --robots 1 --search ${WAREHOUSE_VARIANTS}`, cost: 4 * COSTS.usine, days: 50 },
 ].map((measure) => ({ ...measure, folder: "choix" }));
-
-/**
- * A unit's minutes as measured on 28/10/2026 (earlyStop and calm on, the screen before A*): the rules and the search,
- * eighteen measures run together, twice over for a night's load; the higher of that and what the same measure took
- * on 27/10 in the queue, a tenth off for the screen. docs/outillage.md has the table.
- */
-const COSTS = {
-  entrepot: { petit: 0.13, sami: 0.47, quais: 1.08, couloirs: 0.36, flux: 0.36, assemblage: 0.59 },
-  ligne: { petite: 0.05, sami: 0.19, seul: 0.22, etroite: 0.07, retours: 0.54, tournee: 0.24, melange: 0.15, supermarche: 0.19 },
-  usine: 0.28,
-};
 
 /**
  * Lighter worlds for the search (Sami, 28/10/2026, to test): the legs of the worlds drawn planned fewer turns ahead,

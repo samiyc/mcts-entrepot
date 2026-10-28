@@ -263,8 +263,9 @@ par défaut. Les chemins des mondes tirés sont alors planifiés moins loin que 
   anticipé et d'avant le filtre, sous la charge de la nuit.
 - Les lignes étaient à peu près justes, sauf les bacs vides (`retours`) et les tournées, un peu au-dessus de
   l'estimé.
-- `horizon.json` prend ces coûts proposés (`COSTS` dans `scripts/night.js`). Ceux de `NIGHT`, `ESSAIS` et
-  `DECISIONS` attendent l'accord de Sami.
+- **Adoptés le 28/10** (Sami) : toutes les mesures de `scripts/night.js` prennent ces coûts (`COSTS`), sauf la
+  campagne de la règle de jeu. `night.json` passe de 1 233 à 541 minutes estimées, `decisions.json` de 2 096 à 985
+  (le 27/10, ses jobs avaient pris 1 051 minutes en tout), `essais-commun.json` de 333 à 207.
 
 ## mcts-commun
 
