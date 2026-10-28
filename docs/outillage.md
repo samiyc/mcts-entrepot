@@ -236,6 +236,15 @@ le temps ne l'atteindra non plus : `planLeg` ne demande rien à A*. Le filtre la
   Lancé seulement après un échec vers la même cible, ou seulement quand le robot est encerclé, il rattrapait trop peu
   d'échecs. Ce qui l'a rendu rentable, ce sont des tableaux d'entiers réutilisés d'un parcours à l'autre.
 
+**Les vérifications de baie** (`src/day-ways.js`, commit `2d184bc`). Avant de poser une palette, `shutsIn` vérifie
+qu'elle n'enferme personne. Il lançait un parcours depuis chaque destination (chaque camion, chaque case promise),
+alors que tous ces parcours contournent les mêmes palettes. Un seul étiquetage des morceaux du sol suffit maintenant :
+les réponses sont les mêmes.
+- **Rien ne change** : les mêmes journées à l'octet près sur 7 mesures (5 plans de l'entrepôt, l'usine, les bacs
+  vides), et aucune empreinte ne bouge.
+- **Ce qu'il gagne** : sur une journée d'assemblage, `shutsIn` passe de 15 à 9 % du temps. Avec 14 mesures lancées
+  ensemble, le temps baisse de 7 % sur le plan de Sami et au flux, de 5 % à l'assemblage, de 1 à 2 % ailleurs.
+
 **Des mondes plus légers pour la recherche** (commit `211c7e0`) : l'option `legHorizon` des trois recherches, éteinte
 par défaut. Les chemins des mondes tirés sont alors planifiés moins loin que les 80 tours de `LEG_HORIZON`.
 - Elle est mesurée par paires sur la recherche d'aujourd'hui (`horizon.json`, 50 jobs, tag `horizon-2026-10-28`) :
@@ -266,6 +275,14 @@ par défaut. Les chemins des mondes tirés sont alors planifiés moins loin que 
 - **Adoptés le 28/10** (Sami) : toutes les mesures de `scripts/night.js` prennent ces coûts (`COSTS`), sauf la
   campagne de la règle de jeu. `night.json` passe de 1 233 à 541 minutes estimées, `decisions.json` de 2 096 à 985
   (le 27/10, ses jobs avaient pris 1 051 minutes en tout), `essais-commun.json` de 333 à 207.
+
+**Ce qui reste**, d'après le profil du code actuel :
+- **A*** : 48 à 67 % du temps. Il est chez `mcts-commun`.
+- **Les 4 déroulés de base de chaque décision** (`baseOf`) : 6 % dans l'entrepôt, 13 % à l'usine. En faire moins changerait
+  les décisions.
+- **La portée des déroulés** de la ligne et de l'usine (180 et 360 tours) : un changement de modèle, à ouvrir après
+  les résultats de `legHorizon`.
+- **Le reste** (le clonage des mondes et des réservations) ne pèse pas 1 %.
 
 ## mcts-commun
 

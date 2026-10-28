@@ -138,9 +138,10 @@ Reste :
   budget propre à l'assemblage ;
 - **les lenteurs des journées complètes** (28/10, [../outillage.md](../outillage.md)) : un filtre avant A* écarte les
   chemins que des robots garés pour de bon rendent impossibles. Il ne change aucun résultat, et le temps d'A* baisse de
-  7 à 16 %. L'horizon des chemins des mondes de la recherche (`legHorizon`) est mesuré par paires dans la file
-  (`horizon.json`), les lenteurs d'A* sont signalées à `mcts-commun`, et les estimations des jobs sont mesurées. Reste
-  à trancher l'horizon quand les jobs auront fini, et les nouveaux coûts de `NIGHT` ;
+  7 à 16 %. Les vérifications de baie se font en un seul passage, jusqu'à 7 % de temps en moins. L'horizon des
+  chemins des mondes de la recherche (`legHorizon`) est mesuré par paires dans la file (`horizon.json`), les lenteurs
+  d'A* sont signalées à `mcts-commun`, et les nouveaux coûts des jobs, mesurés, sont adoptés. Reste à trancher
+  l'horizon quand les jobs auront fini ;
 - ~~relier l'entrepôt au supermarché~~ : **fait le 26/10**, l'usine (`src/plant.js`, onglet Usine,
   [../modele-ligne.md](../modele-ligne.md)). Il en reste les replays de l'usine ;
 - ~~une recherche d'entrepôt qui connaît l'état de la ligne~~ : **faite le 26/10** (`src/plant-search.js`), avec la

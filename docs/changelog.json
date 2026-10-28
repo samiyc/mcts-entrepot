@@ -77,6 +77,7 @@
       "date": "28/10",
       "items": [
         "Avant de chercher un chemin, l'entrepôt regarde si des robots garés pour de bon le rendent impossible : les mêmes journées, et jusqu'à 16 % de temps en moins dans A*, la recherche de chemins.",
+        "Les vérifications de baie, avant de poser une palette, se font en un seul passage : les mêmes journées, jusqu'à 7 % de temps en moins.",
         "Les lenteurs d'A* sont signalées à la bibliothèque commune, qui les corrigera de son côté.",
         "Des mondes plus légers pour la recherche, aux chemins planifiés moins loin, sont mesurés dans la file.",
         "Les durées estimées des mesures de nuit sont mesurées et refaites : l'entrepôt et l'usine étaient estimés deux à quatre fois trop haut."
