@@ -202,6 +202,70 @@ L'A* coopératif tient les 2 à 4 robots de nos plans. PIBT vaudrait d'être ess
 vaudrait aussi pour sa vitesse, dans les mondes de la recherche, puisque A* y fait 80 % du temps. Mais ce serait un
 autre modèle, et toutes les empreintes changeraient.
 
+## Les lenteurs des journées complètes (28/10)
+
+Sami a demandé où passe le temps d'une journée complète, et ce qu'on peut y gagner. On a profilé une journée avec la
+recherche (`--cpu-prof`, puis les compteurs de la trace), réglages par défaut :
+
+| Cas | Temps | A* | Les chemins non trouvés : appels, temps d'A* | ms par succès, par échec |
+|---|---|---|---|---|
+| assemblage, 1 journée | 14 s | 52 % | 6 %, 34 % | 0,12, 0,92 |
+| trois quais, 1 journée | 18 s | 71 % | 23 %, 34 % | 0,51, 0,91 |
+| plan de Sami, 1 journée | — | — | 8 %, 29 % | 0,09, 0,45 |
+| flux, 1 journée | — | — | 7 %, 33 % | 0,11, 0,72 |
+| usine (navette à heure fixe), 3 heures | 9,5 s | 62 % | — | — |
+
+- **Les règles seules ne coûtent presque rien** : 1,3 s pour les 4 règles sur 3 journées d'assemblage. C'est la
+  recherche qui coûte, et chaque variante de recherche autant qu'elle.
+- **A\* prend la majorité du temps**, et le ramasse-miettes 7 à 10 % de plus, ses chaînes de clés et ses objets. Ces
+  constats sont partis à `mcts-commun` sur le tableau des sessions le 28/10 (« Entrepôt : où A* perd son temps »),
+  qui les corrigera de son côté.
+- **Un chemin non trouvé coûte cher**, jusqu'à 7,6 fois un chemin trouvé. La plupart des échecs explorent autant de
+  nœuds que le plan a de cases avant qu'A* ne s'en aperçoive.
+
+**Le filtre avant A\*** (`src/day-reach.js`, commit `9d28496`). Un robot garé pour de bon, au plus tard au tour suivant,
+est un mur à tout instant après. Si un parcours en largeur autour de ces murs n'atteint pas la cible, aucun chemin dans
+le temps ne l'atteindra non plus : `planLeg` ne demande rien à A*. Le filtre laisse passer plus qu'un chemin ne peut
+(il ignore les palettes), jamais moins : il ne fait que rejeter.
+- **Il ne change rien** : les mêmes journées à l'octet près avant et après, comparées par `--out` sur 7 mesures (4
+  plans de l'entrepôt, l'usine, deux lignes). Aucune empreinte ne bouge.
+- **Ce qu'il gagne**, une journée avant → après : les échecs passent de 2 762 à 1 042 à l'assemblage, de 5 057 à
+  1 411 aux quais, et de 1 926 à 164 sur 3 heures d'usine. Le temps d'A* baisse de 7 à 16 %, celui de la recherche
+  de 3 à 11 %.
+- **Ce qu'on a écarté d'abord** : le même filtre avec un `Set` et des clés en texte coûtait autant qu'il épargnait.
+  Lancé seulement après un échec vers la même cible, ou seulement quand le robot est encerclé, il rattrapait trop peu
+  d'échecs. Ce qui l'a rendu rentable, ce sont des tableaux d'entiers réutilisés d'un parcours à l'autre.
+
+**Des mondes plus légers pour la recherche** (commit `211c7e0`) : l'option `legHorizon` des trois recherches, éteinte
+par défaut. Les chemins des mondes tirés sont alors planifiés moins loin que les 80 tours de `LEG_HORIZON`.
+- Elle est mesurée par paires sur la recherche d'aujourd'hui (`horizon.json`, 50 jobs, tag `horizon-2026-10-28`) :
+  - 40 et 24 tours sur 30 journées de chaque plan de l'entrepôt, dont le plus long trajet au sol fait 20 cases ;
+  - 48 et 36 tours sur 100 heures de chaque ligne et 50 heures de l'usine, dont le plus long trajet fait 31 cases.
+- Essayé sur deux journées du plan de Sami : 4 % de temps en moins à 40 tours, mêmes journées. Le filtre épargne déjà
+  l'essentiel de ce qu'un horizon plus court couperait.
+
+**Les estimations de la file.** Ce que les jobs du 27/10 ont pris, réel sur estimé :
+
+| Famille | Réel / estimé, 27/10 | Une unité, estimé de `NIGHT` | Une unité, mesurée le 28/10 (×2) | Proposé |
+|---|---|---|---|---|
+| entrepôt, petit / Sami / quais | 0,67 / 0,49 / 0,30 | 0,1 / 0,8 / 3,5 min | 0,13 / 0,47 / 0,61 | 0,13 / 0,47 / 1,08 |
+| entrepôt, couloirs / flux / assemblage | 0,44 / 0,22 / 0,34 | 0,92 / 1,3 / 1,5 | 0,33 / 0,34 / 0,59 | 0,36 / 0,36 / 0,59 |
+| lignes, petite / Sami / seul / étroite | 0,50 / 0,37 / 0,71 / 1,06 | 0,06 / 0,62 / 0,3 / 0,05 | 0,05 / 0,19 / 0,22 / 0,07 | idem |
+| lignes, retours / tournées / mélange / supermarché | 1,12 / 1,04 / 0,70 / 0,51 | 0,78 / 0,25 / 0,21 / 0,48 | 0,54 / 0,24 / 0,15 / 0,19 | idem |
+| usine avec la recherche | 0,22 | 0,9 | 0,28 | 0,28 |
+
+- Les mesures du 28/10 viennent des 18 mesures lancées ensemble. Les unités sont doublées pour la charge d'une nuit (le
+  27/10, une tranche prenait 2,3 fois plus de temps quand 18 jobs tournaient).
+- Le proposé est le plus haut de deux valeurs : cette mesure, ou ce qu'a pris la même mesure le 27/10 dans la file,
+  moins un dixième pour le filtre. Les trois quais montrent pourquoi : leurs deux premières journées sont plus légères
+  que les suivantes.
+- L'entrepôt et l'usine étaient estimés 2 à 4 fois trop haut. C'était le coût de la recherche d'avant l'arrêt
+  anticipé et d'avant le filtre, sous la charge de la nuit.
+- Les lignes étaient à peu près justes, sauf les bacs vides (`retours`) et les tournées, un peu au-dessus de
+  l'estimé.
+- `horizon.json` prend ces coûts proposés (`COSTS` dans `scripts/night.js`). Ceux de `NIGHT`, `ESSAIS` et
+  `DECISIONS` attendent l'accord de Sami.
+
 ## mcts-commun
 
 L'entrepôt en dépend par `"mcts-commun": "file:../mcts-commun"` : `node_modules/mcts-commun` est un lien vers le
