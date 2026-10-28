@@ -87,6 +87,11 @@ Un module y renvoie avec `@typedef {import("./types.js").Rule} Rule`.
 corrige, on ne contourne pas le hook. `npm install` l'active par le script `prepare` (`git config core.hooksPath
 .githooks`). Il a été essayé sur un commit avec une variable inutilisée : le commit a été refusé.
 
+Les tests passent quatre fichiers à la fois au plus, dans le hook comme dans `npm test` (`--test-concurrency=4`). C'est
+la règle de Sami du 28/10 : pas plus de 4 fils à côté de la file. Sans elle, `node --test` en lançait autant que la
+machine a de fils moins un, soit 17. `TEST_CONCURRENCY` ne baisse ce nombre que dans le hook : `node --test` ne lit
+pas cette variable.
+
 ## Les fichiers
 
 - `.editorconfig` : UTF-8, des fins de ligne LF, 2 espaces, une ligne vide en fin de fichier.

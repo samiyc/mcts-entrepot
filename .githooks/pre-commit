@@ -1,5 +1,6 @@
 #!/bin/sh
-# Before each commit (Sami, 26/10/2026): the lint, the types and the tests, as `npm run check`, the tests in short.
+# Before each commit (Sami, 26/10/2026): the lint, the types and the tests, as `npm run check`, the tests in short,
+# four test files at a time at most (Sami, 28/10/2026: no more than 4 threads beside the queue).
 # A failure stops the commit: fix it, never skip it. Enabled by `git config core.hooksPath .githooks`, which
 # `npm install` sets (the prepare script).
-npm run --silent lint && npm run --silent types && node --test --test-reporter=dot
+npm run --silent lint && npm run --silent types && node --test --test-reporter=dot --test-concurrency=${TEST_CONCURRENCY:-4}
