@@ -1,0 +1,364 @@
+{
+  "about": "Des mondes plus légers pour la recherche (Sami, 28/10/2026, écrits par npm run night) : les chemins des mondes tirés planifiés moins loin, deux horizons par paires sur la recherche d'aujourd'hui ; 30 journées par plan de l'entrepôt, 100 heures par ligne, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/horizon.json --tag horizon-AAAA-MM-JJ.",
+  "jobs": [
+    {
+      "id": "horizon-entrepot-petit",
+      "command": "node scripts/compare.js --plan petit --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 30 --out tmp/horizon/horizon-entrepot-petit.jsonl",
+      "estimate": "11 min",
+      "limit": 33
+    },
+    {
+      "id": "horizon-entrepot-sami-001",
+      "command": "node scripts/compare.js --plan sami --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 15 --out tmp/horizon/horizon-entrepot-sami-001.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "horizon-entrepot-sami-016",
+      "command": "node scripts/compare.js --plan sami --search --variant legHorizon=40 --variant legHorizon=24 --from 16 --days 15 --out tmp/horizon/horizon-entrepot-sami-016.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "horizon-entrepot-sami-reunion",
+      "command": "node scripts/compare.js --plan sami --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 30 --merge tmp/horizon/horizon-entrepot-sami-001.jsonl tmp/horizon/horizon-entrepot-sami-016.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-entrepot-sami-001",
+        "horizon-entrepot-sami-016"
+      ]
+    },
+    {
+      "id": "horizon-entrepot-quais-001",
+      "command": "node scripts/compare.js --plan quais --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 8 --out tmp/horizon/horizon-entrepot-quais-001.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "horizon-entrepot-quais-009",
+      "command": "node scripts/compare.js --plan quais --search --variant legHorizon=40 --variant legHorizon=24 --from 9 --days 8 --out tmp/horizon/horizon-entrepot-quais-009.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "horizon-entrepot-quais-017",
+      "command": "node scripts/compare.js --plan quais --search --variant legHorizon=40 --variant legHorizon=24 --from 17 --days 7 --out tmp/horizon/horizon-entrepot-quais-017.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "horizon-entrepot-quais-024",
+      "command": "node scripts/compare.js --plan quais --search --variant legHorizon=40 --variant legHorizon=24 --from 24 --days 7 --out tmp/horizon/horizon-entrepot-quais-024.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "horizon-entrepot-quais-reunion",
+      "command": "node scripts/compare.js --plan quais --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 30 --merge tmp/horizon/horizon-entrepot-quais-001.jsonl tmp/horizon/horizon-entrepot-quais-009.jsonl tmp/horizon/horizon-entrepot-quais-017.jsonl tmp/horizon/horizon-entrepot-quais-024.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-entrepot-quais-001",
+        "horizon-entrepot-quais-009",
+        "horizon-entrepot-quais-017",
+        "horizon-entrepot-quais-024"
+      ]
+    },
+    {
+      "id": "horizon-entrepot-couloirs-001",
+      "command": "node scripts/compare.js --plan couloirs --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 15 --out tmp/horizon/horizon-entrepot-couloirs-001.jsonl",
+      "estimate": "16 min",
+      "limit": 48
+    },
+    {
+      "id": "horizon-entrepot-couloirs-016",
+      "command": "node scripts/compare.js --plan couloirs --search --variant legHorizon=40 --variant legHorizon=24 --from 16 --days 15 --out tmp/horizon/horizon-entrepot-couloirs-016.jsonl",
+      "estimate": "16 min",
+      "limit": 48
+    },
+    {
+      "id": "horizon-entrepot-couloirs-reunion",
+      "command": "node scripts/compare.js --plan couloirs --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 30 --merge tmp/horizon/horizon-entrepot-couloirs-001.jsonl tmp/horizon/horizon-entrepot-couloirs-016.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-entrepot-couloirs-001",
+        "horizon-entrepot-couloirs-016"
+      ]
+    },
+    {
+      "id": "horizon-entrepot-flux-001",
+      "command": "node scripts/compare.js --plan flux --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 15 --out tmp/horizon/horizon-entrepot-flux-001.jsonl",
+      "estimate": "16 min",
+      "limit": 48
+    },
+    {
+      "id": "horizon-entrepot-flux-016",
+      "command": "node scripts/compare.js --plan flux --search --variant legHorizon=40 --variant legHorizon=24 --from 16 --days 15 --out tmp/horizon/horizon-entrepot-flux-016.jsonl",
+      "estimate": "16 min",
+      "limit": 48
+    },
+    {
+      "id": "horizon-entrepot-flux-reunion",
+      "command": "node scripts/compare.js --plan flux --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 30 --merge tmp/horizon/horizon-entrepot-flux-001.jsonl tmp/horizon/horizon-entrepot-flux-016.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-entrepot-flux-001",
+        "horizon-entrepot-flux-016"
+      ]
+    },
+    {
+      "id": "horizon-entrepot-assemblage-001",
+      "command": "node scripts/compare.js --plan assemblage --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 15 --out tmp/horizon/horizon-entrepot-assemblage-001.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "horizon-entrepot-assemblage-016",
+      "command": "node scripts/compare.js --plan assemblage --search --variant legHorizon=40 --variant legHorizon=24 --from 16 --days 15 --out tmp/horizon/horizon-entrepot-assemblage-016.jsonl",
+      "estimate": "25 min",
+      "limit": 75
+    },
+    {
+      "id": "horizon-entrepot-assemblage-reunion",
+      "command": "node scripts/compare.js --plan assemblage --search --variant legHorizon=40 --variant legHorizon=24 --from 1 --days 30 --merge tmp/horizon/horizon-entrepot-assemblage-001.jsonl tmp/horizon/horizon-entrepot-assemblage-016.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-entrepot-assemblage-001",
+        "horizon-entrepot-assemblage-016"
+      ]
+    },
+    {
+      "id": "horizon-ligne-petite",
+      "command": "node scripts/line-compare.js --plan petite --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 100 --out tmp/horizon/horizon-ligne-petite.jsonl",
+      "estimate": "15 min",
+      "limit": 45
+    },
+    {
+      "id": "horizon-ligne-sami-001",
+      "command": "node scripts/line-compare.js --plan sami --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 34 --out tmp/horizon/horizon-ligne-sami-001.jsonl",
+      "estimate": "19 min",
+      "limit": 57
+    },
+    {
+      "id": "horizon-ligne-sami-035",
+      "command": "node scripts/line-compare.js --plan sami --search --variant legHorizon=48 --variant legHorizon=36 --from 35 --days 33 --out tmp/horizon/horizon-ligne-sami-035.jsonl",
+      "estimate": "18 min",
+      "limit": 54
+    },
+    {
+      "id": "horizon-ligne-sami-068",
+      "command": "node scripts/line-compare.js --plan sami --search --variant legHorizon=48 --variant legHorizon=36 --from 68 --days 33 --out tmp/horizon/horizon-ligne-sami-068.jsonl",
+      "estimate": "18 min",
+      "limit": 54
+    },
+    {
+      "id": "horizon-ligne-sami-reunion",
+      "command": "node scripts/line-compare.js --plan sami --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 100 --merge tmp/horizon/horizon-ligne-sami-001.jsonl tmp/horizon/horizon-ligne-sami-035.jsonl tmp/horizon/horizon-ligne-sami-068.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-ligne-sami-001",
+        "horizon-ligne-sami-035",
+        "horizon-ligne-sami-068"
+      ]
+    },
+    {
+      "id": "horizon-ligne-seul-001",
+      "command": "node scripts/line-compare.js --plan seul --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 34 --out tmp/horizon/horizon-ligne-seul-001.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "horizon-ligne-seul-035",
+      "command": "node scripts/line-compare.js --plan seul --search --variant legHorizon=48 --variant legHorizon=36 --from 35 --days 33 --out tmp/horizon/horizon-ligne-seul-035.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "horizon-ligne-seul-068",
+      "command": "node scripts/line-compare.js --plan seul --search --variant legHorizon=48 --variant legHorizon=36 --from 68 --days 33 --out tmp/horizon/horizon-ligne-seul-068.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "horizon-ligne-seul-reunion",
+      "command": "node scripts/line-compare.js --plan seul --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 100 --merge tmp/horizon/horizon-ligne-seul-001.jsonl tmp/horizon/horizon-ligne-seul-035.jsonl tmp/horizon/horizon-ligne-seul-068.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-ligne-seul-001",
+        "horizon-ligne-seul-035",
+        "horizon-ligne-seul-068"
+      ]
+    },
+    {
+      "id": "horizon-ligne-etroite",
+      "command": "node scripts/line-compare.js --plan etroite --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 100 --out tmp/horizon/horizon-ligne-etroite.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "horizon-ligne-retours-001",
+      "command": "node scripts/line-compare.js --plan retours --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 15 --out tmp/horizon/horizon-ligne-retours-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "horizon-ligne-retours-016",
+      "command": "node scripts/line-compare.js --plan retours --search --variant legHorizon=48 --variant legHorizon=36 --from 16 --days 15 --out tmp/horizon/horizon-ligne-retours-016.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "horizon-ligne-retours-031",
+      "command": "node scripts/line-compare.js --plan retours --search --variant legHorizon=48 --variant legHorizon=36 --from 31 --days 14 --out tmp/horizon/horizon-ligne-retours-031.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "horizon-ligne-retours-045",
+      "command": "node scripts/line-compare.js --plan retours --search --variant legHorizon=48 --variant legHorizon=36 --from 45 --days 14 --out tmp/horizon/horizon-ligne-retours-045.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "horizon-ligne-retours-059",
+      "command": "node scripts/line-compare.js --plan retours --search --variant legHorizon=48 --variant legHorizon=36 --from 59 --days 14 --out tmp/horizon/horizon-ligne-retours-059.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "horizon-ligne-retours-073",
+      "command": "node scripts/line-compare.js --plan retours --search --variant legHorizon=48 --variant legHorizon=36 --from 73 --days 14 --out tmp/horizon/horizon-ligne-retours-073.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "horizon-ligne-retours-087",
+      "command": "node scripts/line-compare.js --plan retours --search --variant legHorizon=48 --variant legHorizon=36 --from 87 --days 14 --out tmp/horizon/horizon-ligne-retours-087.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "horizon-ligne-retours-reunion",
+      "command": "node scripts/line-compare.js --plan retours --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 100 --merge tmp/horizon/horizon-ligne-retours-001.jsonl tmp/horizon/horizon-ligne-retours-016.jsonl tmp/horizon/horizon-ligne-retours-031.jsonl tmp/horizon/horizon-ligne-retours-045.jsonl tmp/horizon/horizon-ligne-retours-059.jsonl tmp/horizon/horizon-ligne-retours-073.jsonl tmp/horizon/horizon-ligne-retours-087.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-ligne-retours-001",
+        "horizon-ligne-retours-016",
+        "horizon-ligne-retours-031",
+        "horizon-ligne-retours-045",
+        "horizon-ligne-retours-059",
+        "horizon-ligne-retours-073",
+        "horizon-ligne-retours-087"
+      ]
+    },
+    {
+      "id": "horizon-ligne-tournee-001",
+      "command": "node scripts/line-compare.js --plan tournee --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 34 --out tmp/horizon/horizon-ligne-tournee-001.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "horizon-ligne-tournee-035",
+      "command": "node scripts/line-compare.js --plan tournee --search --variant legHorizon=48 --variant legHorizon=36 --from 35 --days 33 --out tmp/horizon/horizon-ligne-tournee-035.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "horizon-ligne-tournee-068",
+      "command": "node scripts/line-compare.js --plan tournee --search --variant legHorizon=48 --variant legHorizon=36 --from 68 --days 33 --out tmp/horizon/horizon-ligne-tournee-068.jsonl",
+      "estimate": "23 min",
+      "limit": 69
+    },
+    {
+      "id": "horizon-ligne-tournee-reunion",
+      "command": "node scripts/line-compare.js --plan tournee --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 100 --merge tmp/horizon/horizon-ligne-tournee-001.jsonl tmp/horizon/horizon-ligne-tournee-035.jsonl tmp/horizon/horizon-ligne-tournee-068.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-ligne-tournee-001",
+        "horizon-ligne-tournee-035",
+        "horizon-ligne-tournee-068"
+      ]
+    },
+    {
+      "id": "horizon-ligne-melange-001",
+      "command": "node scripts/line-compare.js --plan melange --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 50 --out tmp/horizon/horizon-ligne-melange-001.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "horizon-ligne-melange-051",
+      "command": "node scripts/line-compare.js --plan melange --search --variant legHorizon=48 --variant legHorizon=36 --from 51 --days 50 --out tmp/horizon/horizon-ligne-melange-051.jsonl",
+      "estimate": "21 min",
+      "limit": 63
+    },
+    {
+      "id": "horizon-ligne-melange-reunion",
+      "command": "node scripts/line-compare.js --plan melange --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 100 --merge tmp/horizon/horizon-ligne-melange-001.jsonl tmp/horizon/horizon-ligne-melange-051.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-ligne-melange-001",
+        "horizon-ligne-melange-051"
+      ]
+    },
+    {
+      "id": "horizon-ligne-supermarche-001",
+      "command": "node scripts/line-compare.js --plan supermarche --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 34 --out tmp/horizon/horizon-ligne-supermarche-001.jsonl",
+      "estimate": "19 min",
+      "limit": 57
+    },
+    {
+      "id": "horizon-ligne-supermarche-035",
+      "command": "node scripts/line-compare.js --plan supermarche --search --variant legHorizon=48 --variant legHorizon=36 --from 35 --days 33 --out tmp/horizon/horizon-ligne-supermarche-035.jsonl",
+      "estimate": "18 min",
+      "limit": 54
+    },
+    {
+      "id": "horizon-ligne-supermarche-068",
+      "command": "node scripts/line-compare.js --plan supermarche --search --variant legHorizon=48 --variant legHorizon=36 --from 68 --days 33 --out tmp/horizon/horizon-ligne-supermarche-068.jsonl",
+      "estimate": "18 min",
+      "limit": 54
+    },
+    {
+      "id": "horizon-ligne-supermarche-reunion",
+      "command": "node scripts/line-compare.js --plan supermarche --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 100 --merge tmp/horizon/horizon-ligne-supermarche-001.jsonl tmp/horizon/horizon-ligne-supermarche-035.jsonl tmp/horizon/horizon-ligne-supermarche-068.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-ligne-supermarche-001",
+        "horizon-ligne-supermarche-035",
+        "horizon-ligne-supermarche-068"
+      ]
+    },
+    {
+      "id": "horizon-usine-001",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 25 --out tmp/horizon/horizon-usine-001.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "horizon-usine-026",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant legHorizon=48 --variant legHorizon=36 --from 26 --days 25 --out tmp/horizon/horizon-usine-026.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "horizon-usine-reunion",
+      "command": "node scripts/plant-compare.js --plan train --robots 1 --search --variant legHorizon=48 --variant legHorizon=36 --from 1 --days 50 --merge tmp/horizon/horizon-usine-001.jsonl tmp/horizon/horizon-usine-026.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "horizon-usine-001",
+        "horizon-usine-026"
+      ]
+    }
+  ]
+}

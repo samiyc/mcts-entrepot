@@ -83,9 +83,33 @@ const DECISIONS = [
   { id: "choix-usine", script: "plant-compare.js", args: `--plan train --robots 1 --search ${WAREHOUSE_VARIANTS}`, cost: 3.6, days: 50 },
 ].map((measure) => ({ ...measure, folder: "choix" }));
 
+/**
+ * A unit's minutes as measured on 28/10/2026 (earlyStop and calm on, the screen before A*): the rules and the search,
+ * eighteen measures run together, twice over for a night's load; the higher of that and what the same measure took
+ * on 27/10 in the queue, a tenth off for the screen. docs/outillage.md has the table.
+ */
+const COSTS = {
+  entrepot: { petit: 0.13, sami: 0.47, quais: 1.08, couloirs: 0.36, flux: 0.36, assemblage: 0.59 },
+  ligne: { petite: 0.05, sami: 0.19, seul: 0.22, etroite: 0.07, retours: 0.54, tournee: 0.24, melange: 0.15, supermarche: 0.19 },
+  usine: 0.28,
+};
+
+/**
+ * Lighter worlds for the search (Sami, 28/10/2026, to test): the legs of the worlds drawn planned fewer turns ahead,
+ * paired on the search of today. Two horizons each, above the longest floor distance (20 in the warehouse, 31 on the
+ * lines, which the plant's line shares). The search runs three times: three times its cost, less the rules'.
+ */
+const horizons = (one, other) => `--variant legHorizon=${one} --variant legHorizon=${other}`;
+const HORIZON = [
+  ...Object.entries(COSTS.entrepot).map(([plan, cost]) => ({ id: `horizon-entrepot-${plan}`, script: "compare.js", args: `--plan ${plan} --search ${horizons(40, 24)}`, cost: Math.round(280 * cost) / 100, days: 30 })),
+  ...Object.entries(COSTS.ligne).map(([plan, cost]) => ({ id: `horizon-ligne-${plan}`, script: "line-compare.js", args: `--plan ${plan} --search ${horizons(48, 36)}`, cost: Math.round(280 * cost) / 100 })),
+  { id: "horizon-usine", script: "plant-compare.js", args: `--plan train --robots 1 --search ${horizons(48, 36)}`, cost: Math.round(280 * COSTS.usine) / 100, days: 50 },
+].map((measure) => ({ ...measure, folder: "horizon" }));
+
 const write = (file, about, measures) => writeFileSync(new URL(file, ROOT), `${JSON.stringify({ about, jobs: measures.flatMap(jobsOf) }, null, 2)}\n`);
 write("night.json", "Les mesures de nuit (Sami, 23/10/2026, écrites par npm run night) : la recherche contre les règles, 100 journées par plan de l'entrepôt aux réglages par défaut, 100 heures par ligne, l'usine ; en tranches d'une demi-heure au plus, réunies par un job après elles (mcts-commun, 27/10). mcts-backlog --add-file mcts-entrepot/night.json, puis mcts-backlog.", NIGHT);
 write("night-rollout.json", "La règle de jeu de la recherche de la ligne (Sami, 26/10/2026, écrit par npm run night) : jouée par la plus proche ou par la couverture, sur les mêmes 100 heures par plan, et ce qu'en disent les 30 premières (scripts/line-rollout.js) ; en tranches d'une demi-heure au plus. mcts-backlog --add-file mcts-entrepot/night-rollout.json, puis mcts-backlog.", ROLLOUT);
 write("essais-commun.json", "Les essais demandés par mcts-commun (27/10/2026 au soir, écrits par npm run night) : earlyStop par paires sur la recherche, 100 heures des tournées, du bord étroit et des bacs vides ; ce que dit diagnose des autres lignes, de l'usine et des plans de l'entrepôt. mcts-backlog --add-file mcts-entrepot/essais-commun.json --tag essais-commun-AAAA-MM-JJ.", ESSAIS);
 write("decisions.json", "Les trois décisions à adopter (Sami, 27/10/2026, écrites par npm run night) : l'arrêt anticipé, calm et 128 itérations, chacun par paires sur la recherche d'aujourd'hui ; 100 heures par ligne, 30 journées par plan de l'entrepôt, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/decisions.json --tag decisions-AAAA-MM-JJ.", DECISIONS);
-console.log("night.json, night-rollout.json, essais-commun.json, decisions.json");
+write("horizon.json", "Des mondes plus légers pour la recherche (Sami, 28/10/2026, écrits par npm run night) : les chemins des mondes tirés planifiés moins loin, deux horizons par paires sur la recherche d'aujourd'hui ; 30 journées par plan de l'entrepôt, 100 heures par ligne, 50 heures de l'usine. mcts-backlog --add-file mcts-entrepot/horizon.json --tag horizon-AAAA-MM-JJ.", HORIZON);
+console.log("night.json, night-rollout.json, essais-commun.json, decisions.json, horizon.json");

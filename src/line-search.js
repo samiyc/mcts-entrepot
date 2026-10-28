@@ -1,5 +1,6 @@
 import { search } from "mcts-commun/mcts.js";
 import { createRng } from "mcts-commun/random.js";
+import { withLegHorizon } from "./day-basics.js";
 import { drawShortages } from "./line-day.js";
 import { worldSequence } from "./line-models.js";
 import { worldRestocks } from "./line-supermarket.js";
@@ -16,7 +17,7 @@ import { drawBlockages } from "./simulate.js";
  * cover 11 minutes, 15 minutes see what a choice costs), by `rollout` beyond the tree, and scored on the turns the line
  * stood still against the same rule's from the same point.
  */
-export const LINE_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 180, rollout: "nearest", calm: true, earlyStop: true });
+export const LINE_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 180, rollout: "nearest", calm: true, earlyStop: true, legHorizon: null });
 
 /** The shortages of a world: those seen go on a drawn while, those to come are drawn again after now. */
 function worldShortages(state, rng) {
@@ -99,19 +100,19 @@ function baseOf(state, rng, rule, runs = 4) {
  * otherwise `budget` iterations, seeded from the turn and the robot. With `calm` (Sami, 26/10/2026: the search is
  * slow on well-fed lines and gains nothing there), when the rollout rule stops the line in none of the worlds drawn for
  * the base, there is nothing to win: the rule's choice, without a tree; on by default since 27/10/2026 (no line worse
- * over 100 hours, up to 92 % fewer searches). `earlyStop` and `onSearch` as in search.js.
+ * over 100 hours, up to 92 % fewer searches). `earlyStop`, `legHorizon` and `onSearch` as in search.js.
  * @param {Record<string, any> & import("./types.js").SearchHooks} [options]
  * @returns {import("./types.js").Rule}
  */
 export function lineSearchRule(options = {}) {
-  const { budget, depth, explore, width, spread, seed, lookahead, rollout, calm, earlyStop, onSearch } = { ...LINE_SEARCH_SETTINGS, ...options };
+  const { budget, depth, explore, width, spread, seed, lookahead, rollout, calm, earlyStop, legHorizon, onSearch } = { ...LINE_SEARCH_SETTINGS, ...options };
   const rule = LINE_RULES[rollout];
   return (robot, open, context) => {
     // An hour of the line, not a warehouse's day: the rule's types know only the warehouse's.
     const state = /** @type {any} */ (context.state);
     if (open.length === 1) return open[0];
     const rng = createRng((Math.imul(seed, 0x9e3779b1) + state.t * 131 + robot.id * 7 + open.length) >>> 0);
-    const root = { ...state, limit: Math.min(state.setup.horizon, state.t + lookahead) };
+    const root = { ...withLegHorizon(state, legHorizon), limit: Math.min(state.setup.horizon, state.t + lookahead) };
     const base = baseOf(root, rng, rule);
     if (calm && base === state.stopped) return rule(robot, open, /** @type {any} */ (context));
     const found = search(root, problemFor(base, { width, spread, rule }), { budget, rng, depth, explore, common: true, earlyStop });

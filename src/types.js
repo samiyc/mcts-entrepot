@@ -30,12 +30,13 @@
 /**
  * A day under way (simulate.js `createDay`): the warehouse and its setup, what the day hides (`day.blockages`), the
  * turn, the trucks, robots and orders, the claimed bay cells, the trucks' queues, what the robots know of the aisle,
- * the reservations, the log, the counts, and the robot whose choice comes next (`cursor`, null between turns).
+ * the reservations, the log, the counts, the robot whose choice comes next (`cursor`, null between turns), and in a
+ * search's world how far ahead its legs are planned (`legHorizon`, day-basics.js).
  * @typedef {{
  *   warehouse: object, setup: object, day: { blockages: { from: number, to: number }[] }, t: number, trucks: Truck[],
  *   robots: Robot[], orders: Order[], claims: Map<string, number>, queues: Map<string, number[]>,
  *   known: { blockedUntil: number, seenAt: number | null, seen?: number }, reservations: object, log: object[],
- *   replans: number, stuck: number, relays?: number, cursor: number | null,
+ *   replans: number, stuck: number, relays?: number, cursor: number | null, legHorizon?: number,
  * }} Day
  */
 

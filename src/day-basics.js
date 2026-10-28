@@ -8,6 +8,10 @@ import { WAREHOUSE } from "./warehouse-hypotheses.js";
 
 /** A leg is planned this many turns ahead at most. */
 export const LEG_HORIZON = 80;
+/** How far ahead `state`'s legs are planned: `state.legHorizon` in a search's lighter worlds (28/10/2026), else LEG_HORIZON. */
+export const legHorizonOf = (state) => state.legHorizon ?? LEG_HORIZON;
+/** `state` with its legs planned `legHorizon` turns ahead, for the worlds a search draws from it; itself without one. */
+export const withLegHorizon = (state, legHorizon) => (legHorizon ? { ...state, legHorizon } : state);
 
 export const keyOf = (cell) => `${cell.x},${cell.y}`;
 export const cellOfKey = (key) => {

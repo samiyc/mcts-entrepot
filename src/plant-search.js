@@ -1,5 +1,6 @@
 import { search } from "mcts-commun/mcts.js";
 import { createRng } from "mcts-commun/random.js";
+import { withLegHorizon } from "./day-basics.js";
 import { redrawLine } from "./line-search.js";
 import { LINE_RULES } from "./line-rules.js";
 import { WAREHOUSE_RULES, advancePlant, choosePlant, vehiclesLeft } from "./plant.js";
@@ -14,7 +15,7 @@ import { drawWorld } from "./search.js";
  * stood still against the rollout's from the same point. When the rollout stops the line in none of the worlds drawn
  * for that base, there is nothing to win: the rollout's choice, without a tree.
  */
-export const PLANT_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 360, lineRule: "kanban", rollout: "list", earlyStop: true });
+export const PLANT_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 360, lineRule: "kanban", rollout: "list", earlyStop: true, legHorizon: null });
 
 /** A plant consistent with what the robots know at this choice: the warehouse's, the line's, played up to `limit`. */
 export function drawPlantWorld(plant, rng, limit) {
@@ -73,20 +74,21 @@ function baseOf(root, rng, rules, runs = 4) {
 
 /**
  * The search as a warehouse rule in the plant (plant.js gives it the plant, `context.plant`): a single open order is
- * taken at once; otherwise `budget` iterations, seeded from the turn and the robot. `earlyStop` and `onSearch` as in
- * search.js.
+ * taken at once; otherwise `budget` iterations, seeded from the turn and the robot. `earlyStop`, `legHorizon` and
+ * `onSearch` as in search.js.
  * @param {Record<string, any> & import("./types.js").SearchHooks} [options]
  * @returns {import("./types.js").Rule}
  */
 export function plantSearchRule(options = {}) {
-  const { budget, depth, explore, width, spread, seed, lookahead, lineRule, rollout, earlyStop, onSearch } = { ...PLANT_SEARCH_SETTINGS, ...options };
+  const { budget, depth, explore, width, spread, seed, lookahead, lineRule, rollout, earlyStop, legHorizon, onSearch } = { ...PLANT_SEARCH_SETTINGS, ...options };
   const rules = { lineRule: LINE_RULES[lineRule], rule: WAREHOUSE_RULES[rollout] };
   return (robot, open, context) => {
     // The plant, not a warehouse's day: the rule's types know only the warehouse's.
     const plant = /** @type {any} */ (context).plant;
     if (open.length === 1) return open[0];
     const rng = createRng((Math.imul(seed, 0x9e3779b1) + plant.t * 131 + robot.id * 7 + open.length) >>> 0);
-    const root = { ...plant, limit: Math.min(plant.line.setup.horizon, plant.t + lookahead) };
+    // The warehouse's legs and the line's both planned `legHorizon` ahead in the worlds drawn.
+    const root = { ...plant, warehouse: withLegHorizon(plant.warehouse, legHorizon), line: withLegHorizon(plant.line, legHorizon), limit: Math.min(plant.line.setup.horizon, plant.t + lookahead) };
     const base = baseOf(root, rng, rules);
     if (base === plant.line.stopped) return rules.rule(robot, open, context);
     const found = search(root, problemFor(base, { width, spread, ...rules }), { budget, rng, depth, explore, common: true, earlyStop });

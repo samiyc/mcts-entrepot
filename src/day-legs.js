@@ -1,5 +1,5 @@
 import { astar } from "mcts-commun/grid.js";
-import { LEG_HORIZON, besides, cellOfKey, closed, crossesAfter, keyOf, sameCell } from "./day-basics.js";
+import { besides, cellOfKey, closed, crossesAfter, keyOf, legHorizonOf, sameCell } from "./day-basics.js";
 import { reachable } from "./day-reach.js";
 import { spotsOf } from "./day-spots.js";
 import { palletCells, stretchOf } from "./day-ways.js";
@@ -34,7 +34,7 @@ function legRules(state, robot, target) {
 
 /** Can a leg to `target` be found at all? No search when the answer is known without one (each failed search sweeps the whole horizon). */
 function worthSearching(state, robot, target, { stretch, passable }) {
-  const freeFrom = (cell) => state.reservations.freeFrom(cell.x, cell.y, state.t + LEG_HORIZON, robot.id);
+  const freeFrom = (cell) => state.reservations.freeFrom(cell.x, cell.y, state.t + legHorizonOf(state), robot.id);
   // Out of reach on the floor itself, the aisle closed (no robot counted): no leg either (distances are remembered).
   if (!stretch && !distancesFrom(state.warehouse, robot, closed(state)).has(keyOf(target))) return false;
   // Someone parks on the target for good, or is due there past the horizon: no leg can end there, no need to search.
@@ -50,7 +50,7 @@ function worthSearching(state, robot, target, { stretch, passable }) {
 export function planLeg(state, robot, target) {
   const rules = legRules(state, robot, target);
   if (!worthSearching(state, robot, target, rules)) return false;
-  const path = astar(state.warehouse.plan, robot, target, { passable: rules.passable, reservations: state.reservations, unit: robot.id, start: state.t, horizon: LEG_HORIZON, park: true });
+  const path = astar(state.warehouse.plan, robot, target, { passable: rules.passable, reservations: state.reservations, unit: robot.id, start: state.t, horizon: legHorizonOf(state), park: true });
   if (!path) return false;
   state.reservations.release(robot.id);
   state.reservations.reserve(robot.id, path, { stay: true });
