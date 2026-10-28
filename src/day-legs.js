@@ -1,6 +1,5 @@
 import { astar } from "mcts-commun/grid.js";
 import { besides, cellOfKey, closed, crossesAfter, keyOf, legHorizonOf, sameCell } from "./day-basics.js";
-import { reachable } from "./day-reach.js";
 import { spotsOf } from "./day-spots.js";
 import { palletCells, stretchOf } from "./day-ways.js";
 import { distancesFrom } from "./warehouse.js";
@@ -41,9 +40,7 @@ function worthSearching(state, robot, target, { stretch, passable }) {
   if (!freeFrom(target)) return false;
   // Every way into the target held for good by others (a truck with one door, someone parked on it): no search either.
   const ways = besides(target).filter((cell) => passable(state.warehouse.plan.at(cell.x, cell.y), cell.x, cell.y));
-  if (!sameCell(robot, target) && !ways.some((cell) => sameCell(cell, robot) || freeFrom(cell))) return false;
-  // Shut off by robots parked for good (day-reach.js, 28/10/2026): no leg either.
-  return reachable(state, robot, target, stretch);
+  return sameCell(robot, target) || ways.some((cell) => sameCell(cell, robot) || freeFrom(cell));
 }
 
 /** Plans `robot`'s leg to `target` from now and reserves it; keeps the old leg when no path is found. */
