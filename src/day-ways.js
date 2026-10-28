@@ -6,10 +6,8 @@ import { besides, flood, isFetching, keyOf, orderOf, sameCell, truckOf } from ".
  */
 
 /** Floor a pallet may count on: not the `~` aisle, which may be blocked when it has to go (Sami, 80 % blocked). */
-const plainFloor = (warehouse, cell) => {
-  const char = warehouse.plan.at(cell.x, cell.y);
-  return warehouse.floor(char) && char !== "~";
-};
+const plainChar = (warehouse, char) => warehouse.floor(char) && char !== "~";
+const plainFloor = (warehouse, cell) => plainChar(warehouse, warehouse.plan.at(cell.x, cell.y));
 
 /** Is there a floor way from `from` to `to` through no cell of `blocked` (pallets)? */
 export function wayOut(state, from, to, blocked) {
@@ -58,18 +56,56 @@ export function shutsIn(state, cell) {
 }
 
 /**
- * One sweep a destination: the cells reached from it through no pallet. A pallet (or a robot with one) gets there
- * when it stands in that region or beside it: the same answer as a search from each, once.
+ * The pieces of plain floor around the `blocked` cells (`x + y × width`): each cell a pallet may cross labelled by its
+ * piece, 0 for none. Every sweep of a question goes around the same pallets: one labelling for all of them (28/10/2026,
+ * a sweep a destination was 12 % of a day of the assembly with the search).
+ */
+function piecesOf(warehouse, blocked) {
+  const { plan } = warehouse;
+  const labels = new Int32Array(plan.width * plan.height);
+  const open = (x, y) => plan.inside(x, y) && !blocked.has(x + y * plan.width) && plainChar(warehouse, plan.at(x, y));
+  let piece = 0;
+  for (let start = 0; start < labels.length; start += 1) {
+    if (labels[start] || !open(start % plan.width, Math.floor(start / plan.width))) continue;
+    piece += 1;
+    label({ plan, labels, open }, start, piece);
+  }
+  return labels;
+}
+
+/** Labels `piece` every cell `open` lets through joined to `start` (`x + y × width`). */
+function label({ plan, labels, open }, start, piece) {
+  labels[start] = piece;
+  const queue = [start];
+  while (queue.length > 0) {
+    const cell = /** @type {number} */ (queue.pop());
+    for (const next of besides({ x: cell % plan.width, y: Math.floor(cell / plan.width) })) {
+      const id = next.x + next.y * plan.width;
+      if (!open(next.x, next.y) || labels[id]) continue;
+      labels[id] = piece;
+      queue.push(id);
+    }
+  }
+}
+
+/**
+ * Where a sweep from each destination through no pallet would go: the destination, and the pieces it opens on (its
+ * own, or those beside it when a pallet holds it). A pallet (or a robot with one) gets there when it stands in that
+ * region or beside it: the same answer as a sweep from each.
  */
 function reachesThrough(warehouse, blocked) {
+  const { plan } = warehouse;
+  const labels = piecesOf(warehouse, blocked);
+  const pieceAt = (cell) => (plan.inside(cell.x, cell.y) ? labels[cell.x + cell.y * plan.width] : 0);
   const regions = new Map();
   const regionOf = (to) => {
-    if (!regions.has(keyOf(to))) regions.set(keyOf(to), flood(to, (next, key) => !blocked.has(key) && plainFloor(warehouse, next)).seen);
+    if (!regions.has(keyOf(to))) regions.set(keyOf(to), new Set([to, ...besides(to)].map(pieceAt).filter(Boolean)));
     return regions.get(keyOf(to));
   };
   return (from, to) => {
-    const region = regionOf(to);
-    return region.has(keyOf(from)) || besides(from).some((cell) => region.has(keyOf(cell)));
+    const pieces = regionOf(to);
+    const within = (cell) => sameCell(cell, to) || pieces.has(pieceAt(cell));
+    return within(from) || besides(from).some(within);
   };
 }
 
@@ -88,7 +124,8 @@ function robotShutIn(state, robot, reaches) {
 }
 
 function shutsInNow(state, cell) {
-  const blocked = new Set([keyOf(cell), ...state.orders.filter((order) => order.cell).map((order) => keyOf(order.cell))]);
+  const idOf = (one) => one.x + one.y * state.warehouse.plan.width;
+  const blocked = new Set([idOf(cell), ...state.orders.filter((order) => order.cell).map((order) => idOf(order.cell))]);
   const reaches = reachesThrough(state.warehouse, blocked);
   if (state.orders.some((order) => order.cell && !reaches(order.cell, truckOf(state, order).dock))) return true;
   return state.robots.some((robot) => robot.order && robotShutIn(state, robot, reaches));
