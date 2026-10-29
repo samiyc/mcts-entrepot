@@ -5,6 +5,7 @@ import { PLANS } from "../src/plans.js";
 import * as plant from "../src/plant.js";
 import { RULES, RULE_LABELS, summaryOf } from "../src/rules.js";
 import * as warehouse from "../src/simulate.js";
+import { startingSetup } from "./line-options.js";
 
 /**
  * What the page plays, by simulation (Sami, 26/10/2026: a tab each): the plans, the rules and their labels, how a day
@@ -74,11 +75,14 @@ MODELS.usine = {
   noReplay: true,
 };
 
+/** The setup a plan starts with on the page: the line's named with its settings (line-options.js), the others as they are. */
+export const setupFor = (kind, planId) => (kind === "ligne" ? startingSetup(planId) : { ...MODELS[kind].plans[planId] });
+
 /** A simulation's own state on the page: its plan, rule, day, the choices made, what it compared, a replay opened. */
 export const simOf = (kind, planId) => ({
   kind,
   planId,
-  setup: { ...MODELS[kind].plans[planId] },
+  setup: setupFor(kind, planId),
   rule: MODELS[kind].defaultRule ?? "search",
   seed: 1,
   speed: 4,

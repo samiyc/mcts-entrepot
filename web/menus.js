@@ -1,5 +1,5 @@
 import { el } from "./dom.js";
-import { VARIANT_OF } from "./line-options.js";
+import { LINE_NAMES, VARIANT_OF } from "./line-options.js";
 
 /**
  * The plans in each tab's menu (Sami, 29/10/2026: "the three tabs are not clear"; the assembly station found by chance at
@@ -13,7 +13,7 @@ const MENUS = {
     ["Plusieurs camions", [["quais", "Trois quais"]]],
   ],
   // The line's variants are its settings, under the menu (line-options.js).
-  ligne: [["Les lignes", [["petite", "Petite ligne"], ["sami", "Ligne de Sami"], ["etroite", "Bord de ligne étroit"]]]],
+  ligne: [["Les lignes", ["petite", "etroite", "sami"].map((id) => [id, LINE_NAMES[id]])]],
   usine: [["L'usine", [["usine", "Supermarché commandé à 1 bac"], ["vite", "Supermarché commandé à 2 bacs"], ["train", "Navette à heure fixe"]]]],
 };
 

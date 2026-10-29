@@ -1,4 +1,4 @@
-import { MODELS, simOf } from "./models.js";
+import { MODELS, setupFor, simOf } from "./models.js";
 import { compare, compareWithSearch, finish, play, restart, step, stop } from "./game.js";
 import { patchChildren } from "./dom.js";
 import { readPlan } from "./panels.js";
@@ -117,7 +117,7 @@ function setKnob(sim, name, value) {
   if (name !== "speed") Object.assign(sim, { replay: null, setup: live(sim.setup) });
   if (SETUP_KNOBS[name]) return Object.assign(sim, { setup: SETUP_KNOBS[name](sim.setup, value) });
   if (LINE_KNOBS[name]) return Object.assign(sim, { setup: withSetting(sim.setup, sim.planId, LINE_KNOBS[name], value), planId: lineOf(sim.planId), compared: null });
-  if (name === "plan") Object.assign(sim, { planId: value, setup: { ...MODELS[sim.kind].plans[value] }, compared: null, error: "" });
+  if (name === "plan") Object.assign(sim, { planId: value, setup: setupFor(sim.kind, value), compared: null, error: "" });
   else if (name === "seed") sim.seed = Math.max(1, Number(value) || 1);
   else if (name === "speed") sim.speed = Number(value);
   else sim[name] = value;

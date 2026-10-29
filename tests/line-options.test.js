@@ -15,7 +15,7 @@ describe("the line's settings in the side panel (web/line-options.js)", () => {
     const setup = withSetting({ ...LINE_PLANS.seul, human: true }, "seul", "supermarket", "pickers");
     assert.deepEqual(optionsOf(setup), { ...optionsOf(LINE_PLANS.seul), supermarket: "pickers" });
     assert.equal(setup.human, true);
-    assert.equal(setup.label, "Ligne de Sami : 1 robot, le supermarché servi par 3 préparateurs");
+    assert.equal(setup.label, "Longue ligne : 5 postes, 12 références, une allée qui se bloque ; 1 robot, le supermarché servi par 3 préparateurs");
     assert.deepEqual(unlabelled(withSetting(setup, "sami", "supermarket", "none")), { ...unlabelled(LINE_PLANS.seul), human: true });
   });
 });
