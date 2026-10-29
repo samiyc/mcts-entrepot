@@ -1,5 +1,6 @@
 import { MODELS, simOf } from "./models.js";
 import { compare, compareWithSearch, finish, play, restart, step, stop } from "./game.js";
+import { patchChildren } from "./dom.js";
 import { readPlan } from "./panels.js";
 import { comparaisonsPanel, comparaisonsView } from "./tabs/comparaisons.js";
 import { entrepotPanel, entrepotView } from "./tabs/entrepot.js";
@@ -46,8 +47,8 @@ const gameOf = (kind) => ({ sim: state.sims[kind], render });
 function render() {
   for (const button of document.querySelectorAll(".tabs [role=tab]")) button.setAttribute("aria-selected", String(/** @type {HTMLElement} */ (button).dataset.tab === state.tab));
   const [panel, view] = TABS[state.tab];
-  sidebar.replaceChildren(...[panel(ctx)].flat());
-  app.replaceChildren(...view(ctx));
+  patchChildren(sidebar, [panel(ctx)].flat());
+  patchChildren(app, view(ctx));
 }
 
 function openTab(name) {

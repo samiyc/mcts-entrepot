@@ -72,6 +72,16 @@
   ],
   "versions": [
     {
+      "version": "0.34",
+      "title": "Le bouton Pause répond pendant la lecture",
+      "date": "29/10",
+      "items": [
+        "Pendant qu'une simulation joue, le panneau de gauche n'est plus reconstruit à chaque tour : le survol des boutons ne clignote plus, et un clic sur Pause est bien pris.",
+        "Le formulaire « Changer d'entrepôt » reste ouvert pendant la lecture, et ce qu'on y tape n'est plus effacé à chaque tour."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.33",
       "title": "Le palier de réglages mesuré",
       "date": "28/10",
