@@ -30,7 +30,7 @@ export function warehouseKey(day) {
 export const lineKey = () =>
   legend([
     ["block shelf", "A à L : le supermarché, où les robots prennent les bacs pleins"],
-    ["slot", "le bord de ligne : les bacs de chaque poste"],
+    ["slot", "le bord de ligne : les bacs de pièces de chaque poste"],
     ["station", "P1 à P5 : les postes"],
     ["🚗", "les véhicules, qui avancent d'un poste à chaque takt"],
     ["blockable", "une allée qui peut se bloquer"],

@@ -231,3 +231,4 @@ main.layout.folded .sidebar { display: none; }
   .shuttle { justify-self: center; max-width: 420px; }
   .shuttle-arrow::before { content: "↓"; }
 }
+.stock-note { margin: 0 0 8px; font-size: 0.8rem; }

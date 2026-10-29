@@ -28,12 +28,17 @@ export const lignePanel = ({ state }) => {
 /** A lane as a row: the reference, its bins (the one in use, how full; the full ones behind), the request out. */
 function laneRow(lane) {
   const bins = [el("span", { class: `bin${lane.empty ? " empty" : ""}`, style: `--fill:${Math.round((100 * lane.pieces) / lane.capacity)}%`, title: `${lane.pieces} pièces dans le bac en cours` }), ...Array.from({ length: lane.full }, () => el("span", { class: "bin", style: "--fill:100%", title: "un bac plein" }))];
-  return el("li", { class: lane.empty ? "empty" : null }, el("strong", {}, lane.ref), el("span", { class: "bins" }, ...bins), lane.request ? el("span", { class: "hint" }, ` ${lane.request}`) : null);
+  return el("li", { class: lane.empty ? "empty" : null }, el("strong", {}, lane.ref), el("span", { class: "bins" }, ...bins), lane.request ? el("span", { class: "hint" }, ` bac demandé : ${lane.request}`) : null);
 }
 
+/**
+ * The stock of parts at each station (Sami, 29/10/2026: "say that the gauges on the right are the stock levels"): its
+ * gauges, what they are, and how the robots fill them up.
+ */
 function lineSide(state) {
   const stations = lanesOf(state).map((station) => el("li", {}, el("span", { class: "station-tag" }, `P${station.id}`), el("ul", { class: "lanes" }, ...station.lanes.map(laneRow))));
-  return el("aside", { class: "orders-card" }, el("h2", {}, "Le bord de ligne"), el("ol", { class: "stations" }, ...stations));
+  const how = `Chaque jauge est un bac de ${state.setup.binPieces} pièces : d'abord le bac en cours, rempli selon ce qu'il reste, puis les bacs pleins derrière. Chaque véhicule prend une pièce de chaque référence de son poste. Un bac vidé appelle un robot, qui rapporte un bac plein du supermarché. Si un poste n'a plus de pièce, toute la ligne s'arrête.`;
+  return el("aside", { class: "orders-card" }, el("h2", {}, "Le stock de pièces aux postes"), el("p", { class: "hint stock-note" }, how), el("ol", { class: "stations" }, ...stations));
 }
 
 /** The models known to come, as chips (a mix of models only). */

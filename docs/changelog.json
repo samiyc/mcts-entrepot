@@ -80,7 +80,8 @@
         "Les plans sont groupés dans le menu, sous un nom court ; le nom complet s'affiche dessous. Le poste d'assemblage est rangé avec le plan de Sami.",
         "Une légende sous chaque plan. Le supermarché de la ligne a sa propre couleur, pour ne plus le confondre avec les rayons de l'entrepôt.",
         "Sur la ligne, les véhicules avancent sur une bande sous les postes, d'un poste à chaque takt, et attendent quand la ligne s'arrête.",
-        "L'Usine se lit dans le sens des palettes : l'entrepôt, la navette, puis le supermarché et la ligne, côte à côte sur un grand écran."
+        "L'Usine se lit dans le sens des palettes : l'entrepôt, la navette, puis le supermarché et la ligne, côte à côte sur un grand écran.",
+        "À droite de la ligne, le panneau s'appelle « Le stock de pièces aux postes » et dit ce que sont les jauges : les bacs de pièces de chaque poste, que les robots remplissent depuis le supermarché dès qu'un bac se vide."
       ],
       "commits": []
     },
