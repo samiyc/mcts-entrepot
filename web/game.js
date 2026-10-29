@@ -21,7 +21,7 @@ export function restart(game) {
   const { sim } = game;
   stop(game);
   stopWorkers();
-  Object.assign(sim, { run: sim.run + 1, busy: "", choices: [], thinking: false, kept: Boolean(sim.replay) });
+  Object.assign(sim, { run: sim.run + 1, busy: "", choices: [], known: [], thinking: false, kept: Boolean(sim.replay) });
   sim.day = modelOf(sim).start(sim.setup, sim.seed);
 }
 
@@ -68,6 +68,8 @@ async function playTurn(game, run) {
   let played = true;
   if (sim.replay) played = await turnOf(game, run, () => sim.replay.choices[sim.choices.length] ?? null);
   else if (sim.rule !== "search") model.stepDay(sim.day, recording(model.rules[sim.rule], sim.choices));
+  // The search's choices already made, before the day was taken back (`seek`): played again, not searched again.
+  else if (sim.choices.length < sim.known.length) played = await turnOf(game, run, () => sim.known[sim.choices.length]);
   else {
     sim.thinking = true;
     try {
@@ -107,6 +109,39 @@ export function play(game) {
     }
     if (await playTurn(game, run)) render();
   }, 1000 / sim.speed);
+}
+
+/** The shown day from its start again, the search's choices kept to play again. */
+function takeBack(sim) {
+  stopWorkers();
+  if (sim.choices.length > sim.known.length) sim.known = [...sim.choices];
+  Object.assign(sim, { choices: [], thinking: false, busy: "", day: modelOf(sim).start(sim.setup, sim.seed) });
+}
+
+/** The shown day played to turn `target` (or its end); false when a newer run started meanwhile. */
+async function playTo(game, run, target) {
+  const { sim } = game;
+  while (run === sim.run && sim.day.t < target && !modelOf(sim).isOver(sim.day)) if (!(await playTurn(game, run))) return false;
+  return run === sim.run;
+}
+
+/**
+ * Turn `target` of the shown day (the players' keys, replay-keys.js). Back, the day is made again from its seed and
+ * played to there: a rule plays the same again, the search and a replay their choices already made. On, the turns are
+ * played as by « Un tour », the search asked only past the choices known. The play goes on if it was on. Not in an
+ * hour with the driver at the keys: its moves are the keys'.
+ */
+export async function seek(game, target) {
+  const { sim, render } = game;
+  if (sim.day.human && !sim.replay) return;
+  const playing = sim.timer !== null;
+  stop(game);
+  const run = ++sim.run;
+  if (target < sim.day.t) takeBack(sim);
+  if (!(await playTo(game, run, target))) return;
+  sim.busy = "";
+  render();
+  if (playing) play(game);
 }
 
 /** One turn, by the button. */

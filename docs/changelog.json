@@ -72,6 +72,17 @@
   ],
   "versions": [
     {
+      "version": "0.38",
+      "title": "Les raccourcis clavier des lecteurs, comme sur une vidéo",
+      "date": "29/10",
+      "items": [
+        "Dans l'Entrepôt, la Ligne cadencée et l'Usine : Espace lance ou met en pause ; ← et → reculent ou avancent d'une minute, de cinq avec Maj ; ↑ et ↓ changent la vitesse ; 0 à 9 vont de 0 à 90 % de la journée. Les mêmes touches que dans les lecteurs des urgences.",
+        "Les chiffres marchent sur la rangée du haut d'un clavier AZERTY et sur le pavé numérique. Les touches restent celles d'un champ ou d'un bouton qui a le focus, et celles du cariste quand on le joue.",
+        "Reculer rejoue la journée depuis son début : une règle refait la même chose, et la recherche reprend ses choix déjà faits sans chercher de nouveau. Une ligne d'aide sous les boutons rappelle les touches."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.37",
       "title": "La ligne se règle dans le panneau, et montre ce qui attend",
       "date": "29/10",

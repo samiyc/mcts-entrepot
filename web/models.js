@@ -32,6 +32,8 @@ export const MODELS = {
     base: "list",
     measure: "truckWait",
     compared: Object.freeze({ rules: 100, search: 12 }),
+    // The day's last turn, for the players' keys (replay-keys.js).
+    horizon: (setup) => setup.horizon,
   },
   ligne: {
     kind: "ligne",
@@ -52,6 +54,7 @@ export const MODELS = {
     measure: "stopped",
     // An hour of the line is three times a warehouse's day, and the comparison runs in the page's thread.
     compared: Object.freeze({ rules: 30, search: 8 }),
+    horizon: (setup) => setup.horizon,
   },
 };
 
@@ -71,6 +74,7 @@ MODELS.usine = {
   base: "kanban",
   measure: "stopped",
   compared: Object.freeze({ rules: 20, search: 0 }),
+  horizon: (setup) => setup.line.horizon,
   defaultRule: "kanban",
   noReplay: true,
 };
@@ -88,6 +92,8 @@ export const simOf = (kind, planId) => ({
   speed: 4,
   day: null,
   choices: [],
+  // The search's choices made before the day was taken back (game.js `seek`).
+  known: [],
   thinking: false,
   timer: null,
   compared: null,

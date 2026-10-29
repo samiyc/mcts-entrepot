@@ -1,5 +1,7 @@
 import { MODELS, setupFor, simOf } from "./models.js";
-import { compare, compareWithSearch, finish, play, restart, step, stop } from "./game.js";
+import { compare, compareWithSearch, finish, play, restart, seek, step, stop } from "./game.js";
+import { SPEEDS } from "./knobs.js";
+import { nextSpeed, replayKey } from "./replay-keys.js";
 import { patchChildren } from "./dom.js";
 import { readPlan } from "./panels.js";
 import { setupOf } from "../src/replay.js";
@@ -180,9 +182,23 @@ function driverAction(event) {
   const playing = state.tab === "ligne" && sim.day?.human && !sim.replay && !field;
   return playing ? (KEYS[event.key.toLowerCase()] ?? null) : null;
 }
+/** The shown simulation as a player, for its keys (replay-keys.js); null in a tab without one. */
+function playerOf(kind) {
+  if (!state.sims[kind]) return null;
+  const game = gameOf(kind);
+  const { sim } = game;
+  const toggle = () => (sim.timer === null ? play(game) : stop(game));
+  const faster = (way) => {
+    sim.speed = nextSpeed(SPEEDS, sim.speed, way);
+    if (sim.timer !== null) play(game);
+  };
+  return { t: () => sim.day.t, end: () => MODELS[kind].horizon(sim.setup), seek: (t) => seek(game, t), toggle: () => (toggle(), render()), faster: (way) => (faster(way), render()) };
+}
 document.addEventListener("keydown", (event) => {
   const sim = state.sims.ligne;
   const action = driverAction(event);
+  const player = action ? null : playerOf(state.tab);
+  if (player && replayKey(player, event)) return;
   if (!action) return;
   event.preventDefault();
   sim.day.human.next = action;
