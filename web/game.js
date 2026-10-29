@@ -1,5 +1,5 @@
 import { recording, replayOf } from "../src/replay.js";
-import { MODELS } from "./models.js";
+import { MODELS, driving } from "./models.js";
 import { keepReplay } from "./replay-store.js";
 import { ask, stopWorkers } from "./workers.js";
 
@@ -133,7 +133,7 @@ async function playTo(game, run, target) {
  */
 export async function seek(game, target) {
   const { sim, render } = game;
-  if (sim.day.human && !sim.replay) return;
+  if (driving(sim)) return;
   const playing = sim.timer !== null;
   stop(game);
   const run = ++sim.run;

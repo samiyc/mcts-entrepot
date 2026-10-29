@@ -1,6 +1,6 @@
 import { el } from "./dom.js";
 import { planMenu } from "./menus.js";
-import { MODELS } from "./models.js";
+import { MODELS, driving } from "./models.js";
 import { REPLAY_HINT } from "./replay-keys.js";
 
 /**
@@ -43,5 +43,7 @@ export const buttons = (kind, ...specs) => el("div", { class: "row-buttons" }, .
 /** The play buttons of a simulation's tab. */
 export function playButtons(sim) {
   const play = sim.timer !== null ? ["pause", "Pause"] : ["play", "Jouer"];
-  return [buttons(sim.kind, play, ["step", "Un tour", true], ["finish", "Jusqu'au bout", true]), buttons(sim.kind, ["restart", "Recommencer", true], ["next", `${WORDS[sim.kind].day} suivante`, true]), el("p", { class: "hint keys-hint" }, REPLAY_HINT)];
+  const shown = [buttons(sim.kind, play, ["step", "Un tour", true], ["finish", "Jusqu'au bout", true]), buttons(sim.kind, ["restart", "Recommencer", true], ["next", `${WORDS[sim.kind].day} suivante`, true])];
+  // In game mode the keys are the driver's (its own hint, tabs/ligne.js), none the player's.
+  return driving(sim) ? shown : [...shown, el("p", { class: "hint keys-hint" }, REPLAY_HINT)];
 }

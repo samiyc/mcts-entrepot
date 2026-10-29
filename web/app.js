@@ -1,4 +1,4 @@
-import { MODELS, setupFor, simOf } from "./models.js";
+import { MODELS, driving, setupFor, simOf } from "./models.js";
 import { compare, compareWithSearch, finish, play, restart, seek, step, stop } from "./game.js";
 import { SPEEDS } from "./knobs.js";
 import { nextSpeed, replayKey } from "./replay-keys.js";
@@ -175,12 +175,12 @@ fetch("../docs/changelog.json")
   .catch(() => {});
 // The driver's keys, in the line's tab (step 3); a key in a form field is the field's. Out of play, a key plays a turn.
 const KEYS = { z: "up", s: "down", q: "left", d: "right", arrowup: "up", arrowdown: "down", arrowleft: "left", arrowright: "right", e: "act" };
-/** The driver's action of a key, or null: not in the line's tab, no driver at the keys, a replay, a form field's key. */
+// In game mode no key goes to the player, Space, arrows and figures included (Sami, 29/10/2026).
+const gameMode = () => state.tab === "ligne" && driving(state.sims.ligne);
+/** The driver's action of a key, or null: not in game mode, a form field's key, another key. */
 function driverAction(event) {
-  const sim = state.sims.ligne;
   const field = /** @type {HTMLElement} */ (event.target).closest?.("input, textarea, select");
-  const playing = state.tab === "ligne" && sim.day?.human && !sim.replay && !field;
-  return playing ? (KEYS[event.key.toLowerCase()] ?? null) : null;
+  return gameMode() && !field ? (KEYS[event.key.toLowerCase()] ?? null) : null;
 }
 /** The shown simulation as a player, for its keys (replay-keys.js); null in a tab without one. */
 function playerOf(kind) {
@@ -197,7 +197,7 @@ function playerOf(kind) {
 document.addEventListener("keydown", (event) => {
   const sim = state.sims.ligne;
   const action = driverAction(event);
-  const player = action ? null : playerOf(state.tab);
+  const player = gameMode() ? null : playerOf(state.tab);
   if (player && replayKey(player, event)) return;
   if (!action) return;
   event.preventDefault();

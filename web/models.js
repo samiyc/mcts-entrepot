@@ -82,6 +82,12 @@ MODELS.usine = {
 /** The setup a plan starts with on the page: the line's named with its settings (line-options.js), the others as they are. */
 export const setupFor = (kind, planId) => (kind === "ligne" ? startingSetup(planId) : { ...MODELS[kind].plans[planId] });
 
+/**
+ * Whether the player drives the line's cariste (game mode, not a replay): the keys are then the game's, none goes to
+ * the player (Sami, 29/10/2026: « on est plus en mode lecture, on est en mode jeux »).
+ */
+export const driving = (sim) => Boolean(sim.day?.human) && !sim.replay;
+
 /** A simulation's own state on the page: its plan, rule, day, the choices made, what it compared, a replay opened. */
 export const simOf = (kind, planId) => ({
   kind,

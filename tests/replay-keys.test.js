@@ -1,5 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { driving } from "../web/models.js";
 import { nextSpeed, replayKey, within } from "../web/replay-keys.js";
 
 /** A key as the page gets it: its key, its place, Shift or another modifier, the element it is pressed on. */
@@ -52,5 +53,14 @@ describe("the players' keys (web/replay-keys.js)", () => {
     assert.equal(nextSpeed(speeds, 4, 1), 10);
     assert.equal(nextSpeed(speeds, 10, 1), 10);
     assert.equal(nextSpeed(speeds, 2, -1), 2);
+  });
+});
+
+describe("game mode (web/models.js)", () => {
+  it("is the driver at the line's keys, not a replay of one: the player then takes no key", () => {
+    assert.equal(driving({ day: { human: {} }, replay: null }), true);
+    assert.equal(driving({ day: { human: {} }, replay: {} }), false);
+    assert.equal(driving({ day: {}, replay: null }), false);
+    assert.equal(driving({ day: null, replay: null }), false);
   });
 });
