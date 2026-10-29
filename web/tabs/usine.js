@@ -25,7 +25,7 @@ export function usinePanel({ state }) {
 function between(plant) {
   const waiting = plant.warehouse.orders.filter((order) => order.status !== "delivered").length;
   const shuttle = [...plant.sent.values()].filter((order) => order.at !== Infinity && order.at > plant.line.t).length;
-  return el("p", { class: "summary" }, `${plant.warehouse.orders.length} commandes envoyées à l'entrepôt · ${waiting} en préparation · ${shuttle} sur la navette`);
+  return el("p", { class: "summary status" }, `${plant.warehouse.orders.length} commandes envoyées à l'entrepôt · ${waiting} en préparation · ${shuttle} sur la navette`);
 }
 
 export function usineView({ state }) {
@@ -33,11 +33,11 @@ export function usineView({ state }) {
   return [
     el("p", { class: "hint" }, INTRO),
     el("h2", {}, "La ligne"),
-    el("p", { class: `summary${plant.line.stopRun > 0 ? " line-stopped" : ""}` }, lineStatus(plant.line)),
+    el("p", { class: `summary status${plant.line.stopRun > 0 ? " line-stopped" : ""}` }, lineStatus(plant.line)),
     el("div", { class: "board-wrap" }, lineBoard(plant.line)),
     between(plant),
     el("h2", {}, "L'entrepôt"),
-    el("p", { class: "summary" }, statusLine(plant.warehouse)),
+    el("p", { class: "summary status" }, statusLine(plant.warehouse)),
     el("div", { class: "board-wrap" }, board(plant.warehouse)),
   ];
 }

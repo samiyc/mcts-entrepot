@@ -73,11 +73,12 @@
   "versions": [
     {
       "version": "0.34",
-      "title": "Le bouton Pause répond pendant la lecture",
+      "title": "Le bouton Pause répond, le plan ne bouge plus pendant la lecture",
       "date": "29/10",
       "items": [
         "Pendant qu'une simulation joue, le panneau de gauche n'est plus reconstruit à chaque tour : le survol des boutons ne clignote plus, et un clic sur Pause est bien pris.",
-        "Le formulaire « Changer d'entrepôt » reste ouvert pendant la lecture, et ce qu'on y tape n'est plus effacé à chaque tour."
+        "Le formulaire « Changer d'entrepôt » reste ouvert pendant la lecture, et ce qu'on y tape n'est plus effacé à chaque tour.",
+        "Le bandeau au-dessus du plan garde la hauteur de deux lignes : un message qui passe à la ligne ne fait plus sauter le plan."
       ],
       "commits": []
     },

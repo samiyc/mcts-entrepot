@@ -46,7 +46,7 @@ function sequence(state) {
 
 export function ligneView({ state }) {
   const sim = state.sims.ligne;
-  const summary = el("p", { class: `summary${sim.day.stopRun > 0 ? " line-stopped" : ""}`, "aria-live": "polite" }, sim.busy || lineStatus(sim.day));
+  const summary = el("p", { class: `summary status${sim.day.stopRun > 0 ? " line-stopped" : ""}`, "aria-live": "polite" }, sim.busy || lineStatus(sim.day));
   const layout = el("div", { class: "board-layout" }, el("div", { class: "board-wrap" }, lineBoard(sim.day)), lineSide(sim.day));
   return [el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, ...sequence(sim.day), layout];
 }

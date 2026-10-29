@@ -28,7 +28,7 @@ export function replayNote({ replay, kind }) {
 export function entrepotView({ state }) {
   const sim = state.sims.entrepot;
   const over = isOver(sim.day);
-  const summary = el("p", { class: "summary", "aria-live": "polite" }, sim.busy || statusLine(sim.day, over ? measuresOf(sim.day) : null));
+  const summary = el("p", { class: "summary status", "aria-live": "polite" }, sim.busy || statusLine(sim.day, over ? measuresOf(sim.day) : null));
   const layout = el("div", { class: "board-layout" }, el("div", { class: "board-wrap" }, board(sim.day)), el("aside", { class: "orders-card" }, el("h2", {}, "Les commandes"), orders(sim.day)));
   return [el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, layout];
 }

@@ -160,6 +160,12 @@ main.layout.folded .sidebar { display: none; }
 .bin { display: inline-block; width: 16px; height: 12px; border: 1px solid var(--ink-2); border-radius: 2px; background: linear-gradient(to top, #f2c14e var(--fill), transparent var(--fill)); }
 .bin.empty { border-color: var(--blocked); }
 .summary.line-stopped { border-color: var(--blocked); box-shadow: inset 4px 0 0 var(--blocked); }
+/* The status of a simulation playing keeps the height of two lines (three on a narrow screen), its text in the middle:
+   a message wrapping one turn and not the next no longer moves the board (Sami, 29/10/2026). */
+.summary.status { display: flex; align-items: center; min-height: calc(2 * 1.5em + 20px); }
+@media (max-width: 720px) {
+  .summary.status { min-height: calc(3 * 1.5em + 20px); }
+}
 
 /* Step 2 of the line: the return shelf of the empty bins, the sequence of models known to come. */
 .cell.return { fill: color-mix(in srgb, var(--r3) 30%, var(--floor)); stroke: var(--r3); stroke-width: 1; }
