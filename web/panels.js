@@ -9,7 +9,7 @@ export function orders(day) {
 }
 
 const HINT =
-  "Le plan en texte : « . » le sol, une majuscule un bloc de rayons, « T » un quai où vient un camion, « w » une case devant un quai où une palette attend son camion (une par case), « c » une borne de charge d'où part un robot et où il revient, « ~ » une case qui peut se bloquer, « # » un mur ou l'extérieur. Les commandes sont des lettres de blocs, dans l'ordre où elles arrivent, un groupe par camion séparé par « / » (les quais dans l'ordre de lecture, de haut en bas) ; les camions arrivent aux tours donnés, séparés par des espaces.";
+  "Le plan en texte : « . » le sol, une majuscule un bloc de rayons, « T » un quai où vient un camion, « w » une case devant un quai où une palette attend son camion (une par case), « c » une borne de charge d'où part un robot et où il revient, « ~ » une case qui peut se bloquer, « # » un mur ou l'extérieur. Les commandes sont des lettres de blocs, dans l'ordre où elles arrivent (tirées au hasard chaque journée parmi ces blocs quand la case est cochée), un groupe par camion séparé par « / » (les quais dans l'ordre de lecture, de haut en bas) ; les camions arrivent aux tours donnés, séparés par des espaces.";
 
 function planFields(setup) {
   const field = (label, name, value, attrs = {}) => el("label", {}, label, el("input", { name, value: String(value), ...attrs }));
@@ -18,6 +18,7 @@ function planFields(setup) {
     { class: "fields" },
     field("Robots", "robots", setup.robots, { type: "number", min: "1", max: "12" }),
     field("Commandes", "orders", setup.orders),
+    el("label", { class: "check" }, el("input", { name: "drawOrders", type: "checkbox", checked: setup.drawOrders !== false }), "Commandes tirées au hasard chaque journée, parmi ces blocs (autant par camion)"),
     field("Arrivée des camions (tours)", "trucks", (setup.trucks ?? []).join(" ")),
     field("Allée bloquée (% du temps)", "blocking", Math.round(100 * setup.blocking), { type: "number", min: "0", max: "100" }),
     field("Durée du blocage (tours)", "duration", setup.duration, { type: "number", min: "1" }),
@@ -56,6 +57,7 @@ export function readPlan(form, setup) {
     duration: atLeast(1, data.get("duration")),
     horizon: atLeast(10, data.get("horizon")),
     autoZones: Boolean(data.get("autoZones")),
+    drawOrders: Boolean(data.get("drawOrders")),
   };
 }
 

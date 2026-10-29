@@ -75,6 +75,8 @@ export const PLANS = Object.freeze({
     text: ["c........www#", "AA.BB.CC.DDw#", "c.~~~~......#", "EE.FF.GG.HH.T", "c...........#", "II.JJ.KK.LLw#", "c........www#", "#S###########"].join("\n"),
     robots: 4,
     orders: "ABCDEFGH",
+    // Its orders as written (29/10/2026): drawn, they bring out rare jams at the station (docs/recherche/feuille-de-route.md).
+    drawOrders: false,
     kits: Object.freeze([Object.freeze({ parts: "IJ", truck: 0, work: WAREHOUSE.works.wiring }), Object.freeze({ parts: "KL", truck: 0, work: WAREHOUSE.works.packing })]),
     blocking: 0.8,
     duration: 8,

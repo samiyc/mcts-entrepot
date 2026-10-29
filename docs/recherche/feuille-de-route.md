@@ -166,7 +166,19 @@ Reste :
 - ~~la zone d'assemblage~~ : **un poste d'assemblage fait le 26/10** (`src/day-kits.js`, [../modele.md](../modele.md)) :
   un spécialiste, des pièces apportées par les robots, un travail de durée cachée, un colis qui part au camion. Il en
   reste : la prudence des robots près du spécialiste, un spécialiste pour plusieurs postes, le contrôle après
-  assemblage, un colis qui va vers un autre poste.
+  assemblage, un colis qui va vers un autre poste ;
+- ~~des commandes différentes chaque jour~~ : **faites le 29/10** (Sami) : chaque commande de la journée est tirée parmi
+  les blocs de la liste du plan, chaque camion garde son nombre de commandes ; les blocages restent ceux d'avant
+  (`drawOrders` dans `src/simulate.js`). La variété fait sortir deux défauts qui étaient déjà là :
+  - **le robot de la borne derrière l'allée** (plan de Sami, quais, flux) : sa borne (0,2) n'a qu'une sortie, par les
+    `~` ; certains jours, il cède le passage en boucle des centaines de tours, et une commande n'est pas livrée à la fin
+    de la journée. Sur 100 journées, avec les règles : de 0 à 3 journées par plan et par règle ;
+  - **le poste d'assemblage dans son recoin** : il est au fond d'un cul-de-sac, et sa zone d'attente automatique est
+    prise sur les allées. Avec les commandes tirées, des pièces posées en attente l'enferment, un robot qui attend
+    bouche sa seule sortie, ou un robot qui s'écarte va attendre sur le poste lui-même. Trois corrections essayées le
+    29/10 (une file d'attente au poste comme au quai, le poste jamais traversé, le poste jamais pris pour s'écarter)
+    déplacent les blocages sans les supprimer. En attendant, **le plan d'assemblage garde sa liste fixe**
+    (`drawOrders: false`).
 
 ## À faire : l'atelier d'usinage (job shop)
 

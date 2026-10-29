@@ -25,7 +25,7 @@ describe("the replays (src/replay.js)", () => {
     const choices = [1, 2];
     const replay = replayOf({ planId: "petit", setup: PLANS.petit, seed: 4, rule: "list", choices, measures: {} });
     choices.push(3);
-    assert.equal(replay.format, "entrepot/1");
+    assert.equal(replay.format, "entrepot/2");
     assert.deepEqual(replay.choices, [1, 2]);
     assert.match(replay.savedAt, /^\d{4}-\d\d-\d\dT/);
   });

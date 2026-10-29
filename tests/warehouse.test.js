@@ -127,7 +127,7 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
   it("passes a stuck pallet to the robot nearer the truck through a waiting cell (Sami's relays, 23/10), and finishes sooner", () => {
     // Days with a relay (not every day has one: on days 3 and 8 nobody gets stuck), a pallet set into a truck in a turn:
     // at 90 s the truck's queue paces the robots and nobody gets stuck on these days (26/10/2026).
-    const setup = { ...PLANS.quais, loadTurns: 1, dockLoaders: 0, horizon: 240 };
+    const setup = { ...PLANS.quais, loadTurns: 1, dockLoaders: 0, horizon: 240, drawOrders: false };
     for (const seed of [1, 2, 4, 5, 6, 7]) {
       const { state, measures } = runDay(setup, seed, RULES.nearest);
       const off = runDay({ ...setup, relay: false }, seed, RULES.nearest).measures;
@@ -203,6 +203,27 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
     const [early, late] = [runsOf(setup, { days: 3, seed: 1 }), runsOf(setup, { days: 2, seed: 4 })];
     const joined = Object.fromEntries(Object.keys(early).map((name) => [name, [...early[name], ...late[name]]]));
     assert.deepEqual(summaryOf(joined), compareRules(setup, { days: 5 }));
+  });
+});
+
+describe("the day's orders, drawn (Sami, 29/10/2026)", () => {
+  it("draws each order among the list's blocks, each truck keeping its count, the blockages as with the list", () => {
+    const setup = PLANS.quais;
+    const days = [1, 2, 3, 4, 5].map((seed) => drawDay(seed, setup));
+    const counts = (list) => list.split("/").map((group) => group.length);
+    for (const day of days) {
+      assert.deepEqual(counts(day.orders), counts(setup.orders));
+      assert.ok([...day.orders.replaceAll("/", "")].every((block) => setup.orders.includes(block)));
+    }
+    assert.ok(new Set(days.map((day) => day.orders)).size > 1);
+    assert.deepEqual(drawDay(3, setup).blockages, drawDay(3, { ...setup, drawOrders: false }).blockages);
+    assert.equal(createDay(setup, days[0]).orders.map((order) => order.block).join(""), days[0].orders.replaceAll("/", ""));
+  });
+
+  it("keeps the list as written with drawOrders false", () => {
+    const setup = { ...PLANS.sami, drawOrders: false };
+    assert.equal(drawDay(1, setup).orders, undefined);
+    assert.equal(createDay(setup, drawDay(1, setup)).orders.map((order) => order.block).join(""), setup.orders);
   });
 });
 

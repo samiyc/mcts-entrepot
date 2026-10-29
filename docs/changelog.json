@@ -4,7 +4,7 @@
   "intro": "Des robots vont chercher les commandes dans les rayons et les portent aux camions ; une recherche (ISMCTS) leur répartit les commandes en imaginant les allées qui vont se bloquer.",
   "repo": "mcts-entrepot",
   "gainsTitle": "Ce que gagne la recherche (ISMCTS)",
-  "gainsNote": "Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut), un chargeur au quai. Moins, c'est mieux. Les mesures de la nuit du 26 au 27/10, jouées par l'ordonnanceur commun (mcts-backlog).",
+  "gainsNote": "Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut), un chargeur au quai. Moins, c'est mieux. Les mesures de la nuit du 26 au 27/10, jouées par l'ordonnanceur commun (mcts-backlog), quand chaque plan avait encore une liste de commandes fixe.",
   "gainsHead": [
     "Plan",
     "la plus proche",
@@ -71,6 +71,19 @@
     ]
   ],
   "versions": [
+    {
+      "version": "0.35",
+      "title": "Des commandes différentes chaque jour",
+      "date": "29/10",
+      "items": [
+        "Chaque journée tire ses commandes parmi les blocs du plan, et chaque camion garde son nombre de commandes. Les allées bloquées restent les mêmes qu'avant pour un même numéro de journée.",
+        "Dans « Changer d'entrepôt », une case permet de garder la liste telle qu'elle est écrite.",
+        "Le plan d'assemblage garde sa liste fixe : avec des commandes tirées, son poste au fond d'un recoin se bloque certains jours. C'est noté dans la feuille de route.",
+        "Sur 100 journées, avec les règles, quelques journées (0 à 3 par plan) finissent avec une commande non livrée : un robot dont la borne est derrière l'allée bloquée y cède le passage en boucle. Ce défaut existait déjà, la variété le montre.",
+        "Les replays gardés avant ce changement se rejouent avec leur ancienne liste."
+      ],
+      "commits": []
+    },
     {
       "version": "0.34",
       "title": "Le bouton Pause répond, le plan ne bouge plus pendant la lecture",

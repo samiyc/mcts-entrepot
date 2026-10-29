@@ -17,9 +17,10 @@ import { runDay } from "../src/simulate.js";
  * hash here, and its commit says so, with the measures before and after. The assembly line (26/10/2026) has its own.
  */
 const EXPECTED = {
-  rules: "f4246396d157eb59",
-  variants: "f4a686a4a04ed798",
-  search: "5e85a8ef85c3bcc5",
+  // 29/10/2026: each day's orders drawn from its seed, among the list's blocks, each truck keeping its count.
+  rules: "d8d65b240e689efd",
+  variants: "ed0f0e3437c30f38",
+  search: "73c14199da19efc8",
   // 27/10/2026: calm on by default, its short hour of the search plays the rule where nothing is to win.
   line: "eca391e5b795329c",
   plant: "e05d63d3eb8ac964",

@@ -57,14 +57,25 @@ export { choose, nextChoice, measuresOf };
 /**
  * What the day hides, drawn from a seed: the blockages (`[{ from, to }]`, turns). The `~` aisle is blocked again
  * and again (Sami, 23/10: it was once a day at most), `duration` turns each time, with free spells between drawn at
- * random so that it is blocked `blocking` of the time on average (1: always).
+ * random so that it is blocked `blocking` of the time on average (1: always). Then the day's orders (`drawOrders`).
  */
 export function drawDay(seed, setup) {
   const rng = createRng(seed);
   const blockages = drawBlockages(rng, setup, 1);
   // The orders' arrivals (day-arrivals.js), then the kits' works (day-kits.js), drawn after the blockages: a day without them draws as before.
   const arrivals = setup.arrivals ? { arrivals: drawArrivals(rng, setup, setup.orders.replaceAll("/", "").length) } : {};
-  return { blockages, ...arrivals, ...(setup.kits ? { works: drawWorks(rng, setup.kits) } : {}) };
+  return { blockages, ...arrivals, ...(setup.kits ? { works: drawWorks(rng, setup.kits) } : {}), ...drawOrders(rng, setup) };
+}
+
+/**
+ * The day's orders (Sami, 29/10/2026: more variety from one day to the next), drawn last, the blockages as before:
+ * each one a block of the plan's list drawn at random, each truck keeping its count. `drawOrders: false` keeps the
+ * list as written.
+ */
+function drawOrders(rng, setup) {
+  const blocks = [...new Set(setup.orders.replaceAll("/", ""))].sort();
+  if (setup.drawOrders === false || !blocks.length) return {};
+  return { orders: setup.orders.split("/").map((group) => [...group].map(() => blocks[rng.int(blocks.length)]).join("")).join("/") };
 }
 
 /** The blockages from turn `start` to the day's end, for `drawDay` and for the search's worlds. */
@@ -78,22 +89,25 @@ export function drawBlockages(rng, { blocking, duration, horizon }, start) {
   return blockages;
 }
 
-/** The day's trucks: the orders split by `/`, one group a dock, each truck with its arrival turn. */
-function trucksOf(setup, warehouse) {
-  const groups = setup.orders.split("/");
+/** The day's trucks: its orders split by `/`, one group a dock, each truck with its arrival turn. */
+function trucksOf(setup, list, warehouse) {
+  const groups = list.split("/");
   if (groups.length > warehouse.docks.length) throw new Error(`${groups.length} camions pour ${warehouse.docks.length} quai${warehouse.docks.length > 1 ? "s" : ""} (T) sur le plan`);
   return groups.map((blocks, i) => ({ id: i + 1, dock: warehouse.docks[i], at: setup.trucks?.[i] ?? 0, blocks, loaders: {} }));
 }
 
+/** What the day hides, as a day keeps it: older callers give one `blockage` (or none), read as a list. */
+const keptDay = ({ arrivals, works, orders, blockages, blockage }) => ({ ...(arrivals ? { arrivals } : {}), ...(works ? { works } : {}), ...(orders ? { orders } : {}), blockages: blockages ?? (blockage ? [blockage] : []) });
+
 /** The start of a day: robots at their charging point (or near the first dock), orders open, nothing known of the blockage. */
 export function createDay(setup, day) {
   const warehouse = readWarehouse(setup.text, { autoZones: setup.autoZones !== false });
-  const docked = trucksOf(setup, warehouse);
+  const list = day.orders ?? setup.orders;
+  const docked = trucksOf(setup, list, warehouse);
   const trucks = [...docked, ...stationTrucks(setup, warehouse, docked.length)];
-  for (const block of new Set(setup.orders.replaceAll("/", ""))) if (!warehouse.blocks.get(block)?.length) throw new Error(`commande ${block} : pas de bloc ${block} accessible sur le plan`);
+  for (const block of new Set(list.replaceAll("/", ""))) if (!warehouse.blocks.get(block)?.length) throw new Error(`commande ${block} : pas de bloc ${block} accessible sur le plan`);
   const homes = homesOf(warehouse, setup.robots);
-  // Older callers give one `blockage` (or none): read as a list.
-  day = { ...(day.arrivals ? { arrivals: day.arrivals } : {}), ...(day.works ? { works: day.works } : {}), blockages: day.blockages ?? (day.blockage ? [day.blockage] : []) };
+  day = keptDay(day);
   const orders = docked.flatMap((truck) => [...truck.blocks].map((block) => ({ block, truck: truck.id - 1 }))).map(({ block, truck }, i) => ({ id: i + 1, block, truck, status: day.arrivals?.[i] > 0 ? "pending" : "open", robot: null, deliveredAt: null, stagedAt: null, cell: null }));
   // Every robot holds its starting cell: nobody plans through a robot standing still.
   const reservations = createReservations();

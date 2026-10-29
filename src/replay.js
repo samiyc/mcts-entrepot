@@ -8,8 +8,13 @@ import { advance, choose, createDay, drawDay } from "./simulate.js";
  * person. The warehouse and the assembly line alike (`kind`).
  */
 
-/** The format of a replay, by kind: its first word names the file the page server writes ("ligne_…json"). */
-export const formatOf = (kind) => `${kind}/1`;
+/** The format of a replay, by kind: its first word names the file the page server writes ("ligne_…json"). The warehouse's
+ * is at 2 since its orders are drawn with the day (29/10/2026). */
+const VERSIONS = { entrepot: 2, ligne: 1 };
+export const formatOf = (kind) => `${kind}/${VERSIONS[kind]}`;
+
+/** A replay's setup: a day kept before its orders were drawn (`entrepot/1`) plays its list as written. */
+export const setupOf = (replay) => (replay.format === "entrepot/1" ? { ...replay.setup, drawOrders: false } : replay.setup);
 
 /** What a replay plays, by kind: the day drawn and made, and its choices. */
 const MODELS = {

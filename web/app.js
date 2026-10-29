@@ -2,6 +2,7 @@ import { MODELS, simOf } from "./models.js";
 import { compare, compareWithSearch, finish, play, restart, step, stop } from "./game.js";
 import { patchChildren } from "./dom.js";
 import { readPlan } from "./panels.js";
+import { setupOf } from "../src/replay.js";
 import { comparaisonsPanel, comparaisonsView } from "./tabs/comparaisons.js";
 import { entrepotPanel, entrepotView } from "./tabs/entrepot.js";
 import { lignePanel, ligneView } from "./tabs/ligne.js";
@@ -61,7 +62,7 @@ function openTab(name) {
 /** A kept day (or hour of the line), opened again in its tab: its plan, its day, its rule, its own choices. */
 function openReplay(replay) {
   const kind = replay.kind ?? "entrepot";
-  Object.assign(state.sims[kind], { replay, planId: replay.planId, setup: replay.setup, seed: replay.seed, rule: replay.rule, compared: null, error: "" });
+  Object.assign(state.sims[kind], { replay, planId: replay.planId, setup: setupOf(replay), seed: replay.seed, rule: replay.rule, compared: null, error: "" });
   restart(gameOf(kind));
   openTab(kind);
 }
