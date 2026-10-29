@@ -3,6 +3,7 @@ import { compare, compareWithSearch, finish, play, restart, step, stop } from ".
 import { patchChildren } from "./dom.js";
 import { readPlan } from "./panels.js";
 import { setupOf } from "../src/replay.js";
+import { lineOf, withSetting } from "./line-options.js";
 import { comparaisonsPanel, comparaisonsView } from "./tabs/comparaisons.js";
 import { entrepotPanel, entrepotView } from "./tabs/entrepot.js";
 import { lignePanel, ligneView } from "./tabs/ligne.js";
@@ -108,10 +109,14 @@ const SETUP_KNOBS = {
   warehouseRobots: (setup, value) => ({ ...setup, warehouse: { ...setup.warehouse, robots: Number(value) } }),
 };
 
+/** The line's settings (line-options.js): the setup made again, the plan its line. */
+const LINE_KNOBS = { lineRobots: "robots", lineModels: "models", lineReturns: "returns", lineTour: "tour", lineSupermarket: "supermarket" };
+
 /** A setting of simulation `sim` changed: a plan, a day, a speed, a rule, the driver at the keys. */
 function setKnob(sim, name, value) {
   if (name !== "speed") Object.assign(sim, { replay: null, setup: live(sim.setup) });
   if (SETUP_KNOBS[name]) return Object.assign(sim, { setup: SETUP_KNOBS[name](sim.setup, value) });
+  if (LINE_KNOBS[name]) return Object.assign(sim, { setup: withSetting(sim.setup, sim.planId, LINE_KNOBS[name], value), planId: lineOf(sim.planId), compared: null });
   if (name === "plan") Object.assign(sim, { planId: value, setup: { ...MODELS[sim.kind].plans[value] }, compared: null, error: "" });
   else if (name === "seed") sim.seed = Math.max(1, Number(value) || 1);
   else if (name === "speed") sim.speed = Number(value);

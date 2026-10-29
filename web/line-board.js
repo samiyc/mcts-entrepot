@@ -9,16 +9,39 @@ import { blockageOf } from "./view.js";
  * stands still for one), their line side, the robots and their legs; under the stations, a row of its own, the
  * conveyor and its vehicles (29/10/2026).
  */
+/** The bins a station asked for, in a badge on its corner: amber while one waits for a robot, blue once all are coming. */
+function askedBadge(cell) {
+  if (!cell.asked) return [];
+  const x = cell.x * CELL + CELL - 7;
+  const y = cell.y * CELL + 7;
+  return [svg("circle", { cx: x, cy: y, r: 6.5, class: `badge${cell.waiting ? " waiting" : ""}` }), svg("text", { x, y: y + 3.5, class: "badge-count" }, String(cell.asked))];
+}
+
+function stationTitle(cell) {
+  const stop = cell.stopped ? " : la ligne est arrêtée, il lui manque une pièce" : "";
+  if (!cell.asked) return `Poste ${cell.id}${stop}`;
+  const waiting = cell.waiting ? `, dont ${cell.waiting} qu'aucun robot n'est encore allé chercher` : ", un robot va chercher chacun";
+  return `Poste ${cell.id}${stop} · ${cell.asked} bac${cell.asked > 1 ? "s" : ""} demandé${cell.asked > 1 ? "s" : ""}${waiting}`;
+}
+
 function stationMarks(cell) {
-  const title = cell.stopped ? `Poste ${cell.id} : la ligne est arrêtée, il lui manque une pièce` : `Poste ${cell.id}`;
-  return [svg("text", { x: centreX(cell), y: centreY(cell, 4), class: "letter station-id" }, `P${cell.id}`), svg("title", {}, title)];
+  return [svg("text", { x: centreX(cell), y: centreY(cell, 4), class: "letter station-id" }, `P${cell.id}`), ...askedBadge(cell), svg("title", {}, stationTitle(cell))];
+}
+
+/** A reference's stock at the supermarket, a pip a bin along the cell's foot, and ⏳ while an order to the warehouse is under way. */
+function stockMarks(cell) {
+  if (cell.stock === null) return [];
+  const left = centreX(cell) - (cell.bins * 7 - 2) / 2;
+  const pips = Array.from({ length: cell.bins }, (_, i) => svg("rect", { x: left + i * 7, y: cell.y * CELL + CELL - 8, width: 5, height: 4, rx: 1, class: `pip${i < cell.stock ? " full" : ""}` }));
+  return cell.ordered ? [...pips, svg("text", { x: cell.x * CELL + CELL - 8, y: cell.y * CELL + 11, class: "symbol ordered" }, "⏳")] : pips;
 }
 
 function blockMarks(cell) {
   const plural = cell.stock > 1 ? "s" : "";
   const stock = cell.stock === null ? "" : ` · ${cell.stock} bac${plural} au supermarché`;
-  const title = cell.short ? `Référence ${cell.letter} : plus de bac, les robots attendent${stock}` : `Référence ${cell.letter} du supermarché${stock}`;
-  return [...letterOf(cell), svg("title", {}, title)];
+  const ordered = cell.ordered ? " · une commande est partie à l'entrepôt" : "";
+  const title = cell.short ? `Référence ${cell.letter} : plus de bac, les robots attendent${stock}${ordered}` : `Référence ${cell.letter} du supermarché${stock}${ordered}`;
+  return [...letterOf(cell), ...stockMarks(cell), svg("title", {}, title)];
 }
 
 /** What a cell shows over its square, in drawing order. */

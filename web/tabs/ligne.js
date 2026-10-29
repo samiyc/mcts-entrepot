@@ -1,8 +1,9 @@
 import { el } from "../dom.js";
 import { facts, lineKey } from "../legend.js";
-import { panelOf, playButtons } from "../knobs.js";
+import { fieldsOf, panelOf, playButtons, select } from "../knobs.js";
+import { lineOf, optionsOf, settingsOf } from "../line-options.js";
 import { lineBoard } from "../line-board.js";
-import { lanesOf, lineStatus, sequenceOf } from "../line-view.js";
+import { lanesOf, lineStatus, restocksOf, sequenceOf } from "../line-view.js";
 import { replayNote } from "./entrepot.js";
 
 /**
@@ -20,9 +21,28 @@ function driverFields(sim) {
   return sim.setup.human ? [box, keys] : [box];
 }
 
+/** A box of the line's settings. */
+const box = (name, checked, text) => el("label", { class: "check" }, el("input", { type: "checkbox", "data-knob": name, "data-sim": "ligne", checked }), text);
+
+/** Each setting of the line, as a field (line-options.js). */
+const SETTINGS = {
+  robots: (options) => el("label", {}, "Robots", select("lineRobots", ["1", "2", "3"].map((n) => [n, n]), String(options.robots), "ligne")),
+  models: (options) => el("label", {}, "Modèles", select("lineModels", [["one", "un seul modèle"], ["mix", "essence et hybride mêlés"]], options.models, "ligne")),
+  returns: (options) => box("lineReturns", options.returns, "Les bacs vides rapportés à l'étagère"),
+  tour: (options) => box("lineTour", options.tour, "Un robot porte plusieurs bacs par tournée"),
+  supermarket: (options) =>
+    el("label", {}, "Le supermarché", select("lineSupermarket", [["none", "illimité"], ["warehouse", "commandé à l'entrepôt (10 à 40 min)"], ["pickers", "servi par 3 préparateurs, au plus juste"]], options.supermarket, "ligne")),
+};
+
+/** The settings of the chosen line (Sami, 29/10/2026: settings rather than lines of their own). */
+function settings(sim) {
+  const options = optionsOf(sim.setup);
+  return el("fieldset", { class: "settings" }, el("legend", {}, "Réglages de la ligne"), ...settingsOf(lineOf(sim.planId)).map((name) => SETTINGS[name](options)));
+}
+
 export const lignePanel = ({ state }) => {
   const sim = state.sims.ligne;
-  return panelOf("L'heure de ligne", sim, ["plan", "rule", "seed", "speed"], ...playButtons(sim), ...driverFields(sim), el("p", { class: "hint" }, "Un tour = 5 s ; une heure = 720 tours. Les chiffres et leurs sources : docs/recherche/ligne-cadencee.md."));
+  return panelOf("L'heure de ligne", sim, ["plan"], settings(sim), ...fieldsOf(sim, ["rule", "seed", "speed"]), ...playButtons(sim), ...driverFields(sim), el("p", { class: "hint" }, "Un tour = 5 s ; une heure = 720 tours. Les chiffres et leurs sources : docs/recherche/ligne-cadencee.md."));
 };
 
 /** A lane as a row: the reference, its bins (the one in use, how full; the full ones behind), the request out. */
@@ -38,7 +58,16 @@ function laneRow(lane) {
 function lineSide(state) {
   const stations = lanesOf(state).map((station) => el("li", {}, el("span", { class: "station-tag" }, `P${station.id}`), el("ul", { class: "lanes" }, ...station.lanes.map(laneRow))));
   const how = `Chaque jauge est un bac de ${state.setup.binPieces} pièces : d'abord le bac en cours, rempli selon ce qu'il reste, puis les bacs pleins derrière. Chaque véhicule prend une pièce de chaque référence de son poste. Un bac vidé appelle un robot, qui rapporte un bac plein du supermarché. Si un poste n'a plus de pièce, toute la ligne s'arrête.`;
-  return el("aside", { class: "orders-card" }, el("h2", {}, "Le stock de pièces aux postes"), el("p", { class: "hint stock-note" }, how), el("ol", { class: "stations" }, ...stations));
+  return el("aside", { class: "orders-card" }, ...restocksCard(state), el("h2", {}, "Le stock de pièces aux postes"), el("p", { class: "hint stock-note" }, how), el("ol", { class: "stations" }, ...stations));
+}
+
+/** The supermarket's orders to the warehouse under way, with a supermarket that has a stock (Sami, 29/10/2026). */
+function restocksCard(state) {
+  const restocks = restocksOf(state);
+  if (!restocks) return [];
+  const rows = restocks.map((one) => el("li", {}, el("strong", {}, one.block), ` ${one.where}, depuis ${one.since}`));
+  const list = rows.length ? el("ul", { class: "restocks" }, ...rows) : el("p", { class: "hint" }, "Aucune commande en cours : le supermarché est assez plein.");
+  return [el("h2", {}, "Les commandes à l'entrepôt"), list];
 }
 
 /** The models known to come, as chips (a mix of models only). */
@@ -62,5 +91,5 @@ export function ligneView({ state }) {
   const sim = state.sims.ligne;
   const summary = el("p", { class: `summary status${sim.day.stopRun > 0 ? " line-stopped" : ""}`, "aria-live": "polite" }, sim.busy || lineStatus(sim.day));
   const layout = el("div", { class: "board-layout" }, el("div", { class: "board-wrap" }, lineBoard(sim.day)), lineSide(sim.day));
-  return [lineFacts(), el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, ...sequence(sim.day), layout, lineKey()];
+  return [lineFacts(), el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, ...sequence(sim.day), layout, lineKey(sim.day)];
 }

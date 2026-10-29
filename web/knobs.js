@@ -21,9 +21,12 @@ const FIELDS = {
   speed: (sim) => el("label", {}, "Vitesse", select("speed", [["2", "lente"], ["4", "normale"], ["10", "rapide"]], String(sim.speed), sim.kind)),
 };
 
+/** The settings of `sim` named, as fields. */
+export const fieldsOf = (sim, names) => names.flatMap((name) => FIELDS[name](sim));
+
 /** The panel of a tab: its title, the settings of `sim` it uses, then its own fields. */
 export function panelOf(title, sim, names, ...own) {
-  return el("section", { class: "panel" }, el("h2", {}, title), ...names.flatMap((name) => FIELDS[name](sim)), ...own);
+  return el("section", { class: "panel" }, el("h2", {}, title), ...fieldsOf(sim, names), ...own);
 }
 
 /** A row of buttons, each `[action, label, quiet]`, acting on the simulation `kind` (`data-sim`). */

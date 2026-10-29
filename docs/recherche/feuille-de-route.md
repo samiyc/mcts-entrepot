@@ -37,7 +37,12 @@ Le 29/10, Sami trouvait les trois onglets de simulation trop semblables. Depuis 
 - une légende accompagne chaque plan (`web/legend.js`) ;
 - le supermarché de la ligne a sa propre couleur, distincte des rayons de l'entrepôt ;
 - les véhicules avancent sur une bande sous les postes, d'un poste à chaque takt, et attendent quand la ligne s'arrête ;
-- l'Usine se lit dans le sens des palettes : l'entrepôt, puis la navette, puis le supermarché et la ligne.
+- l'Usine se lit dans le sens des palettes : l'entrepôt, puis la navette, puis le supermarché et la ligne ;
+- les variantes de la ligne de Sami sont devenues des réglages du panneau (`web/line-options.js`), car « commandé à
+  l'entrepôt » et « servi par 3 préparateurs » semblaient identiques à l'écran. Les plans nommés restent pour les
+  mesures de nuit, et un test vérifie que chacun se retrouve par ces réglages ;
+- ce qui attend se voit : les bacs du supermarché, ses commandes à l'entrepôt et leur état, les bacs demandés à chaque
+  poste.
 
 ## Étape 1 : la ligne cadencée, mono-modèle (faite le 26/10)
 

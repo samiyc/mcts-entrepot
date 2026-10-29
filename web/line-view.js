@@ -18,10 +18,20 @@ const minutes = (seconds) => (seconds < 60 ? `${seconds} s` : `${Math.floor(seco
 /** The lane the line stands still for, or null while it runs. */
 export const stoppedLane = (state) => (state.stopRun > 0 ? (state.lanes.find((lane) => lane.pieces === 0) ?? null) : null);
 
-/** A block of the supermarket: its letter, the bins asked of it, whether it is out (a shortage seen, its stock empty), its stock. */
+/**
+ * A block of the supermarket: its letter, the bins asked of it, whether it is out (a shortage seen, its stock empty), its
+ * stock out of its full count (`bins`), and whether an order to the warehouse is under way for it (Sami, 29/10/2026).
+ */
 function blockView(state, char, waiting) {
   const stock = state.stock?.[char] ?? null;
-  return { kind: "block", letter: char, pending: waiting.get(char) ?? 0, short: state.known.short[char] !== undefined || stock === 0, stock };
+  const ordered = Boolean(state.restocks?.some((one) => one.block === char));
+  return { kind: "block", letter: char, pending: waiting.get(char) ?? 0, short: state.known.short[char] !== undefined || stock === 0, stock, bins: state.setup.supermarket?.bins ?? null, ordered };
+}
+
+/** A station's bins asked and not yet brought (Sami, 29/10/2026), and how many no robot has taken yet. */
+function askedAt(state, station) {
+  const asked = state.orders.filter((order) => order.station === station && order.status !== "delivered");
+  return { asked: asked.length, waiting: asked.filter((order) => order.status === "open").length };
 }
 
 /** Every cell to draw: `{ x, y, kind, … }`, kind floor, block, station, slot, charge, blockable or wall. */
@@ -35,7 +45,7 @@ export function cellsOfLine(state) {
   const kindOf = (char, x, y) => {
     if (char === "r") return { kind: "return" };
     const station = stationAt.get(`${x},${y}`);
-    if (station) return { kind: "station", id: station.id, stopped: stopped?.station === station.id - 1 };
+    if (station) return { kind: "station", id: station.id, stopped: stopped?.station === station.id - 1, ...askedAt(state, station.id - 1) };
     if (slotAt.has(`${x},${y}`)) return { kind: "slot", station: slotAt.get(`${x},${y}`) };
     if (isBlock(char)) return blockView(state, char, waiting);
     return { kind: { c: "charge", "~": "blockable", ".": "floor" }[char] ?? "wall" };
@@ -108,6 +118,20 @@ export function carsOf(state) {
     return { number, x: station.x + share * gap, model: modelAt(state, number - 1)?.name ?? null };
   });
   return cars.filter((car) => car.x <= state.drawn.width - 1);
+}
+
+/** Where an order to the warehouse stands: with a queue of pickers, waiting for one, picked, or on its way; else at the warehouse. */
+function restockState(state, order) {
+  const warehouse = state.setup.supermarket.warehouse;
+  if (!warehouse) return "à l'entrepôt";
+  if (state.t < order.start) return "attend un préparateur";
+  return state.t < order.at - warehouse.transport ? "en préparation" : "en route vers le supermarché";
+}
+
+/** The supermarket's orders to the warehouse under way (null with an endless supermarket): the reference, where it stands, since when. */
+export function restocksOf(state) {
+  if (!state.stock) return null;
+  return state.restocks.map((order) => ({ block: order.block, where: restockState(state, order), since: minutes((state.t - order.orderedAt) * state.setup.turnSeconds) }));
 }
 
 /** The hour in one line. */

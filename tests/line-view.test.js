@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { LINE_PLANS } from "../src/line-plan.js";
 import { LINE_RULES } from "../src/line-rules.js";
 import { createLine, drawLineDay, isOver, stepDay } from "../src/line.js";
-import { carsOf, cellsOfLine, lanesOf, lineStatus, robotsOfLine } from "../web/line-view.js";
+import { carsOf, cellsOfLine, lanesOf, lineStatus, restocksOf, robotsOfLine } from "../web/line-view.js";
 
 describe("what the page shows of the line (web/line-view.js)", () => {
   it("draws the stations, their slots, the supermarket's blocks and the robots", () => {
@@ -35,6 +35,24 @@ describe("what the page shows of the line (web/line-view.js)", () => {
     const held = carsOf(stopped).map((car) => car.x);
     stepDay(stopped, LINE_RULES.kanban);
     if (stopped.stopRun > 0) assert.deepEqual(carsOf(stopped).map((car) => car.x), held);
+  });
+
+  it("shows what waits: the supermarket's bins, its orders to the warehouse and where they stand, the bins each station asked for", () => {
+    const endless = createLine(LINE_PLANS.sami, drawLineDay(1, LINE_PLANS.sami));
+    assert.equal(restocksOf(endless), null);
+    assert.ok(cellsOfLine(endless).filter((cell) => cell.kind === "block").every((cell) => cell.stock === null && !cell.ordered));
+    const setup = LINE_PLANS.file;
+    const state = createLine(setup, drawLineDay(1, setup));
+    while (!isOver(state) && state.restocks.length === 0) stepDay(state, LINE_RULES.kanban);
+    const [order] = restocksOf(state);
+    assert.ok(["attend un préparateur", "en préparation", "en route vers le supermarché"].includes(order.where));
+    const blocks = cellsOfLine(state).filter((cell) => cell.kind === "block");
+    assert.ok(blocks.every((cell) => cell.bins === setup.supermarket.bins && cell.stock <= cell.bins));
+    assert.ok(blocks.some((cell) => cell.letter === order.block && cell.ordered));
+    const stations = cellsOfLine(state).filter((cell) => cell.kind === "station");
+    const open = state.orders.filter((one) => one.status !== "delivered").length;
+    assert.equal(stations.reduce((sum, cell) => sum + cell.asked, 0), open);
+    assert.ok(stations.every((cell) => cell.waiting <= cell.asked));
   });
 
   it("tells a stop: the station, the reference missing, the stop so far", () => {

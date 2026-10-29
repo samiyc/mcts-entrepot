@@ -67,7 +67,7 @@ export function usineView({ state }) {
     el("h2", {}, "2. Le supermarché et la ligne"),
     el("p", { class: `summary status${plant.line.stopRun > 0 ? " line-stopped" : ""}` }, lineStatus(plant.line)),
     el("div", { class: "board-wrap" }, lineBoard(plant.line)),
-    lineKey(),
+    lineKey(plant.line),
   );
   return [plantFacts(), el("p", { class: "hint" }, INTRO), el("div", { class: "plant-flow" }, warehouse, shuttle(plant), line)];
 }

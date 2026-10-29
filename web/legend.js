@@ -26,12 +26,20 @@ export function warehouseKey(day) {
   ]);
 }
 
-/** The line's key. */
-export const lineKey = () =>
+/** What only a supermarket with a stock shows: its bins left, its orders to the warehouse. */
+const STOCK_KEY = [
+  ["pips", "sous une référence : ses bacs pleins au supermarché"],
+  ["⏳", "une commande partie à l'entrepôt pour cette référence"],
+];
+
+/** The line's key, the supermarket's stock with one (`state`, an hour of the line). */
+export const lineKey = (state) =>
   legend([
     ["block shelf", "A à L : le supermarché, où les robots prennent les bacs pleins"],
+    ...(state.stock ? STOCK_KEY : []),
     ["slot", "le bord de ligne : les bacs de pièces de chaque poste"],
     ["station", "P1 à P5 : les postes"],
+    ["badge waiting", "des bacs demandés par un poste : orange tant qu'un robot n'y va pas, bleu quand tous arrivent"],
     ["🚗", "les véhicules, qui avancent d'un poste à chaque takt"],
     ["blockable", "une allée qui peut se bloquer"],
   ]);

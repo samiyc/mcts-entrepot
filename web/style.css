@@ -232,3 +232,16 @@ main.layout.folded .sidebar { display: none; }
   .shuttle-arrow::before { content: "↓"; }
 }
 .stock-note { margin: 0 0 8px; font-size: 0.8rem; }
+/* What waits on the line (Sami, 29/10/2026): a reference's bins at the supermarket, an order to the warehouse, the bins a
+ * station asked for. */
+.pip { fill: color-mix(in srgb, var(--panel) 70%, transparent); stroke: var(--ink); stroke-width: 0.6; }
+.pip.full { fill: #f2c14e; }
+.symbol.ordered { font-size: 12px; }
+.badge { fill: var(--dock); stroke: var(--panel); stroke-width: 1.5; }
+.badge.waiting { fill: #e08a1e; }
+.badge-count { font: 700 9px system-ui, sans-serif; text-anchor: middle; fill: #fff; pointer-events: none; }
+.key-swatch.pips { width: 20px; height: 6px; border: 1px solid var(--ink-2); background: linear-gradient(to right, #f2c14e 0 66%, transparent 66%); }
+.key-swatch.badge { border-radius: 50%; border: none; background: linear-gradient(to right, #e08a1e 50%, var(--dock) 50%); }
+.restocks { margin: 0 0 10px; padding-left: 1.2em; font-size: 0.85rem; }
+.settings { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px 8px; margin: 0 0 8px; display: grid; gap: 6px; }
+.settings legend { font-size: 0.8rem; font-weight: 700; color: var(--ink-2); padding: 0 4px; }

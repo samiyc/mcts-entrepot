@@ -1,4 +1,5 @@
 import { el } from "./dom.js";
+import { VARIANT_OF } from "./line-options.js";
 
 /**
  * The plans in each tab's menu (Sami, 29/10/2026: "the three tabs are not clear"; the assembly station found by chance at
@@ -11,27 +12,28 @@ const MENUS = {
     ["Le plan de Sami", [["sami", "Les commandes au départ"], ["flux", "Les commandes au fil de la journée"], ["assemblage", "Avec un poste d'assemblage"]]],
     ["Plusieurs camions", [["quais", "Trois quais"]]],
   ],
-  ligne: [
-    ["Lignes simples", [["petite", "Petite ligne"], ["etroite", "Bord de ligne étroit"]]],
-    ["La ligne de Sami", [["sami", "Deux robots"], ["seul", "Un seul robot"], ["melange", "Essence et hybride"], ["retours", "Les bacs vides rapportés"], ["tournee", "Un robot, plusieurs bacs"]]],
-    ["Le supermarché et l'entrepôt", [["supermarche", "Réapprovisionné par l'entrepôt"], ["file", "Servi par 3 préparateurs"]]],
-  ],
+  // The line's variants are its settings, under the menu (line-options.js).
+  ligne: [["Les lignes", [["petite", "Petite ligne"], ["sami", "Ligne de Sami"], ["etroite", "Bord de ligne étroit"]]]],
   usine: [["L'usine", [["usine", "Supermarché commandé à 1 bac"], ["vite", "Supermarché commandé à 2 bacs"], ["train", "Navette à heure fixe"]]]],
 };
+
+/** The plans a menu does not list, by kind, and the one each shows as: the line's variants show as their line. */
+const SHOWN_AS = { ligne: VARIANT_OF };
+const shownAs = (kind, planId) => SHOWN_AS[kind]?.[planId] ?? planId;
 
 /** The groups of `kind`'s menu over its `plans`, those left out last. */
 export function menuOf(kind, plans) {
   const groups = (MENUS[kind] ?? []).map(([title, items]) => [title, items.filter(([id]) => plans[id])]);
   const named = new Set(groups.flatMap(([, items]) => items.map(([id]) => id)));
   const others = Object.entries(plans)
-    .filter(([id]) => !named.has(id))
+    .filter(([id]) => !named.has(id) && shownAs(kind, id) === id)
     .map(([id, plan]) => [id, plan.label]);
   return others.length ? [...groups, ["Autres", others]] : groups;
 }
 
 /** The menu of plans of `sim`, in its groups, and the plan's whole label under it. */
 export function planMenu(sim, plans, title) {
-  const option = ([id, name]) => el("option", { value: id, selected: id === sim.planId }, name);
+  const option = ([id, name]) => el("option", { value: id, selected: id === shownAs(sim.kind, sim.planId) }, name);
   const groups = menuOf(sim.kind, plans).map(([label, items]) => el("optgroup", { label }, ...items.map(option)));
   const select = el("select", { "data-knob": "plan", "data-sim": sim.kind }, ...groups);
   return [el("label", {}, title, select), el("p", { class: "hint plan-note" }, sim.setup.label ?? plans[sim.planId]?.label ?? "")];
