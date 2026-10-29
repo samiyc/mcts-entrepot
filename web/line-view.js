@@ -1,4 +1,4 @@
-import { knownModels } from "../src/line-models.js";
+import { knownModels, modelAt } from "../src/line-models.js";
 import { isBlock } from "../src/warehouse.js";
 
 /**
@@ -93,6 +93,22 @@ export function humanOf(state) {
  * with resequencing, those beyond the notice are as planned, they may still move.
  */
 export const sequenceOf = (state) => knownModels(state).map((model, i) => ({ name: model.name, first: i === 0, planned: Boolean(state.setup.resequence) && i > state.setup.resequence.notice }));
+
+/**
+ * The vehicles on the line (Sami, 29/10/2026: to see the takt), one a station, the youngest at the first: each slides
+ * toward the next station as its takt goes by and waits there while the line stands still; the one past the last
+ * station leaves the board. `{ number, x, model }`, `x` in cells, maybe between two.
+ */
+export function carsOf(state) {
+  const stations = [...state.stations].sort((a, b) => a.x - b.x);
+  const share = Math.min(1, Math.max(0, 1 - (state.nextTakt - state.t) / state.setup.takt));
+  const cars = stations.map((station, s) => {
+    const gap = (stations[s + 1] ?? station).x - station.x || (stations[s - 1] ? station.x - stations[s - 1].x : 1);
+    const number = state.produced + stations.length - s;
+    return { number, x: station.x + share * gap, model: modelAt(state, number - 1)?.name ?? null };
+  });
+  return cars.filter((car) => car.x <= state.drawn.width - 1);
+}
 
 /** The hour in one line. */
 export function lineStatus(state) {

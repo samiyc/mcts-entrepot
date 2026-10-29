@@ -1,4 +1,5 @@
 import { el } from "../dom.js";
+import { facts, lineKey } from "../legend.js";
 import { panelOf, playButtons } from "../knobs.js";
 import { lineBoard } from "../line-board.js";
 import { lanesOf, lineStatus, sequenceOf } from "../line-view.js";
@@ -44,9 +45,17 @@ function sequence(state) {
   return [el("p", { class: "sequence hint" }, "La séquence connue : ", ...chips, after)];
 }
 
+/** What the tab shows, measures, and how long an hour plays (Sami, 29/10/2026: the three tabs told apart). */
+const lineFacts = () =>
+  facts([
+    ["On regarde", "des robots qui apportent les bacs du supermarché au bord de ligne"],
+    ["On mesure", "le temps où la ligne est arrêtée faute de pièce : moins, c'est mieux"],
+    ["Durée", "une heure, 720 tours de 5 s ; un véhicule toutes les 55 s"],
+  ]);
+
 export function ligneView({ state }) {
   const sim = state.sims.ligne;
   const summary = el("p", { class: `summary status${sim.day.stopRun > 0 ? " line-stopped" : ""}`, "aria-live": "polite" }, sim.busy || lineStatus(sim.day));
   const layout = el("div", { class: "board-layout" }, el("div", { class: "board-wrap" }, lineBoard(sim.day)), lineSide(sim.day));
-  return [el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, ...sequence(sim.day), layout];
+  return [lineFacts(), el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, ...sequence(sim.day), layout, lineKey()];
 }

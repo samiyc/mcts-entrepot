@@ -19,6 +19,8 @@
   --block-done: #d9d2c4;
   --wall: #4a4f55;
   --dock: #2f6f8f;
+  /* The supermarket's shelves on the line's board, apart from the warehouse's racks (29/10/2026). */
+  --shelf: #7fa9a0;
   --blocked: #c8352e;
   --r1: #d9573b;
   --r2: #3a74c4;
@@ -47,6 +49,7 @@
     --block-done: #3a3631;
     --wall: #0d0f12;
     --dock: #3d84aa;
+    --shelf: #3f6a62;
     color-scheme: dark;
   }
 }
@@ -189,3 +192,42 @@ main.layout.folded .sidebar { display: none; }
 .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; }
 .swatch.with { background: var(--series-with); }
 .swatch.without { background: var(--series-without); }
+
+/* The tabs told apart (Sami, 29/10/2026): what a tab shows, measures and how long it plays; the plan's whole label
+ * under its menu; the key under a board; the supermarket's shelves, the conveyor and its vehicles on the line's board;
+ * the plant in the order the pallets go. */
+.tab-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 10px; }
+.tab-facts > div { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.tab-facts dt { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); }
+.tab-facts dd { margin: 2px 0 0; font-size: 0.9rem; }
+@media (max-width: 720px) {
+  .tab-facts { grid-template-columns: 1fr; }
+}
+.plan-note { margin: -4px 0 4px; font-size: 0.8rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 0.8rem; color: var(--ink-2); }
+.legend li { display: inline-flex; align-items: center; gap: 5px; }
+.key-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); }
+.key-symbol { display: inline-block; width: 16px; text-align: center; }
+.key-swatch.block { background: var(--block); }
+.key-swatch.block.shelf { background: var(--shelf); }
+.key-swatch.dock, .key-swatch.station { background: var(--dock); }
+.key-swatch.bay, .key-swatch.slot { background: color-mix(in srgb, var(--dock) 22%, var(--floor)); border: 1px dashed var(--dock); }
+.key-swatch.blockable { background: var(--floor); border: 1.5px dashed var(--blocked); }
+.key-swatch.assembly { background: color-mix(in srgb, var(--r3) 35%, var(--floor)); border-color: var(--r3); }
+.cell.block.shelf { fill: var(--shelf); stroke: color-mix(in srgb, var(--shelf) 55%, var(--ink)); stroke-width: 1.5; }
+.conveyor rect { fill: color-mix(in srgb, var(--wall) 70%, var(--floor)); }
+.conveyor.stopped rect { fill: color-mix(in srgb, var(--blocked) 55%, var(--wall)); }
+.car rect { fill: var(--panel); stroke: var(--ink-2); stroke-width: 1.5; }
+.car.essence rect { stroke: var(--r2); stroke-width: 2.5; }
+.car.hybride rect { stroke: var(--r3); stroke-width: 2.5; }
+.car .symbol { font-size: 15px; }
+.plant-flow { display: grid; grid-template-columns: minmax(0, 2fr) 140px minmax(0, 3fr); gap: 12px; align-items: start; }
+.plant-part h2 { margin-top: 0; }
+.plant-flow .summary.status { min-height: calc(3 * 1.5em + 20px); }
+.shuttle { align-self: center; display: grid; gap: 6px; justify-items: center; text-align: center; font-size: 0.82rem; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 8px; }
+.shuttle-arrow::before { content: "→"; font-size: 1.8rem; line-height: 1; color: var(--dock); }
+@media (max-width: 1100px) {
+  .plant-flow { grid-template-columns: 1fr; }
+  .shuttle { justify-self: center; max-width: 420px; }
+  .shuttle-arrow::before { content: "↓"; }
+}

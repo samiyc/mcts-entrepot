@@ -1,4 +1,5 @@
 import { el } from "./dom.js";
+import { planMenu } from "./menus.js";
 import { MODELS } from "./models.js";
 
 /**
@@ -14,7 +15,7 @@ export function select(name, options, current, kind) {
 const WORDS = { entrepot: { plan: "Entrepôt", day: "Journée" }, ligne: { plan: "Ligne", day: "Heure" }, usine: { plan: "Usine", day: "Heure" } };
 
 const FIELDS = {
-  plan: (sim) => el("label", {}, WORDS[sim.kind].plan, select("plan", Object.entries(MODELS[sim.kind].plans).map(([id, plan]) => [id, plan.label]), sim.planId, sim.kind)),
+  plan: (sim) => planMenu(sim, MODELS[sim.kind].plans, WORDS[sim.kind].plan),
   rule: (sim) => el("label", {}, "Règle", select("rule", Object.entries(MODELS[sim.kind].labels), sim.rule, sim.kind)),
   seed: (sim) => el("label", {}, `${WORDS[sim.kind].day} n°`, el("input", { type: "number", min: "1", value: String(sim.seed), "data-knob": "seed", "data-sim": sim.kind, inputmode: "numeric" })),
   speed: (sim) => el("label", {}, "Vitesse", select("speed", [["2", "lente"], ["4", "normale"], ["10", "rapide"]], String(sim.speed), sim.kind)),
@@ -22,7 +23,7 @@ const FIELDS = {
 
 /** The panel of a tab: its title, the settings of `sim` it uses, then its own fields. */
 export function panelOf(title, sim, names, ...own) {
-  return el("section", { class: "panel" }, el("h2", {}, title), ...names.map((name) => FIELDS[name](sim)), ...own);
+  return el("section", { class: "panel" }, el("h2", {}, title), ...names.flatMap((name) => FIELDS[name](sim)), ...own);
 }
 
 /** A row of buttons, each `[action, label, quiet]`, acting on the simulation `kind` (`data-sim`). */

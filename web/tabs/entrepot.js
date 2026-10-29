@@ -1,6 +1,7 @@
 import { isOver, measuresOf } from "../../src/simulate.js";
 import { board } from "../board.js";
 import { el } from "../dom.js";
+import { facts, warehouseKey } from "../legend.js";
 import { panelOf, playButtons } from "../knobs.js";
 import { editor, orders } from "../panels.js";
 import { statusLine } from "../view.js";
@@ -25,10 +26,18 @@ export function replayNote({ replay, kind }) {
   return [el("p", { class: "summary replay-note" }, text, el("button", { type: "button", class: "quiet", "data-action": "leaveReplay", "data-sim": kind }, "Quitter le replay"))];
 }
 
+/** What the tab shows, measures, and how long a day plays (Sami, 29/10/2026: the three tabs told apart). */
+const warehouseFacts = (setup) =>
+  facts([
+    ["On regarde", "des robots qui portent les commandes des rayons jusqu'aux camions"],
+    ["On mesure", "le temps que les camions passent à quai : moins, c'est mieux"],
+    ["Durée", `une journée, ${setup.horizon} tours de 5 s au plus ; d'un numéro à l'autre, d'autres commandes et d'autres blocages`],
+  ]);
+
 export function entrepotView({ state }) {
   const sim = state.sims.entrepot;
   const over = isOver(sim.day);
   const summary = el("p", { class: "summary status", "aria-live": "polite" }, sim.busy || statusLine(sim.day, over ? measuresOf(sim.day) : null));
   const layout = el("div", { class: "board-layout" }, el("div", { class: "board-wrap" }, board(sim.day)), el("aside", { class: "orders-card" }, el("h2", {}, "Les commandes"), orders(sim.day)));
-  return [el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, layout];
+  return [warehouseFacts(sim.setup), el("p", { class: "hint" }, INTRO), ...replayNote(sim), summary, layout, warehouseKey(sim.day)];
 }

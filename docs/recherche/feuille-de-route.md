@@ -31,6 +31,14 @@ contrainte y est moins le trajet et le temps à quai que **l'ordonnancement des 
 
 L'onglet **Ligne cadencée** vient avec l'étape 1.
 
+Le 29/10, Sami trouvait les trois onglets de simulation trop semblables. Depuis :
+- chaque onglet dit en haut ce qu'il montre, ce qu'il mesure et combien de temps il joue ;
+- les plans sont groupés dans le menu (`web/menus.js`), sous un nom court, et le nom complet s'écrit sous le menu ;
+- une légende accompagne chaque plan (`web/legend.js`) ;
+- le supermarché de la ligne a sa propre couleur, distincte des rayons de l'entrepôt ;
+- les véhicules avancent sur une bande sous les postes, d'un poste à chaque takt, et attendent quand la ligne s'arrête ;
+- l'Usine se lit dans le sens des palettes : l'entrepôt, puis la navette, puis le supermarché et la ligne.
+
 ## Étape 1 : la ligne cadencée, mono-modèle (faite le 26/10)
 
 Les chiffres sont dans [../modele-ligne.md](../modele-ligne.md). En bref :
