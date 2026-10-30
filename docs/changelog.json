@@ -72,6 +72,17 @@
   ],
   "versions": [
     {
+      "version": "0.42",
+      "title": "La revue qualité",
+      "date": "30/10",
+      "items": [
+        "La relecture du code, sur la grille de mcts-commun : la doc, les tests et leur couverture (93 % des lignes), les exports morts, les copies de la lib, la graine et l'intervalle de chaque mesure. Le rapport est dans docs/qualite.md.",
+        "Trois trous de test comblés : l'arbre de la recherche de la ligne et celui de l'usine ne tournaient dans aucun test, et l'annulation d'un relais n'était pas testée. L'heure de recherche que tient l'empreinte de la ligne est allongée pour qu'elle cherche vraiment.",
+        "Un défaut trouvé, à décider : un relais annulé au bout de 20 tours repart souvent aussitôt, avec les mêmes robots."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.41",
       "title": "La recherche de la ligne joue par la couverture",
       "date": "30/10",

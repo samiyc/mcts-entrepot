@@ -39,6 +39,7 @@ script de mesure prend `--from N --days D --out FICHIER` (une ligne JSON par jou
 `--merge FICHIER…`, qui réunit les tranches en un seul tableau ([`docs/outillage.md`](docs/outillage.md), « Les jobs de
 la file »).
 L'outillage est décrit dans [`docs/outillage.md`](docs/outillage.md), le journal des versions dans la page.
+La revue qualité (la doc, les tests, la lib, les mesures) est dans [`docs/qualite.md`](docs/qualite.md).
 
 ## Deux étages
 

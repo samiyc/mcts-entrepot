@@ -79,11 +79,14 @@ describe("the assembly line (src/line*.js)", () => {
     assert.ok(state.log.some((event) => event.type === "restocked"));
   });
 
-  it("plays a day with the search, the same day twice", () => {
-    const setup = { ...LINE_PLANS.seul, horizon: 240 };
-    const one = runLine(setup, 1, lineSearchRule({ budget: 12 })).measures;
+  it("plays a day with the search, the same day twice, and grows its tree where the line can stop", () => {
+    const setup = { ...LINE_PLANS.seul, horizon: 360 };
+    let trees = 0;
+    const one = runLine(setup, 1, lineSearchRule({ budget: 12, onSearch: () => (trees += 1) })).measures;
     assert.deepEqual(runLine(setup, 1, lineSearchRule({ budget: 12 })).measures, one);
     assert.ok(one.produced > 0);
+    // calm skips the tree where the rollout stops the line in no world drawn: here, not every time (30/10/2026).
+    assert.ok(trees > 0, "au moins une décision cherchée par un arbre");
   });
 });
 

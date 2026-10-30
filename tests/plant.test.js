@@ -58,6 +58,14 @@ describe("the plant: the line and its supermarket fed by the warehouse (src/plan
     assert.ok(told > 0, "au moins un choix entre deux couvertures différentes");
   });
 
+  it("grows its tree where the line can stop, and plays the same hour twice alike", () => {
+    const setup = { ...PLANT_PLANS.train, warehouse: { ...PLANT_PLANS.train.warehouse, robots: 1 } };
+    let trees = 0;
+    const one = runPlant(setup, 2, LINE_RULES.kanban, plantSearchRule({ budget: 4, onSearch: () => (trees += 1) })).measures;
+    assert.ok(trees > 0, "au moins une décision cherchée par un arbre (30/10/2026 : aucun test n'en faisait)");
+    assert.deepEqual(runPlant(setup, 2, LINE_RULES.kanban, plantSearchRule({ budget: 4 })).measures, one);
+  });
+
   it("with the shuttle on a timetable, a pallet waits for the next departure", () => {
     const setup = PLANT_PLANS.train;
     const { state } = runPlant(setup, 1, LINE_RULES.kanban);

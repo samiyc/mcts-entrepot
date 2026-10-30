@@ -34,6 +34,16 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.42</span> La revue qualité <span class="date">30/10</span></h3>
+        <ul>
+          <li>La relecture du code, sur la grille de mcts-commun : la doc, les tests et leur couverture (93 % des lignes), les exports morts, les copies de la lib, la graine et l'intervalle de chaque mesure. Le rapport est dans docs/qualite.md.</li>
+          <li>Trois trous de test comblés : l'arbre de la recherche de la ligne et celui de l'usine ne tournaient dans aucun test, et l'annulation d'un relais n'était pas testée. L'heure de recherche que tient l'empreinte de la ligne est allongée pour qu'elle cherche vraiment.</li>
+          <li>Un défaut trouvé, à décider : un relais annulé au bout de 20 tours repart souvent aussitôt, avec les mêmes robots.</li>
+        </ul>
+        <p class="commits"></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.41</span> La recherche de la ligne joue par la couverture <span class="date">30/10</span></h3>
         <ul>
           <li>La recherche de la ligne imagine la suite de l'heure en jouant « la couverture la plus courte », et non plus « la plus proche » (Sami). Le 27/10, c'était mieux sur les quatre lignes où le robot manque : de 11 à 41 tours d'arrêt de moins par heure, et jamais nettement pire.</li>

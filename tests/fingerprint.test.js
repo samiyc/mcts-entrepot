@@ -22,7 +22,7 @@ const EXPECTED = {
   variants: "214547d78e961e5d",
   search: "73c14199da19efc8",
   // 30/10/2026: a held robot tries its other pickups, the next stuck one gives way; 27/10, calm on by default.
-  line: "513d161f7adf9ee7",
+  line: "464e4022bc9e5ec4",
   plant: "e05d63d3eb8ac964",
   // 30/10/2026: the assembly's orders drawn, its loader waiting for the parts on their way to its door.
   kits: "84bb35d65aeae74d",
@@ -62,10 +62,11 @@ const FINGERPRINTS = {
   kits: () => [1, 2, 3].flatMap((seed) => Object.values(RULES).map((rule) => played(PLANS.assemblage, seed, rule))),
   // A day played by the search, at a small budget.
   search: () => played({ ...PLANS.petit, autoZones: false }, 1, searchRule({ budget: 16 })),
-  // The assembly line: every plan under every rule, two hours each, and a short hour of its search.
+  // The assembly line: every plan under every rule, two hours each, and a short hour of its search, long enough for it to
+  // grow trees (360 turns since 30/10/2026: at 240 calm skipped every one).
   line: () => [
     ...Object.values(LINE_PLANS).flatMap((setup) => [1, 2].flatMap((seed) => Object.values(LINE_RULES).map((rule) => lineDay(setup, seed, rule)))),
-    lineDay({ ...LINE_PLANS.seul, horizon: 240 }, 1, lineSearchRule({ budget: 12 })),
+    lineDay({ ...LINE_PLANS.seul, horizon: 360 }, 1, lineSearchRule({ budget: 12 })),
   ],
   // The plant (26/10/2026): each plan, one warehouse robot, half an hour under each warehouse rule, and a one-bin supermarket.
   plant: () =>
