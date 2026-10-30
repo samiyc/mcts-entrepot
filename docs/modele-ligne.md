@@ -132,9 +132,9 @@ quelques tours au plus, et aucune conclusion ne change.
 
 ## Étape 3 : le cariste au clavier (26/10, l'après-midi)
 
-Le cariste (`src/line-human.js`) est une personne sur la grille. Il fait une action par tour : un pas (Z Q S D ou les
-flèches) ou E. À côté d'un bloc, E prend le bac plein de la plus ancienne demande de cette référence ; devant le bord de
-ligne du poste, E le pose.
+Le cariste (`src/line-human.js`) est une personne sur la grille. Il fait une action par tour : un pas (Z Q S D, sans les
+flèches depuis le 30/10) ou E. À côté d'un bloc, E prend le bac plein de la plus ancienne demande de cette référence ;
+devant le bord de ligne du poste, E le pose.
 - Il ne réserve pas de chemin, mais **il tient sa case** : les robots dont le chemin la traverse replanifient (`hold`
   de l'entrepôt) ; lui ne marche jamais là où un robot est, ou arrive au tour suivant.
 - **Ses actions sont écrites** tour par tour : gardées dans le replay, envoyées au worker de la recherche ; l'heure se

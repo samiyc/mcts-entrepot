@@ -119,7 +119,7 @@ Chaque point est une option du plan ; les plans de l'étape 1 jouent coup pour c
 
 ## Étape 3 : l'humain au clavier (faite le 26/10)
 
-Le cariste (Z Q S D ou les flèches, et E) prend un bac à côté d'un bloc et le pose devant son poste. La machine
+Le cariste (Z Q S D et E) prend un bac à côté d'un bloc et le pose devant son poste. La machine
 ordonnance le reste ([homme-robot.md](homme-robot.md)). Il tient sa case, et les robots replanifient autour de lui.
 Ses actions sont gardées dans le replay. Pour mesurer sans personne au clavier, deux caristes simulés : un qui aide
 (la couverture la plus courte d'abord), un au hasard (`scripts/line-drivers.js`).

@@ -1,7 +1,7 @@
 import { el } from "./dom.js";
 import { planMenu } from "./menus.js";
 import { MODELS, driving } from "./models.js";
-import { REPLAY_HINT } from "./replay-keys.js";
+import { replayHint, replayKeys } from "mcts-commun/replay-keys.js";
 
 /**
  * The settings of a simulation, in the side panel (Sami, 26/10/2026, as in mcts-urgences): its plan, its rule, the
@@ -14,6 +14,10 @@ export function select(name, options, current, kind) {
 
 /** What a simulation's plan and day are called: the warehouse's days, the line's and the plant's hours. */
 const WORDS = { entrepot: { plan: "Entrepôt", day: "Journée" }, ligne: { plan: "Ligne", day: "Heure" }, usine: { plan: "Usine", day: "Heure" } };
+
+/** The players' keys (mcts-commun/replay-keys.js; Sami, 30/10/2026): a minute is 12 turns of 5 s, five with Shift, to whole turns. */
+export const replayKey = replayKeys({ step: 12, bigStep: 60, whole: true });
+const REPLAY_HINT = replayHint({ step: "1 min", bigStep: "5 min" });
 
 /** The speeds of play, slowest first: turns a second. */
 export const SPEEDS = [

@@ -8,7 +8,7 @@ import { distancesFrom } from "./warehouse.js";
 /**
  * The forklift driver on the line (Sami, 26/10/2026; docs/recherche/feuille-de-route.md, step 3; as the cook of
  * mcts-cuisine and the intern of mcts-urgences): a person on the grid, one action a turn, `up`, `down`, `left`, `right`,
- * `act` or `wait` (the keys Z Q S D or the arrows, and E). Beside a block, `act` takes the full bin of an open request
+ * `act` or `wait` (the keys Z Q S D and E). Beside a block, `act` takes the full bin of an open request
  * for its reference; on the drop cells of that request's station, `act` sets it down. The driver plans nothing ahead
  * but holds the cell it stands on: the robots whose legs cross it plan again around it (day-legs.js `hold`), and it
  * never steps where a robot is or comes next turn. Its actions are written down turn by turn (`actions`): played again,

@@ -17,7 +17,7 @@ const INTRO =
 /** The driver at the keys (step 3): the box, and the keys when it is on. */
 function driverFields(sim) {
   const box = el("label", { class: "check" }, el("input", { type: "checkbox", "data-knob": "human", "data-sim": "ligne", checked: Boolean(sim.setup.human) }), "Jouer le cariste");
-  const keys = el("p", { class: "hint" }, "Z Q S D ou les flèches pour marcher, E pour prendre un bac à côté d'un bloc (le plus ancien demandé) ou le poser devant son poste. Hors lecture, chaque touche joue un tour. Les robots s'écartent de vous. En mode jeu, les touches du lecteur (Espace, chiffres) sont coupées.");
+  const keys = el("p", { class: "hint" }, "Z Q S D pour marcher, E pour prendre un bac à côté d'un bloc (le plus ancien demandé) ou le poser devant son poste. Hors lecture, chaque touche joue un tour. Les robots s'écartent de vous. En mode jeu, les touches du lecteur (Espace, flèches, chiffres) sont coupées.");
   return sim.setup.human ? [box, keys] : [box];
 }
 

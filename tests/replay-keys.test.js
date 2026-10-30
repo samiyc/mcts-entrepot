@@ -1,7 +1,8 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { driving } from "../web/models.js";
-import { nextSpeed, replayKey, within } from "../web/replay-keys.js";
+import { nextSpeed, within } from "mcts-commun/replay-keys.js";
+import { replayKey } from "../web/knobs.js";
 
 /** A key as the page gets it: its key, its place, Shift or another modifier, the element it is pressed on. */
 const keyOf = (key, { code = "", shiftKey = false, ctrlKey = false, on = null } = {}) => {
@@ -16,7 +17,7 @@ const playerAt = (t, end = 420) => {
   return { asked, t: () => t, end: () => end, seek: (to) => asked.push(["seek", to]), toggle: () => asked.push(["toggle"]), faster: (way) => asked.push(["faster", way]) };
 };
 
-describe("the players' keys (web/replay-keys.js)", () => {
+describe("the players' keys (mcts-commun/replay-keys.js, our steps in web/knobs.js)", () => {
   it("plays or pauses, goes a minute or five back and on within the day, faster or slower", () => {
     const player = playerAt(100);
     for (const event of [keyOf(" "), keyOf("ArrowLeft"), keyOf("ArrowRight", { shiftKey: true }), keyOf("ArrowUp"), keyOf("ArrowDown")]) assert.equal(replayKey(player, event), true);
@@ -36,7 +37,7 @@ describe("the players' keys (web/replay-keys.js)", () => {
     assert.deepEqual(player.asked, [["seek", 216], ["seek", 144], ["seek", 360]]);
   });
 
-  it("leaves the keys of a field, of a button, with Ctrl, and the others, and keeps the page still for its own", () => {
+  it("leaves the keys of a field, space on a button, with Ctrl, and the others, and keeps the page still for its own", () => {
     const player = playerAt(10);
     assert.equal(replayKey(player, keyOf(" ", { on: "button" })), false);
     assert.equal(replayKey(player, keyOf("ArrowLeft", { on: "input" })), false);
@@ -46,6 +47,13 @@ describe("the players' keys (web/replay-keys.js)", () => {
     const space = keyOf(" ");
     replayKey(player, space);
     assert.equal(space.prevented, true);
+  });
+
+  it("takes the arrows and the figures on a button (the kitchen's rule, in the library)", () => {
+    const player = playerAt(100);
+    assert.equal(replayKey(player, keyOf("ArrowLeft", { on: "button" })), true);
+    assert.equal(replayKey(player, keyOf("5", { on: "button" })), true);
+    assert.deepEqual(player.asked, [["seek", 88], ["seek", 210]]);
   });
 
   it("steps through the speeds, stopping at both ends", () => {
