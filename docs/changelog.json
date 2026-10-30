@@ -72,6 +72,16 @@
   ],
   "versions": [
     {
+      "version": "0.41",
+      "title": "La recherche de la ligne joue par la couverture",
+      "date": "30/10",
+      "items": [
+        "La recherche de la ligne imagine la suite de l'heure en jouant « la couverture la plus courte », et non plus « la plus proche » (Sami). Le 27/10, c'était mieux sur les quatre lignes où le robot manque : de 11 à 41 tours d'arrêt de moins par heure, et jamais nettement pire.",
+        "Une mesure de confirmation est dans la file : les deux façons de jouer, par paires sur 100 heures de chaque ligne ; et la recherche du poste d'assemblage à 128 et 256 itérations contre 64, sur 100 journées."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.40",
       "title": "La nuit de référence, les docs relues, la page revue",
       "date": "30/10",

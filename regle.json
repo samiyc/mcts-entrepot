@@ -1,0 +1,179 @@
+{
+  "about": "La règle de jeu de la ligne et le budget de l'assemblage (Sami, 30/10/2026, écrit par npm run night) : la recherche de la ligne jouée par la couverture, le nouveau défaut, contre la plus proche, 100 heures par ligne ; la recherche de l'assemblage à 128 et 256 itérations contre 64, 100 journées. mcts-backlog --add-file mcts-entrepot/regle.json --tag regle-AAAA-MM-JJ.",
+  "jobs": [
+    {
+      "id": "regle-ligne-petite",
+      "command": "node scripts/line-compare.js --plan petite --search --variant rollout=nearest --from 1 --days 100 --out tmp/regle/regle-ligne-petite.jsonl",
+      "estimate": "6 min",
+      "limit": 30
+    },
+    {
+      "id": "regle-ligne-sami",
+      "command": "node scripts/line-compare.js --plan sami --search --variant rollout=nearest --from 1 --days 100 --out tmp/regle/regle-ligne-sami.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "regle-ligne-seul-001",
+      "command": "node scripts/line-compare.js --plan seul --search --variant rollout=nearest --from 1 --days 50 --out tmp/regle/regle-ligne-seul-001.jsonl",
+      "estimate": "15 min",
+      "limit": 45
+    },
+    {
+      "id": "regle-ligne-seul-051",
+      "command": "node scripts/line-compare.js --plan seul --search --variant rollout=nearest --from 51 --days 50 --out tmp/regle/regle-ligne-seul-051.jsonl",
+      "estimate": "15 min",
+      "limit": 45
+    },
+    {
+      "id": "regle-ligne-seul-reunion",
+      "command": "node scripts/line-compare.js --plan seul --search --variant rollout=nearest --from 1 --days 100 --merge tmp/regle/regle-ligne-seul-001.jsonl tmp/regle/regle-ligne-seul-051.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "regle-ligne-seul-001",
+        "regle-ligne-seul-051"
+      ]
+    },
+    {
+      "id": "regle-ligne-etroite",
+      "command": "node scripts/line-compare.js --plan etroite --search --variant rollout=nearest --from 1 --days 100 --out tmp/regle/regle-ligne-etroite.jsonl",
+      "estimate": "10 min",
+      "limit": 30
+    },
+    {
+      "id": "regle-ligne-retours-001",
+      "command": "node scripts/line-compare.js --plan retours --search --variant rollout=nearest --from 1 --days 50 --out tmp/regle/regle-ligne-retours-001.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "regle-ligne-retours-051",
+      "command": "node scripts/line-compare.js --plan retours --search --variant rollout=nearest --from 51 --days 50 --out tmp/regle/regle-ligne-retours-051.jsonl",
+      "estimate": "20 min",
+      "limit": 60
+    },
+    {
+      "id": "regle-ligne-retours-reunion",
+      "command": "node scripts/line-compare.js --plan retours --search --variant rollout=nearest --from 1 --days 100 --merge tmp/regle/regle-ligne-retours-001.jsonl tmp/regle/regle-ligne-retours-051.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "regle-ligne-retours-001",
+        "regle-ligne-retours-051"
+      ]
+    },
+    {
+      "id": "regle-ligne-tournee-001",
+      "command": "node scripts/line-compare.js --plan tournee --search --variant rollout=nearest --from 1 --days 50 --out tmp/regle/regle-ligne-tournee-001.jsonl",
+      "estimate": "15 min",
+      "limit": 45
+    },
+    {
+      "id": "regle-ligne-tournee-051",
+      "command": "node scripts/line-compare.js --plan tournee --search --variant rollout=nearest --from 51 --days 50 --out tmp/regle/regle-ligne-tournee-051.jsonl",
+      "estimate": "15 min",
+      "limit": 45
+    },
+    {
+      "id": "regle-ligne-tournee-reunion",
+      "command": "node scripts/line-compare.js --plan tournee --search --variant rollout=nearest --from 1 --days 100 --merge tmp/regle/regle-ligne-tournee-001.jsonl tmp/regle/regle-ligne-tournee-051.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "regle-ligne-tournee-001",
+        "regle-ligne-tournee-051"
+      ]
+    },
+    {
+      "id": "regle-ligne-melange",
+      "command": "node scripts/line-compare.js --plan melange --search --variant rollout=nearest --from 1 --days 100 --out tmp/regle/regle-ligne-melange.jsonl",
+      "estimate": "18 min",
+      "limit": 54
+    },
+    {
+      "id": "regle-ligne-supermarche",
+      "command": "node scripts/line-compare.js --plan supermarche --search --variant rollout=nearest --from 1 --days 100 --out tmp/regle/regle-ligne-supermarche.jsonl",
+      "estimate": "24 min",
+      "limit": 72
+    },
+    {
+      "id": "regle-assemblage-001",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 1 --days 10 --out tmp/regle/regle-assemblage-001.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-011",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 11 --days 10 --out tmp/regle/regle-assemblage-011.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-021",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 21 --days 10 --out tmp/regle/regle-assemblage-021.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-031",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 31 --days 10 --out tmp/regle/regle-assemblage-031.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-041",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 41 --days 10 --out tmp/regle/regle-assemblage-041.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-051",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 51 --days 10 --out tmp/regle/regle-assemblage-051.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-061",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 61 --days 10 --out tmp/regle/regle-assemblage-061.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-071",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 71 --days 10 --out tmp/regle/regle-assemblage-071.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-081",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 81 --days 10 --out tmp/regle/regle-assemblage-081.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-091",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 91 --days 10 --out tmp/regle/regle-assemblage-091.jsonl",
+      "estimate": "22 min",
+      "limit": 66
+    },
+    {
+      "id": "regle-assemblage-reunion",
+      "command": "node scripts/compare.js --plan assemblage --search --variant budget=128 --variant budget=256 --from 1 --days 100 --merge tmp/regle/regle-assemblage-001.jsonl tmp/regle/regle-assemblage-011.jsonl tmp/regle/regle-assemblage-021.jsonl tmp/regle/regle-assemblage-031.jsonl tmp/regle/regle-assemblage-041.jsonl tmp/regle/regle-assemblage-051.jsonl tmp/regle/regle-assemblage-061.jsonl tmp/regle/regle-assemblage-071.jsonl tmp/regle/regle-assemblage-081.jsonl tmp/regle/regle-assemblage-091.jsonl",
+      "estimate": "1 min",
+      "limit": 10,
+      "after": [
+        "regle-assemblage-001",
+        "regle-assemblage-011",
+        "regle-assemblage-021",
+        "regle-assemblage-031",
+        "regle-assemblage-041",
+        "regle-assemblage-051",
+        "regle-assemblage-061",
+        "regle-assemblage-071",
+        "regle-assemblage-081",
+        "regle-assemblage-091"
+      ]
+    }
+  ]
+}

@@ -22,7 +22,7 @@ const EXPECTED = {
   variants: "214547d78e961e5d",
   search: "73c14199da19efc8",
   // 30/10/2026: a held robot tries its other pickups, the next stuck one gives way; 27/10, calm on by default.
-  line: "0096057d566f8fe4",
+  line: "513d161f7adf9ee7",
   plant: "e05d63d3eb8ac964",
   // 30/10/2026: the assembly's orders drawn, its loader waiting for the parts on their way to its door.
   kits: "84bb35d65aeae74d",

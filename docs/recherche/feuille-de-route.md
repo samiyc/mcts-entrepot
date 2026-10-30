@@ -139,16 +139,17 @@ Fait :
 Les chiffres sont dans [../modele-ligne.md](../modele-ligne.md).
 
 Reste :
-- **la règle de jeu de la recherche** : la campagne `night-rollout.json`, faite le 27/10 sur 100 heures, donne la
+- ~~la règle de jeu de la recherche~~ : **la couverture par défaut depuis le 30/10** (Sami), sa mesure de confirmation
+  dans la file (`regle.json`). La campagne `night-rollout.json`, faite le 27/10 sur 100 heures, donnait la
   couverture devant la plus proche sur les quatre lignes où le robot manque, et nulle part derrière
-  ([../modele-ligne.md](../modele-ligne.md)). Reste à en faire le défaut (les empreintes changent) : la nuit du 30/10 le montre encore aux bacs vides, où la
-  recherche, jouée par la plus proche, perd 38,7 tours contre le kanban ;
+  ([../modele-ligne.md](../modele-ligne.md)). La nuit du 30/10 le montrait encore aux bacs vides, où la recherche, jouée par la plus proche, perdait 38,7 tours
+  contre le kanban ;
 - ~~l'arrêt anticipé, `calm`, plus d'itérations~~ : **mesurés la nuit du 27/10** (119 jobs, par paires,
   [../modele-ligne.md](../modele-ligne.md)). L'arrêt anticipé est adopté dans les trois recherches : les mêmes résultats
   partout, jusqu'à un tiers de temps en moins. `calm` est adopté sur la ligne : aucune ligne n'y perd, et la recherche
   y coûte de 27 à 93 % de moins. 128 itérations ne sont pas adoptées : elles gagnent à l'assemblage et perdent chaque
   journée du plan de Sami. Reste à comprendre pourquoi chercher plus y joue moins bien (le score), et à décider d'un
-  budget propre à l'assemblage ;
+  budget propre à l'assemblage : 128 et 256 itérations y sont remesurées sur des journées tirées (`regle.json`, 30/10) ;
 - **les lenteurs des journées complètes** (28/10, [../outillage.md](../outillage.md)) : un filtre avant A* écarte les
   chemins que des robots garés pour de bon rendent impossibles. Il ne change aucun résultat, et le temps d'A* baisse de
   7 à 16 %. Les vérifications de baie se font en un seul passage, jusqu'à 7 % de temps en moins. L'horizon des

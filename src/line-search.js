@@ -15,9 +15,10 @@ import { drawBlockages } from "./simulate.js";
  * the models of the vehicles beyond the frozen sequence.
  * A world is played `lookahead` turns ahead (an hour of the line is too long to roll out at every iteration; two bins
  * cover 11 minutes, 15 minutes see what a choice costs), by `rollout` beyond the tree, and scored on the turns the line
- * stood still against the same rule's from the same point.
+ * stood still against the same rule's from the same point. The rollout is the shortest cover (Sami, 30/10/2026): ahead of
+ * the nearest on the four lines short of robots on 27/10, and never clearly behind (docs/modele-ligne.md).
  */
-export const LINE_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 180, rollout: "nearest", calm: true, earlyStop: true, legHorizon: null, rootWidth: null, widening: 0 });
+export const LINE_SEARCH_SETTINGS = Object.freeze({ budget: 64, depth: 2, explore: 0.3, width: 5, spread: 20, seed: 1, lookahead: 180, rollout: "cover", calm: true, earlyStop: true, legHorizon: null, rootWidth: null, widening: 0 });
 
 /** The shortages of a world: those seen go on a drawn while, those to come are drawn again after now. */
 function worldShortages(state, rng) {

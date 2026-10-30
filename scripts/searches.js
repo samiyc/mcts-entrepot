@@ -85,8 +85,9 @@ export function searchesLines(records, labels) {
   return names.map((name) => searchesLine(labels[name] ?? name, sumOf(records.map((record) => record.searches?.[name]).filter(Boolean))));
 }
 
-/** `key=value,key=value` as search options, each value a number (`earlyStop=1`, `budget=128`). */
-export const optionsOf = (text) => Object.fromEntries(text.split(",").filter(Boolean).map((pair) => pair.split("=")).map(([key, value]) => [key, Number(value)]));
+/** `key=value,key=value` as search options, each value a number (`earlyStop=1`, `budget=128`) or else a name (`rollout=nearest`). */
+const valueOf = (value) => (Number.isNaN(Number(value)) ? value : Number(value));
+export const optionsOf = (text) => Object.fromEntries(text.split(",").filter(Boolean).map((pair) => pair.split("=")).map(([key, value]) => [key, valueOf(value)]));
 
 /**
  * The search variants a measure asks (Sami, 27/10/2026: try the early stop, `calm` and more iterations, then adopt them):

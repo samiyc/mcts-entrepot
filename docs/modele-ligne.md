@@ -395,8 +395,8 @@ Les tours d'arrêt évités par heure sur la meilleure règle, par paires, même
 - **Les lignes bien servies n'ont rien à gagner** (petite, sami, supermarche : moins d'un tour par heure d'écart).
 - **30 heures ne contredisent jamais les 100**, mêmes signes partout, mais elles ratent le mélange (14,7, −2,3 à 31,8
   sur 30 heures). Un essai court écarte une idée, il n'en promeut pas.
-- **Ce qui reste à décider** : jouer la recherche de la ligne par la couverture par défaut. Ça change le modèle, et ses
-  empreintes ; `calm` reste coupée, la campagne ne l'a pas mesurée.
+- **Ce qui restait à décider** : jouer la recherche de la ligne par la couverture par défaut. **Adopté le 30/10** (Sami),
+  plus bas.
 
 **Le cariste sur la ligne** (`line-drivers.js`, 100 heures, la plus proche) :
 - **le cariste qui aide** évite l'arrêt là où le robot manque. Aux bacs vides, 122,3 tours par heure (114,6 à 130,0) ;
@@ -549,3 +549,17 @@ retenu : ses robots perdent moins de temps. 100 heures par ligne, la recherche p
   commandes ; la plus lointaine fait pire avec un seul robot (−4,1).
 - **Les jobs vont 3 à 4 fois plus vite** qu'au 27/10 (`calm` et l'arrêt anticipé, adoptés le 27/10 au soir) : 393 s pour
   la ligne à un robot, contre 1 782 s.
+
+## La couverture, règle de jeu de la recherche (30/10)
+
+Sami (30/10) : « ok pour le défaut + mesure ». La recherche de la ligne joue maintenant ses mondes par la couverture la
+plus courte (`LINE_SEARCH_SETTINGS.rollout`, `src/line-search.js`), et non plus par la plus proche. Les chiffres qui
+l'ont décidé sont ceux de la campagne du 27/10 (plus haut) : la couverture devant sur les quatre lignes où le robot
+manque, de 11,4 à 41,0 tours d'arrêt par heure, et jamais nettement derrière. La nuit du 30/10 le confirmait aux bacs
+vides, où la recherche jouée par la plus proche perdait encore 38,7 tours contre le kanban.
+
+L'empreinte de la ligne change (`0096057d566f8fe4` devient `513d161f7adf9ee7`), les cinq autres non. La mesure de
+confirmation est dans la file (`regle.json`, `regle-2026-10-30`) : la couverture contre la plus proche (`--variant
+rollout=nearest`), par paires sur 100 heures de chaque ligne, et dans les mêmes jobs, l'assemblage à 128 et 256
+itérations contre 64 sur 100 journées tirées ([modele.md](modele.md)). `--variant` prend maintenant un nom
+(`rollout=nearest`) comme un nombre.
