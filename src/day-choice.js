@@ -73,6 +73,12 @@ export function nextChoice(state) {
   return null;
 }
 
+/**
+ * What a robot given a new order forgets: the goal it gave way from (its way home), else on reaching the pickup it
+ * would go back there and pick the order at its charging point (30/10/2026, Sami's plan day 21).
+ */
+const FRESH = Object.freeze({ resume: null, blockedFor: 0 });
+
 /** A load: to the pallet on the bay, picked up like an order, then into the truck. Not reached: out of the way. */
 function takeLoad(state, robot, chosen) {
   if (!planLeg(state, robot, chosen.cell)) {
@@ -86,7 +92,7 @@ function takeLoad(state, robot, chosen) {
     state.log.push({ t: state.t, type: "loader", robot: robot.id, truck: truck.id, zone });
   }
   Object.assign(chosen, { status: "toTruck", robot: robot.id });
-  Object.assign(robot, { phase: "toPick", order: chosen.id });
+  Object.assign(robot, { phase: "toPick", order: chosen.id, ...FRESH });
   state.log.push({ t: state.t, type: "load", robot: robot.id, order: chosen.id });
 }
 
@@ -99,7 +105,7 @@ function takeOrder(state, { robot, distances }, chosen) {
   Object.assign(chosen, { status: "assigned", robot: robot.id });
   const truck = truckOf(state, chosen);
   if (truck.dock.bay.length > 0 && (!isThere(state, truck) || !isLoader(state, truck, robot))) claim(state, chosen, bayCellFor(state, truck, robot));
-  Object.assign(robot, { phase: "toPick", order: chosen.id });
+  Object.assign(robot, { phase: "toPick", order: chosen.id, ...FRESH });
   state.log.push({ t: state.t, type: "assigned", robot: robot.id, order: chosen.id });
 }
 

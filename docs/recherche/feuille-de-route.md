@@ -182,16 +182,26 @@ Reste :
   assemblage, un colis qui va vers un autre poste ;
 - ~~des commandes différentes chaque jour~~ : **faites le 29/10** (Sami) : chaque commande de la journée est tirée parmi
   les blocs de la liste du plan, chaque camion garde son nombre de commandes ; les blocages restent ceux d'avant
-  (`drawOrders` dans `src/simulate.js`). La variété fait sortir deux défauts qui étaient déjà là :
-  - **le robot de la borne derrière l'allée** (plan de Sami, quais, flux) : sa borne (0,2) n'a qu'une sortie, par les
-    `~` ; certains jours, il cède le passage en boucle des centaines de tours, et une commande n'est pas livrée à la fin
-    de la journée. Sur 100 journées, avec les règles : de 0 à 3 journées par plan et par règle ;
-  - **le poste d'assemblage dans son recoin** : il est au fond d'un cul-de-sac, et sa zone d'attente automatique est
-    prise sur les allées. Avec les commandes tirées, des pièces posées en attente l'enferment, un robot qui attend
-    bouche sa seule sortie, ou un robot qui s'écarte va attendre sur le poste lui-même. Trois corrections essayées le
-    29/10 (une file d'attente au poste comme au quai, le poste jamais traversé, le poste jamais pris pour s'écarter)
-    déplacent les blocages sans les supprimer. En attendant, **le plan d'assemblage garde sa liste fixe**
-    (`drawOrders: false`).
+  (`drawOrders` dans `src/simulate.js`). La variété a fait sortir des défauts qui étaient déjà là : de 0 à 5 journées
+  sur 100, par plan et par règle, finissaient avec une commande non livrée. **Corrigés le 30/10** (Sami), cinq causes,
+  une journée de test chacune (`tests/defects.test.js`) :
+  - **le robot de la borne (0,2)** (plan de Sami, flux) : il cédait le passage sur le chemin de sa borne, recevait une
+    commande pendant ce temps, puis, à la case de prise, repartait vers sa borne et y « prenait » la commande. Un robot
+    qui reçoit une commande oublie le but qu'il avait laissé pour céder le passage ;
+  - **une case de prise sur l'allée fermée** (quais) : le robot l'attendait toute la journée en cédant le passage à
+    personne. Retenu, il essaie maintenant les autres cases de prise de son bloc ;
+  - **un relais annulé pendant que la palette est posée** (quais) : le preneur prenait la palette et laissait sa propre
+    commande à personne. Un relais n'est plus annulé à ce moment-là ;
+  - **le chargeur du poste d'assemblage enfermé** : il partait chercher une pièce pendant que deux autres arrivaient
+    devant le poste ; posées, elles lui fermaient le retour. Il attend maintenant aussi les pièces en route vers sa zone ;
+  - **deux robots chargés nez à nez à la porte du poste** : celui qui devait céder le passage n'avait aucune case libre,
+    et l'autre n'était jamais sollicité. Le suivant cède maintenant quand le premier ne peut pas.
+
+  Sur 400 journées de chaque plan, avec les quatre règles, plus aucune commande non livrée, et **le plan d'assemblage
+  tire ses commandes** comme les autres. La ligne cadencée, qui partage la relance des robots, perd moins de tours
+  (de 0 à 12 tours d'arrêt en moins par heure selon la ligne et la règle, sur 50 heures). **Les relais** ne servent
+  plus guère que dans les couloirs (14 à 29 tours gagnés par journée, sur 100) : ailleurs, les robots qu'ils
+  débloquaient attendaient surtout une case de prise sur l'allée fermée. Leur test passe des quais aux couloirs.
 
 ## À faire : l'atelier d'usinage (job shop)
 

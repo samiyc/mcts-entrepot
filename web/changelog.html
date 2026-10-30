@@ -33,6 +33,17 @@
         <h2>Les versions</h2>
 
       <article class="version">
+        <h3><span class="tag">0.39</span> Plus aucune commande oubliée <span class="date">30/10</span></h3>
+        <ul>
+          <li>Depuis que les commandes sont tirées chaque journée, 0 à 5 journées sur 100 finissaient avec une commande non livrée. Cinq causes corrigées : un robot qui « prenait » sa commande à sa borne, un robot qui attendait toute la journée une case de prise sur l'allée fermée, un relais annulé pendant que la palette était posée, le chargeur du poste d'assemblage enfermé par des pièces en route, et deux robots nez à nez à la porte du poste.</li>
+          <li>Sur 400 journées de chaque plan, avec les quatre règles, toutes les commandes sont livrées. Sur 100 journées, la dernière livraison arrive plus tôt sur le plan de Sami (de 4 à 10 tours selon la règle), le flux (de 8 à 10) et les trois quais (de 1 à 2). Au poste d'assemblage, à liste égale, « la liste » gagne 9 tours et « la plus lointaine » en perd 14.</li>
+          <li>Le plan d'assemblage tire maintenant ses commandes comme les autres. La ligne cadencée, qui relance ses robots de la même façon, s'arrête moins : jusqu'à 12 tours d'arrêt de moins par heure, selon la ligne et la règle.</li>
+          <li>Les relais entre robots ne servent plus guère que dans les couloirs, où ils font gagner 14 à 29 tours par journée : ailleurs, ils débloquaient surtout des robots qui attendaient une case de prise sur l'allée fermée.</li>
+        </ul>
+        <p class="commits"></p>
+      </article>
+
+      <article class="version">
         <h3><span class="tag">0.38</span> Les raccourcis clavier des lecteurs, comme sur une vidéo <span class="date">29/10</span></h3>
         <ul>
           <li>Dans l'Entrepôt, la Ligne cadencée et l'Usine : Espace lance ou met en pause ; ← et → reculent ou avancent d'une minute, de cinq avec Maj ; ↑ et ↓ changent la vitesse ; 0 à 9 vont de 0 à 90 % de la journée. Les mêmes touches que dans les lecteurs des urgences et de la cuisine : le module vient maintenant de la bibliothèque commune.</li>

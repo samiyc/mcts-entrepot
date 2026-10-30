@@ -17,14 +17,15 @@ import { runDay } from "../src/simulate.js";
  * hash here, and its commit says so, with the measures before and after. The assembly line (26/10/2026) has its own.
  */
 const EXPECTED = {
-  // 29/10/2026: each day's orders drawn from its seed, among the list's blocks, each truck keeping its count.
-  rules: "d8d65b240e689efd",
-  variants: "ed0f0e3437c30f38",
+  // 30/10/2026: the days that left an order undelivered (tests/defects.test.js); 29/10, each day's orders drawn.
+  rules: "9ad0244c7e9293a7",
+  variants: "214547d78e961e5d",
   search: "73c14199da19efc8",
-  // 27/10/2026: calm on by default, its short hour of the search plays the rule where nothing is to win.
-  line: "eca391e5b795329c",
+  // 30/10/2026: a held robot tries its other pickups, the next stuck one gives way; 27/10, calm on by default.
+  line: "0096057d566f8fe4",
   plant: "e05d63d3eb8ac964",
-  kits: "191d9cd342d57a27",
+  // 30/10/2026: the assembly's orders drawn, its loader waiting for the parts on their way to its door.
+  kits: "84bb35d65aeae74d",
 };
 
 const digest = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex").slice(0, 16);

@@ -72,6 +72,18 @@
   ],
   "versions": [
     {
+      "version": "0.39",
+      "title": "Plus aucune commande oubliée",
+      "date": "30/10",
+      "items": [
+        "Depuis que les commandes sont tirées chaque journée, 0 à 5 journées sur 100 finissaient avec une commande non livrée. Cinq causes corrigées : un robot qui « prenait » sa commande à sa borne, un robot qui attendait toute la journée une case de prise sur l'allée fermée, un relais annulé pendant que la palette était posée, le chargeur du poste d'assemblage enfermé par des pièces en route, et deux robots nez à nez à la porte du poste.",
+        "Sur 400 journées de chaque plan, avec les quatre règles, toutes les commandes sont livrées. Sur 100 journées, la dernière livraison arrive plus tôt sur le plan de Sami (de 4 à 10 tours selon la règle), le flux (de 8 à 10) et les trois quais (de 1 à 2). Au poste d'assemblage, à liste égale, « la liste » gagne 9 tours et « la plus lointaine » en perd 14.",
+        "Le plan d'assemblage tire maintenant ses commandes comme les autres. La ligne cadencée, qui relance ses robots de la même façon, s'arrête moins : jusqu'à 12 tours d'arrêt de moins par heure, selon la ligne et la règle.",
+        "Les relais entre robots ne servent plus guère que dans les couloirs, où ils font gagner 14 à 29 tours par journée : ailleurs, ils débloquaient surtout des robots qui attendaient une case de prise sur l'allée fermée."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.38",
       "title": "Les raccourcis clavier des lecteurs, comme sur une vidéo",
       "date": "29/10",

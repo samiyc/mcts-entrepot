@@ -45,13 +45,13 @@ export function bayCellFor(state, truck, robot) {
 const nearestPickupCell = (state, robot, order) => nearestPickup(state.warehouse, order.block, distancesFrom(state.warehouse, robot, closed(state)))?.cell ?? null;
 
 /**
- * May a loader fetch `order` itself: only once no pallet waits in its zone, and no pallet waiting or promised stands
- * between where it will pick and the truck (set down meanwhile, it would shut the loader out with its own: a bay in
- * a one-cell aisle).
+ * May a loader fetch `order` itself: only once no pallet waits in its zone or is on its way there (set down while it
+ * fetches, it would shut the loader out: the assembly station, 30/10/2026, day 54), and no pallet waiting or promised
+ * stands between where it will pick and the truck (a bay in a one-cell aisle).
  */
 function loaderMayFetch(state, order, robot, zone) {
   const truck = truckOf(state, order);
-  const waits = (other) => other.truck === order.truck && other.cell && (other.status === "staged" || other.status === "toTruck") && zoneOf(truck, other.cell) === zone;
+  const waits = (other) => other !== order && other.truck === order.truck && other.cell && zoneOf(truck, other.cell) === zone;
   if (state.orders.some(waits)) return false;
   const promised = new Set(state.orders.filter((other) => other.cell).map((other) => keyOf(other.cell)));
   return wayOut(state, order.cell ?? nearestPickupCell(state, robot, order) ?? robot, truck.dock, promised);

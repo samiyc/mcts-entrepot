@@ -138,9 +138,15 @@ export function handOver(state, robot, order) {
   if (!planLeg(state, taker, order.cell)) taker.target = order.cell;
 }
 
+/**
+ * Is the pallet being set down for `taker` now? The hand-over is then next turn: called off meanwhile, the taker went back
+ * to its order and took the pallet too, its order left to nobody (30/10/2026, the three docks day 133).
+ */
+const settingDown = (state, taker) => state.robots.some((one) => one.relay === taker.id && one.phase === "dropping");
+
 /** The relays of this turn: those that took too long called off, then one started if a pair is found (true). */
 export function relays(state) {
-  for (const robot of state.robots) if (robot.phase === "relay" && state.t - robot.relaySince >= RELAY_PATIENCE) callOff(state, robot);
+  for (const robot of state.robots) if (robot.phase === "relay" && state.t - robot.relaySince >= RELAY_PATIENCE && !settingDown(state, robot)) callOff(state, robot);
   const pair = relayPair(state);
   return Boolean(pair) && startRelay(state, pair);
 }

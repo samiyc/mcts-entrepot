@@ -1,6 +1,6 @@
 import { SIDES } from "./warehouse.js";
 import { blockedNow, closed, humanLoads, isThere, orderOf, sameCell, truckOf } from "./day-basics.js";
-import { aroundPallet, giveWay, planLeg, replanOrHold } from "./day-legs.js";
+import { aroundPallet, giveWay, legToPickup, planLeg, replanOrHold } from "./day-legs.js";
 import { deliver, dropCellOf, release } from "./day-bays.js";
 import { callQueues, goDrop, leaveQueue } from "./day-queues.js";
 import { handOver, relays } from "./day-relays.js";
@@ -97,10 +97,15 @@ const heldShort = (state, robot) => {
   const end = robot.path?.at(-1);
   return Boolean(robot.target && end && end.t <= state.t && !sameCell(end, robot.target));
 };
+/**
+ * A robot on its way to pick, held short, tries its order's other pickup cells too: the one it chose may be on an
+ * aisle closed since, while others are open (30/10/2026, the three docks day 1: it gave way to nobody all day).
+ */
+const otherPickup = (state, robot) => robot.phase === "toPick" && !robot.resume && orderOf(state, robot)?.status === "assigned" && legToPickup(state, robot, orderOf(state, robot));
 /** `robot` held short tries again: its turns held so far, 0 once a leg is found. */
 const retryLeg = (state, robot) => {
   if (!heldShort(state, robot)) return 0;
-  return planLeg(state, robot, robot.target) ? 0 : (robot.blockedFor ?? 0) + 1;
+  return planLeg(state, robot, robot.target) || otherPickup(state, robot) ? 0 : (robot.blockedFor ?? 0) + 1;
 };
 
 /**
@@ -112,8 +117,10 @@ export function retry(state) {
   callQueues(state);
   for (const robot of state.robots) robot.blockedFor = retryLeg(state, robot);
   if (relays(state)) return;
-  const stuck = state.robots.filter((robot) => robot.blockedFor >= 2 && !robot.resume).sort((a, b) => b.blockedFor - a.blockedFor || b.id - a.id)[0];
-  if (stuck) giveWay(state, stuck);
+  // The next one when the first has nowhere to go (30/10/2026, the assembly day 82: boxed in at the station's door, it
+  // was asked all day, and the one behind it, which could step aside, never).
+  const stuck = state.robots.filter((robot) => robot.blockedFor >= 2 && !robot.resume).sort((a, b) => b.blockedFor - a.blockedFor || b.id - a.id);
+  stuck.some((robot) => giveWay(state, robot));
 }
 
 const positionAt = (path, t) => path.find((step) => step.t === t) ?? path.at(-1);

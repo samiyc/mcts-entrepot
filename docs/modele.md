@@ -12,7 +12,7 @@ l'affectation par la recherche (plus bas).
   dessiner un autre.
 - **Les commandes** sont des lettres de blocs, dans l'ordre où elles arrivent ; toutes sont là au départ. Depuis le
   29/10 (Sami), chaque journée tire les siennes parmi les blocs de la liste du plan, et chaque camion garde son nombre
-  de commandes (`drawOrders: false` garde la liste écrite ; le plan d'assemblage la garde, voir la feuille de route).
+  de commandes (`drawOrders: false` garde la liste écrite). Le plan d'assemblage tire les siennes depuis le 30/10.
 - **Un robot libre** reçoit une commande de la règle, va jusqu'à une case de sol au bord du bloc, prend
   (un tour), rapporte au camion, dépose (un tour).
 - **Les chemins** : chaque trajet est un chemin A* dans l'espace et le temps (`grid` de `mcts-commun`),

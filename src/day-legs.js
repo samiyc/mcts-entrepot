@@ -125,14 +125,15 @@ export function standBy(state, robot) {
   goAside(state, robot, robot);
 }
 
-/** `robot`, stuck, to the nearest free cell (an aside cell first) within four steps; its target kept for after. */
+/** `robot`, stuck, to the nearest free cell (an aside cell first) within four steps; its target kept for after. False when it has none. */
 export function giveWay(state, robot) {
   const taken = takenBy(state, robot);
   const { aside, docking } = spotsOf(state.warehouse);
   const pocket = new Set(aside);
   const near = [...distancesFrom(state.warehouse, robot, closed(state))].filter(([key, steps]) => steps > 0 && steps <= 4 && !taken.has(key) && !docking.has(key)).sort((a, b) => Number(pocket.has(b[0])) - Number(pocket.has(a[0])) || a[1] - b[1]);
   const goal = robot.target;
-  if (!near.some(([key]) => planLeg(state, robot, cellOfKey(key)))) return;
+  if (!near.some(([key]) => planLeg(state, robot, cellOfKey(key)))) return false;
   Object.assign(robot, { resume: goal, blockedFor: 0 });
   state.log.push({ t: state.t, type: "gaveWay", robot: robot.id });
+  return true;
 }

@@ -62,7 +62,9 @@ describe("the assembly line (src/line*.js)", () => {
           assert.equal(new Set(cells).size, cells.length, `${id}, ${name}, tour ${state.t} : deux robots dans la même case`);
         }
         assert.ok(state.produced <= Math.floor(setup.horizon / setup.takt));
-        assert.ok(state.orders.filter((order) => order.status === "open").length <= state.lanes.length, `${id}, ${name} : des demandes oubliées`);
+        // A lane asks for a bin each one it empties: never more open than its bins (30/10/2026: a robot short may leave two of one lane open).
+        const open = state.orders.filter((order) => order.status === "open");
+        assert.ok(state.lanes.every((_, i) => open.filter((order) => order.lane === i).length <= setup.bins), `${id}, ${name} : des demandes oubliées`);
         assert.deepEqual(runLine(setup, 2, rule).measures, runLine(setup, 2, rule).measures);
       }
     }

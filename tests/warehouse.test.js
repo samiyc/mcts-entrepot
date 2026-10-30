@@ -125,20 +125,20 @@ describe("the warehouse (src/warehouse.js, src/simulate.js)", () => {
   });
 
   it("passes a stuck pallet to the robot nearer the truck through a waiting cell (Sami's relays, 23/10), and finishes sooner", () => {
-    // Days with a relay (not every day has one: on days 3 and 8 nobody gets stuck), a pallet set into a truck in a turn:
-    // at 90 s the truck's queue paces the robots and nobody gets stuck on these days (26/10/2026).
-    const setup = { ...PLANS.quais, loadTurns: 1, dockLoaders: 0, horizon: 240, drawOrders: false };
-    for (const seed of [1, 2, 4, 5, 6, 7]) {
+    // Days of the corridors with a relay that pays (30/10/2026: on the three docks, the robots stuck there were waiting for
+    // a pickup cell on the closed aisle; now they go to another, and no relay is needed).
+    const setup = { ...PLANS.couloirs, drawOrders: false };
+    for (const seed of [1, 6, 7, 8, 10]) {
       const { state, measures } = runDay(setup, seed, RULES.nearest);
       const off = runDay({ ...setup, relay: false }, seed, RULES.nearest).measures;
       assert.equal(measures.delivered, measures.orders);
       assert.ok(measures.relays > 0, `jour ${seed} : aucun relais`);
       assert.equal(off.relays, 0);
       assert.ok(measures.finish < off.finish, `jour ${seed} : ${measures.finish} contre ${off.finish} sans relais`);
-      // The robot that set the pallet down is not the one that delivered it.
+      // The robot that set the pallet down is not the one that brought it to the dock.
       const relay = state.log.find((event) => event.type === "relay");
-      const delivered = state.log.find((event) => event.type === "delivered" && event.order === relay.order);
-      assert.equal(delivered.robot, relay.to);
+      const staged = state.log.find((event) => event.type === "staged" && event.order === relay.order);
+      assert.equal(staged.robot, relay.to);
     }
   });
 
