@@ -42,8 +42,11 @@ describe("a relay called off (src/day-relays.js)", () => {
       while (!isOver(state)) {
         const before = state.log.length;
         stepDay(state, RULES[rule]);
-        if (!state.log.slice(before).some((one) => one.type === "relayOff")) continue;
+        const turn = state.log.slice(before);
+        if (!turn.some((one) => one.type === "relayOff")) continue;
         seen += 1;
+        // Called off, the same pair does not start again at once (30/10/2026: it did, the call-off undone).
+        for (const off of turn.filter((one) => one.type === "relayOff")) assert.ok(!turn.some((one) => one.type === "relay" && one.robot === off.robot && one.to === off.to), `le même relais repart au tour ${state.t}`);
         // No order left to nobody: each one taken is some robot's, to fetch, to carry or kept for after a relay.
         for (const order of state.orders.filter((one) => one.status === "assigned")) {
           const robot = state.robots.find((one) => one.id === order.robot);

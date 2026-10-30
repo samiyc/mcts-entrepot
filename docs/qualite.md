@@ -15,7 +15,7 @@ Les P0 et P1 sont corrigés ou proposés à Sami ; les P2 et P3 sont listés.
 
 | # | Classe | Écart | État |
 |---|---|---|---|
-| 1 | P1 | **Un relais annulé repart aussitôt, souvent avec la même paire** (`src/day-relays.js`, `relays`) : `callOff` puis `relayPair` dans le même tour. Sur six journées tracées, la même paire repart trois fois (trois quais 32 et 39, deux fois de suite au 39). La patience de 20 tours se répète sans rien changer. Toutes les commandes finissent livrées. | **à décider** : corriger touche `src/` et les empreintes des règles et des variantes, à mesurer avant et après |
+| 1 | P1 | **Un relais annulé repart aussitôt, souvent avec la même paire** (`src/day-relays.js`, `relays`) : `callOff` puis `relayPair` dans le même tour. Sur six journées tracées, la même paire repart trois fois (trois quais 32 et 39, deux fois de suite au 39). La patience de 20 tours se répète sans rien changer. Toutes les commandes finissent livrées. | corrigé le 30/10 (Sami : « ok à corriger ») : une paire annulée ne repart pas avant 20 tours. Sur 100 journées de chaque plan sous les quatre règles, 2 journées changent (trois quais, la plus proche : fin 260,3 → 260,1), toutes livrées ; aucune empreinte ne bouge, le test des relais annulés le vérifie |
 | 2 | P1 | **L'arbre de la recherche de la ligne ne tournait dans aucun test** (`problemFor` de `src/line-search.js`) : avec `calm`, l'heure courte de l'empreinte et du test (240 tours) ne cherchait jamais par un arbre. | corrigé : 360 tours, 8 arbres ; le test l'exige, l'empreinte de la ligne le tient (`464e4022bc9e5ec4`) |
 | 3 | P1 | **L'arbre de la recherche de l'usine ne tournait dans aucun test** (`src/plant-search.js`). Elle cherche rarement : 0 arbre dans les heures du test, 10 dans l'heure 2 de la navette à heure fixe. | corrigé : un test sur cette heure, la même deux fois |
 | 4 | P1 | **L'annulation d'un relais n'était pas testée** (`callOff`, `backToFetch`), alors qu'un défaut du 30/10 venait de là. | corrigé : trois journées où un relais est annulé, aucune commande sans robot |
@@ -28,6 +28,9 @@ Les P0 et P1 sont corrigés ou proposés à Sami ; les P2 et P3 sont listés.
 | 11 | P3 | **`npm run types`** tourne sans `strict` (`tsconfig.json`), et `src/` a peu de JSDoc (34 balises) : les types sont surtout déduits. | noté |
 | 12 | P3 | **`scripts/search-bench.js`** part toujours de la journée 1 (pas de `--from`) ; les autres scripts de mesure prennent `--from`, `--days` et rendent un intervalle. | noté |
 | 13 | — | La doc contre le code : six écarts, corrigés le 30/10 (557af95) : les gains du README, les six empreintes, les commandes de l'usine et de la nuit, des étapes faites encore « à faire ». | corrigé |
+
+**« 2 cases réservées deux fois »**, signalé par la file pendant `regle-assemblage-021` : les deux dans des mondes de la
+recherche (`overbookedInClone` de la trace), aucune dans la vraie journée. Noté pour `mcts-commun`.
 
 **Aucun `eslint-disable`**, aucun `ts-ignore`, aucun TODO dans `src/` et `web/`, aucun `Math.random` : tout est tiré
 d'une graine.

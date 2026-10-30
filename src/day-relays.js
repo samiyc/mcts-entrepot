@@ -36,12 +36,18 @@ function relayCell(state, { loaded, taker, near }, { homes, busy }) {
   return cells[0] ?? null;
 }
 
+/**
+ * Was the relay of `loaded` to `taker` called off less than `RELAY_PATIENCE` turns ago? Then not again so soon: called
+ * off, the same pair started again the same turn, the call-off undone (30/10/2026, the quality review).
+ */
+const calledOff = (state, loaded, taker) => loaded.calledOff?.taker === taker.id && state.t - loaded.calledOff.at < RELAY_PATIENCE;
+
 /** The empty robot nearer the drop cell than `loaded` that would take its pallet, the nearest such to it, with the waiting cell; or null. */
 function takerFor(state, loaded, taken) {
   const toDrop = distancesFrom(state.warehouse, loaded.target ?? loaded.queued, closed(state));
   const near = distancesFrom(state.warehouse, loaded, closed(state));
   const mine = toDrop.get(keyOf(loaded)) ?? Infinity;
-  const nearer = (other) => other !== loaded && isEmpty(state, other) && (toDrop.get(keyOf(other)) ?? Infinity) < mine && near.has(keyOf(other));
+  const nearer = (other) => other !== loaded && isEmpty(state, other) && (toDrop.get(keyOf(other)) ?? Infinity) < mine && near.has(keyOf(other)) && !calledOff(state, loaded, other);
   const takers = state.robots.filter(nearer).sort((a, b) => near.get(keyOf(a)) - near.get(keyOf(b)));
   for (const taker of takers) {
     const cell = relayCell(state, { loaded, taker, near }, taken);
@@ -112,6 +118,7 @@ function backToFetch(state, taker) {
 /** A relay nobody completed in time: the loaded robot back to its drop cell, the taker back to what it was doing. */
 function callOff(state, taker) {
   const loaded = state.robots.find((one) => one.relay === taker.id);
+  if (loaded) loaded.calledOff = { taker: taker.id, at: state.t };
   if (loaded?.phase === "toDrop") backToDrop(state, loaded);
   backToFetch(state, taker);
   state.log.push({ t: state.t, type: "relayOff", robot: loaded?.id ?? null, to: taker.id });

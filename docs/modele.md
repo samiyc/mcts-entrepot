@@ -515,7 +515,8 @@ quais, en tours à quai des camions (ailleurs, le tour de fin) :
 - **Elle gagne maintenant au flux** (4,1 tours, contre 0,4) : ses robots ne se cèdent plus le passage en boucle.
 - **À l'assemblage, son gain n'est plus net** (3,2, contre 9,7 sur la liste fixe) : 47 journées gagnées, 46 perdues. Un budget plus grand y
   gagnait le 27/10 (128 itérations, 16,1 tours sur la liste fixe) : 128 et 256 itérations y sont remesurées sur 100
-  journées tirées (`regle.json`, Sami, 30/10).
+  journées tirées (`regle.json`, Sami, 30/10) : **ni l'un ni l'autre ne gagne** (128 : −0,5, de −3,5 à 2,5 ; 256 :
+  0,9, de −2,1 à 3,9, en tours d'attente des camions), pour 2 et 3 fois le temps. Le budget reste à 64.
 - **La meilleure règle change** : la plus lointaine sur le plan de Sami et le flux, la plus proche aux couloirs. Les
   règles ne s'écartent que de quelques tours ; aux trois quais, la liste et le camion d'abord finissent ensemble.
 - **Le chargeur** est occupé 93 % du temps sous la recherche au plan de Sami (91,5 % sous la meilleure règle), 87 %

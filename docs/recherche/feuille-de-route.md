@@ -140,7 +140,8 @@ Les chiffres sont dans [../modele-ligne.md](../modele-ligne.md).
 
 Reste :
 - ~~la règle de jeu de la recherche~~ : **la couverture par défaut depuis le 30/10** (Sami), sa mesure de confirmation
-  dans la file (`regle.json`). La campagne `night-rollout.json`, faite le 27/10 sur 100 heures, donnait la
+  dans la file (`regle.json`) : confirmée, 40,2 tours d'arrêt de moins par heure aux bacs vides, 22,8 aux tournées, 1,7 de
+  plus au supermarché ([../modele-ligne.md](../modele-ligne.md)). La campagne `night-rollout.json`, faite le 27/10 sur 100 heures, donnait la
   couverture devant la plus proche sur les quatre lignes où le robot manque, et nulle part derrière
   ([../modele-ligne.md](../modele-ligne.md)). La nuit du 30/10 le montrait encore aux bacs vides, où la recherche, jouée par la plus proche, perdait 38,7 tours
   contre le kanban ;
@@ -149,7 +150,8 @@ Reste :
   partout, jusqu'à un tiers de temps en moins. `calm` est adopté sur la ligne : aucune ligne n'y perd, et la recherche
   y coûte de 27 à 93 % de moins. 128 itérations ne sont pas adoptées : elles gagnent à l'assemblage et perdent chaque
   journée du plan de Sami. Reste à comprendre pourquoi chercher plus y joue moins bien (le score), et à décider d'un
-  budget propre à l'assemblage : 128 et 256 itérations y sont remesurées sur des journées tirées (`regle.json`, 30/10) ;
+  budget propre à l'assemblage : remesurés sur des journées tirées le 30/10 (`regle.json`), 128 et 256 itérations
+  n'y gagnent plus rien, le budget reste à 64 ;
 - **les lenteurs des journées complètes** (28/10, [../outillage.md](../outillage.md)) : un filtre avant A* écarte les
   chemins que des robots garés pour de bon rendent impossibles. Il ne change aucun résultat, et le temps d'A* baisse de
   7 à 16 %. Les vérifications de baie se font en un seul passage, jusqu'à 7 % de temps en moins. L'horizon des

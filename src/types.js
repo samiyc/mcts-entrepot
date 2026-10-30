@@ -12,7 +12,7 @@
  *   id: number, x: number, y: number, home: Cell, phase: string, order: number | null, target: Cell | null,
  *   queued: Cell | null, queuedAt?: number, resume: Cell | null, blockedFor: number, path: (Cell & { t: number })[] | null,
  *   until: number | null, moves: number, waits: number, relay?: number | null, relayGoal?: Cell | null,
- *   relayOrder?: number | null, relaySince?: number | null,
+ *   relayOrder?: number | null, relaySince?: number | null, calledOff?: { taker: number, at: number },
  * }} Robot
  */
 

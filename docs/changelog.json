@@ -72,6 +72,17 @@
   ],
   "versions": [
     {
+      "version": "0.43",
+      "title": "La couverture confirmée, le relais qui repartait",
+      "date": "30/10",
+      "items": [
+        "La recherche de la ligne jouée par la couverture, mesurée par paires sur 100 heures : 40 tours d'arrêt de moins par heure aux bacs vides, où elle fait maintenant jeu égal avec le kanban, et 23 de moins aux tournées. Elle perd 1,7 tour au supermarché ; elle reste le défaut partout (Sami).",
+        "Au poste d'assemblage, 128 et 256 itérations ne gagnent rien sur 64 avec des journées tirées. Le budget reste à 64.",
+        "Un relais annulé au bout de 20 tours ne repart plus aussitôt avec les mêmes robots. Sur 600 journées, 2 changent, toutes livrées."
+      ],
+      "commits": []
+    },
+    {
       "version": "0.42",
       "title": "La revue qualité",
       "date": "30/10",

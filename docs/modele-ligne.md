@@ -563,3 +563,20 @@ confirmation est dans la file (`regle.json`, `regle-2026-10-30`) : la couverture
 rollout=nearest`), par paires sur 100 heures de chaque ligne, et dans les mêmes jobs, l'assemblage à 128 et 256
 itérations contre 64 sur 100 journées tirées ([modele.md](modele.md)). `--variant` prend maintenant un nom
 (`rollout=nearest`) comme un nombre.
+
+**La confirmation** (`regle-2026-10-30`, 100 heures par ligne, tours d'arrêt par heure, la couverture sur la plus
+proche, par paires) :
+
+| Ligne | la couverture sur la plus proche | la recherche sur la meilleure règle |
+|---|---|---|
+| bacs vides | **40,2 (34,1 à 46,3)** | 1,5 (−4,1 à 7,1), contre −38,7 |
+| tournées | **22,8 (12,5 à 33,1)** | **70,4 (60,5 à 80,3)**, contre 47,6 |
+| mélange | 4,9 (−2,0 à 11,9) | 4,7 (−1,4 à 10,7) |
+| un robot | 2,1 (−6,5 à 10,7) | **17,4 (6,9 à 27,8)** |
+| petite, ligne de Sami, bord étroit | de 0 à 0,6, dans l'intervalle | 0 |
+| supermarché | **−1,7 (−3,2 à −0,2)** | −0,9 (−2,4 à 0,6) |
+
+- **La couverture se confirme** : elle sauve la recherche aux bacs vides, qui fait maintenant jeu égal avec le kanban,
+  et ajoute 23 tours aux tournées.
+- **Elle perd un peu au supermarché**, 1,7 tour par heure : là, c'est le stock qui décide, et la plus proche y est la
+  meilleure règle. Sami (30/10) : la couverture reste le défaut partout.
