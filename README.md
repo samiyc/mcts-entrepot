@@ -29,6 +29,7 @@ au terrain, sont dans [`docs/recherche/hypotheses.md`](docs/recherche/hypotheses
 | `npm run page` | la page, http://127.0.0.1:4802/web/ : Entrepôt, Ligne cadencée, Usine, Comparaisons, Replays, Stats |
 | `npm run compare -- [--plan sami] [--search]` | les règles de l'entrepôt, et la recherche, sur les mêmes journées |
 | `npm run line -- [--plan tournee] [--search] [--diagnose] [--early]` | les règles de la ligne, et la recherche, sur les mêmes heures ; ce que voient ses recherches, et l'arrêt anticipé par paires |
+| `npm run plant -- [--plan train] [--robots N] [--search]` | l'usine : les règles de l'entrepôt, et sa recherche, sur les mêmes heures |
 | `node scripts/line-drivers.js` | ce que le cariste apporte à la ligne, ou ce qu'il coûte |
 | `npm run night` | `night.json`, `night-rollout.json`, `essais-commun.json`, `decisions.json`, `horizon.json`, `diagnose.json` et `palier.json`, les mesures longues pour la file, en tranches d'une demi-heure au plus |
 | `npm run check` | le lint, les types et les tests ; le hook le relance avant chaque commit |
@@ -50,10 +51,13 @@ L'outillage est décrit dans [`docs/outillage.md`](docs/outillage.md), le journa
 
 ## Ce que la recherche gagne
 
-Toujours par paires sur les mêmes journées, contre la meilleure règle simple :
-- **L'entrepôt** : 26 tours sur le plan de Sami, 14 aux trois quais (les mesures de nuit du 23/10).
-- **La ligne cadencée, tournées de 4 bacs** : 59 tours d'arrêt de moins par heure (de 48,9 à 69,6 ; 36 % d'arrêt en
-  moins). C'est quand il faut choisir les bacs qui complètent une tournée qu'elle fait le plus la différence.
+Toujours par paires sur les mêmes journées, contre la meilleure règle simple (la nuit du 30/10, 100 journées ou
+100 heures par plan) :
+- **L'entrepôt** : 4,4 tours sur le plan de Sami, 4,1 au flux, 2,2 aux couloirs ; aux trois quais, 50,7 tours à quai
+  des camions de moins. À l'assemblage, son gain (3,2) n'est pas sûr.
+- **La ligne cadencée, tournées de 4 bacs** : 47,6 tours d'arrêt de moins par heure (de 36,2 à 58,9 ; 31 % d'arrêt en
+  moins). C'est quand il faut choisir les bacs qui complètent une tournée qu'elle fait le plus la différence. Sur la
+  ligne à un robot : 15,3.
 - **Les lignes bien servies** : rien. Il n'y a presque pas d'arrêt à éviter.
 
 ## D'où ça vient

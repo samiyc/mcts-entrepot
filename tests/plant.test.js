@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createRng } from "mcts-commun/random.js";
 import { LINE_RULES } from "../src/line-rules.js";
 import { drawPlantWorld, plantSearchRule } from "../src/plant-search.js";
-import { PLANT_PLANS, WAREHOUSE_RULES, advancePlant, choosePlant, isPlantOver, measuresOfPlant, runPlant, startPlant, stepPlant } from "../src/plant.js";
+import { PLANT_PLANS, WAREHOUSE_RULES, advancePlant, choosePlant, isPlantOver, measuresOfPlant, runPlant, startPlant, stepPlant, vehiclesLeft } from "../src/plant.js";
 
 const listOf = (plant, choice) => WAREHOUSE_RULES.list(choice.robot, choice.open, { t: plant.t, reach: choice.reach, state: plant.warehouse })?.id;
 
@@ -42,6 +42,20 @@ describe("the plant: the line and its supermarket fed by the warehouse (src/plan
     const plant = startPlant(setup, 3);
     for (let choice = advancePlant(plant, LINE_RULES.kanban); choice; choice = advancePlant(plant, LINE_RULES.kanban)) choosePlant(plant, choice, listOf(plant, choice));
     assert.deepEqual(measuresOfPlant(plant), runPlant(setup, 3, LINE_RULES.kanban).measures);
+  });
+
+  it("under the line's cover, sends first the order the line will stop for first", () => {
+    const setup = { ...PLANT_PLANS.usine, warehouse: { ...PLANT_PLANS.usine.warehouse, robots: 1 } };
+    const plant = startPlant(setup, 1);
+    let told = 0;
+    for (let choice = advancePlant(plant, LINE_RULES.kanban); choice; choice = advancePlant(plant, LINE_RULES.kanban)) {
+      const left = (order) => vehiclesLeft(plant.line, order.block);
+      const chosen = WAREHOUSE_RULES.lineCover(choice.robot, choice.open, { t: plant.t, reach: choice.reach, state: plant.warehouse });
+      assert.equal(left(chosen), Math.min(...choice.open.map(left)));
+      if (new Set(choice.open.map(left)).size > 1) told += 1;
+      choosePlant(plant, choice, chosen.id);
+    }
+    assert.ok(told > 0, "au moins un choix entre deux couvertures différentes");
   });
 
   it("with the shuttle on a timetable, a pallet waits for the next departure", () => {

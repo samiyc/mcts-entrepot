@@ -37,6 +37,7 @@ function loaderTitle(loader) {
 }
 
 function truckTitle(truck, gone) {
+  if (truck.shuttle) return `Le quai de la navette : ${truck.left || "aucune"} palette${truck.left > 1 ? "s" : ""} à charger${loaderTitle(truck.loader)}`;
   if (gone) return `Camion ${truck.id} : chargé, parti${loaderTitle(truck.loader)}`;
   if (!truck.there) return `Camion ${truck.id} : attendu au tour ${truck.at}${loaderTitle(truck.loader)}`;
   const plural = truck.left > 1 ? "s" : "";
@@ -57,10 +58,13 @@ function loaderMark(cell, loader) {
 /** A truck's loader, if one is there, and its title. */
 const truckExtras = (cell, truck, gone) => (truck ? [...(truck.loader ? [loaderMark(cell, truck.loader)] : []), svg("title", {}, truckTitle(truck, gone))] : []);
 
+/** A truck at its dock with orders left; the plant's dock is the shuttle's, always there (30/10/2026: it said "parti" at turn 0). */
+const atDock = (truck) => !truck || truck.shuttle || (truck.there && truck.left > 0);
+
 function dockMarks(cell) {
   const { truck } = cell;
-  const there = !truck || (truck.there && truck.left > 0);
-  const gone = truck && truck.left === 0 && truck.there;
+  const there = atDock(truck);
+  const gone = truck && !there && truck.left === 0 && truck.there;
   const marks = [svg("text", { x: centreX(cell), y: centreY(cell, there ? 7 : 4), class: `letter dock-letter${there ? " truck" : " due"}` }, dockText(truck, there, gone))];
   return [...marks, ...truckExtras(cell, truck, gone)];
 }

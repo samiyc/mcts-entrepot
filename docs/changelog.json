@@ -4,7 +4,7 @@
   "intro": "Des robots vont chercher les commandes dans les rayons et les portent aux camions ; une recherche (ISMCTS) leur répartit les commandes en imaginant les allées qui vont se bloquer.",
   "repo": "mcts-entrepot",
   "gainsTitle": "Ce que gagne la recherche (ISMCTS)",
-  "gainsNote": "Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut), un chargeur au quai. Moins, c'est mieux. Les mesures de la nuit du 26 au 27/10, jouées par l'ordonnanceur commun (mcts-backlog), quand chaque plan avait encore une liste de commandes fixe.",
+  "gainsNote": "Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut), un chargeur au quai. Moins, c'est mieux. Les mesures de la nuit du 30/10, jouées par l'ordonnanceur commun (mcts-backlog), chaque journée tirant ses commandes.",
   "gainsHead": [
     "Plan",
     "la plus proche",
@@ -17,60 +17,72 @@
   "gainsRows": [
     [
       "Petit entrepôt",
-      "118,8",
-      "120,5",
-      "121,9",
-      "118,8",
+      "119,0",
+      "121,0",
+      "123,0",
+      "119,0",
       "<strong>118,8</strong>",
-      "0,0"
+      "−0,2"
     ],
     [
       "Plan de Sami",
-      "251,4",
-      "234,9",
-      "240,8",
-      "251,4",
-      "<strong>229,2</strong>",
-      "−5,7"
+      "242,2",
+      "237,7",
+      "235,1",
+      "242,2",
+      "<strong>230,8</strong>",
+      "−4,3"
     ],
     [
       "Trois quais, un chargeur",
-      "265,0",
-      "253,8",
-      "272,5",
-      "252,2",
-      "<strong>244,0</strong>",
-      "−8,2"
+      "260,3",
+      "251,3",
+      "263,5",
+      "251,3",
+      "<strong>247,7</strong>",
+      "−3,6"
     ],
     [
       "Deux couloirs étroits",
-      "155,0",
-      "155,0",
-      "157,0",
-      "155,0",
-      "<strong>151,0</strong>",
-      "−4,0"
+      "153,3",
+      "153,8",
+      "155,1",
+      "153,3",
+      "<strong>151,1</strong>",
+      "−2,2"
     ],
     [
       "Flux (commandes au fil de la journée)",
-      "243,9",
-      "239,4",
-      "256,4",
-      "243,9",
-      "<strong>239,0</strong>",
-      "−0,4"
+      "237,3",
+      "238,7",
+      "236,8",
+      "237,3",
+      "<strong>232,7</strong>",
+      "−4,1"
     ],
     [
       "Poste d'assemblage",
-      "259,4",
-      "261,0",
-      "259,7",
-      "259,4",
-      "<strong>249,7</strong>",
-      "−9,7"
+      "250,1",
+      "264,7",
+      "270,3",
+      "250,1",
+      "<strong>246,9</strong>",
+      "−3,2"
     ]
   ],
   "versions": [
+    {
+      "version": "0.40",
+      "title": "La nuit de référence, les docs relues, la page revue",
+      "date": "30/10",
+      "items": [
+        "La mesure de nuit refaite avec les commandes tirées chaque journée et les défauts corrigés (24 jobs, 100 journées ou 100 heures par plan) : aucune commande non livrée. La recherche bat la meilleure règle sur le plan de Sami (4,4 tours), le flux (4,1, contre 0,4 avant), les couloirs (2,2) et aux trois quais (50,7 tours à quai des camions de moins). À l'assemblage, son gain (3,2) n'est plus sûr. Le tableau de cette page reprend ces mesures.",
+        "Sur la ligne cadencée, les règles arrêtent moins la ligne là où le robot manque, et la recherche gagne maintenant nettement sur la ligne à un robot (15,3 tours d'arrêt de moins par heure). Aux tournées de 4 bacs, elle en gagne 47,6.",
+        "Les docs relues contre le code et les tests : les gains du README, les six empreintes, les commandes de l'usine et de la nuit, les étapes déjà faites. Un test de plus : la règle « la couverture de la ligne » de l'usine envoie d'abord la commande pour laquelle la ligne s'arrêtera la première.",
+        "La page revue onglet par onglet, chaque plan sous chaque règle joué jusqu'au bout : aucune erreur. Trois corrections : le journal des versions retrouve sa mise en forme (perdue le 23/10, quand le style commun est passé dans mcts-commun) ; dans l'Usine, le quai de l'entrepôt est celui de la navette, et ne dit plus « parti » au tour 0 ; le bouton qui replie le panneau ne cache plus le dernier bouton d'un panneau long."
+      ],
+      "commits": []
+    },
     {
       "version": "0.39",
       "title": "Plus aucune commande oubliée",

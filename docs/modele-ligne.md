@@ -518,3 +518,34 @@ change, puisque son heure courte de recherche saute ces décisions : `85e28c2d2b
 
 Avec `diagnose` corrigé (mcts-commun `a2c66bd`, qui juge `closeCall` sur l'écart mesuré par paires), ces jobs ont tourné
 pour partie avant et après la correction : leurs comptes de codes ne se comparent pas à ceux de la section d'avant.
+
+## La nuit de référence du 30/10
+
+Les mêmes jobs que le 27/10 (`night.json`, `base-2026-10-30`), après les cinq défauts de l'entrepôt corrigés le 30/10
+([modele.md](modele.md), « La nuit de référence du 30/10 »). La ligne partage avec l'entrepôt la relance d'un robot
+retenu : ses robots perdent moins de temps. 100 heures par ligne, la recherche par paires sur la meilleure règle :
+
+| Ligne | la meilleure règle (tours d'arrêt par heure) | recherche | gain sur elle (IC 95 %) | le 27/10 |
+|---|---|---|---|---|
+| petite | le kanban, 2,0 | 2,7 | −0,7 (−2,2 à 0,8) | −0,5 |
+| ligne de Sami | la couverture, 2,5 | 2,9 | −0,4 (−0,8 à 0,0) | −1,0 |
+| bord étroit | la couverture, 140,0 | 136,3 | **3,8 (0,6 à 6,9)** | 3,8 |
+| supermarché | la plus proche, 71,2 | 70,4 | **0,8 (0,3 à 1,3)** | 0,6 |
+| mélange | la couverture, 25,7 | 26,0 | −0,3 (−7,7 à 7,1) | 2,0 |
+| un robot | la plus proche, 69,2 | 53,9 | **15,3 (5,2 à 25,3)** | 5,0, pas sûr |
+| bacs vides | le kanban, 41,7 | 80,4 | **−38,7 (−44,6 à −32,8)** | −38,9 |
+| tournées | la plus proche, 155,1 | 107,6 | **47,6 (36,2 à 58,9)** | 59,3 |
+
+- **Les règles arrêtent moins la ligne** là où le robot manque : un robot, de 77,1 à 69,2 sous la plus proche ;
+  mélange, de 33,5 à 25,7 sous la couverture ; bacs vides, de 46,2 à 41,7 sous le kanban ; tournées, de 164,7 à 155,1.
+- **Sur la ligne à un robot, la recherche gagne maintenant nettement** (15,3 tours, 60 heures gagnées, 34 perdues).
+  Aux tournées, elle gagne un peu moins, parce que la plus proche s'est améliorée.
+- **Aux bacs vides, elle perd toujours contre le kanban**, comme le 27/10 : sa règle de jeu, la plus proche, y est la
+  pire des trois (127,3).
+- **Le cariste qui aide** : il évite 121,7 tours d'arrêt par heure aux bacs vides, 117,3 aux tournées, 34,1 sur la
+  ligne à un robot. Il gêne toujours sur le bord étroit (−25,5), et ne change rien sur la ligne de Sami à deux robots.
+- **L'usine** : rien ne change. Avec la navette à la demande et 4 robots à l'entrepôt, la ligne ne s'arrête pas. Avec
+  la navette à heure fixe (5 à 6 tours d'arrêt par heure), aucune règle ni la recherche ne fait mieux que l'ordre des
+  commandes ; la plus lointaine fait pire avec un seul robot (−4,1).
+- **Les jobs vont 3 à 4 fois plus vite** qu'au 27/10 (`calm` et l'arrêt anticipé, adoptés le 27/10 au soir) : 393 s pour
+  la ligne à un robot, contre 1 782 s.

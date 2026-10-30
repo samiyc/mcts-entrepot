@@ -141,8 +141,8 @@ Les chiffres sont dans [../modele-ligne.md](../modele-ligne.md).
 Reste :
 - **la règle de jeu de la recherche** : la campagne `night-rollout.json`, faite le 27/10 sur 100 heures, donne la
   couverture devant la plus proche sur les quatre lignes où le robot manque, et nulle part derrière
-  ([../modele-ligne.md](../modele-ligne.md)). Reste à en faire le défaut (les empreintes changent) ; l'option `calm` n'est
-  pas mesurée ;
+  ([../modele-ligne.md](../modele-ligne.md)). Reste à en faire le défaut (les empreintes changent) : la nuit du 30/10 le montre encore aux bacs vides, où la
+  recherche, jouée par la plus proche, perd 38,7 tours contre le kanban ;
 - ~~l'arrêt anticipé, `calm`, plus d'itérations~~ : **mesurés la nuit du 27/10** (119 jobs, par paires,
   [../modele-ligne.md](../modele-ligne.md)). L'arrêt anticipé est adopté dans les trois recherches : les mêmes résultats
   partout, jusqu'à un tiers de temps en moins. `calm` est adopté sur la ligne : aucune ligne n'y perd, et la recherche
@@ -174,8 +174,8 @@ Reste :
 - ~~le robot qui charge lui-même le camion~~ : **un chargeur au quai fait la nuit du 26/10** (`src/day-loaders.js`,
   [../modele.md](../modele.md)) : le robot pose en 5 s, le chargeur charge à 90 s, un camion après l'autre. Il en reste :
   le chargeur sur la grille et au clavier, la prudence des robots près de lui, l'ordre de chargement à l'envers d'une
-  tournée à plusieurs arrêts, le changement de camion à quai, et les robots qui se cèdent le passage en boucle (3
-  journées sur 100 du flux, sous la plus lointaine) ;
+  tournée à plusieurs arrêts, le changement de camion à quai. Les robots qui se cédaient le passage en boucle (3 journées sur 100 du flux, sous
+  la plus lointaine) ne le font plus depuis le 30/10 ;
 - ~~la zone d'assemblage~~ : **un poste d'assemblage fait le 26/10** (`src/day-kits.js`, [../modele.md](../modele.md)) :
   un spécialiste, des pièces apportées par les robots, un travail de durée cachée, un colis qui part au camion. Il en
   reste : la prudence des robots près du spécialiste, un spécialiste pour plusieurs postes, le contrôle après
@@ -202,6 +202,9 @@ Reste :
   (de 0 à 12 tours d'arrêt en moins par heure selon la ligne et la règle, sur 50 heures). **Les relais** ne servent
   plus guère que dans les couloirs (14 à 29 tours gagnés par journée, sur 100) : ailleurs, les robots qu'ils
   débloquaient attendaient surtout une case de prise sur l'allée fermée. Leur test passe des quais aux couloirs.
+- ~~la mesure de nuit à refaire~~ : **faite le 30/10** (`base-2026-10-30`, 24 jobs) : aucune commande non livrée ; la
+  recherche bat la meilleure règle partout sauf à l'assemblage, où son gain n'est plus sûr, et gagne maintenant au flux
+  et sur la ligne à un robot ([../modele.md](../modele.md), [../modele-ligne.md](../modele-ligne.md)).
 
 ## À faire : l'atelier d'usinage (job shop)
 

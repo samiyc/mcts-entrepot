@@ -427,8 +427,8 @@ camion attendu d'abord) :
   ce que disait Sami : plusieurs chargeurs quand plusieurs camions chargent ensemble.
 - **Le poste d'assemblage ne départage plus les règles** : le chargeur fixe le pas, et le spécialiste n'attend plus
   ses pièces assez longtemps pour que ça se voie.
-- **Sur le flux, 3 journées sur 100 ne finissent pas sous la plus lointaine d'abord** : des robots se cèdent le
-  passage en boucle dans l'allée bloquée. C'est à reprendre.
+- **Sur le flux, 3 journées sur 100 ne finissaient pas sous la plus lointaine d'abord** : des robots se cédaient le
+  passage en boucle dans l'allée bloquée. Corrigé le 30/10 (« La nuit de référence du 30/10 », plus bas).
 - **L'usine** ([modele-ligne.md](modele-ligne.md)) : le quai de la navette n'est plus un goulot.
 - **La recherche coûte moins cher** : une journée du plan de Sami passe de plus de 10 minutes à 57 s. Aux trois quais
   avec un seul chargeur, c'est 292 s. Ses mesures sont plus bas.
@@ -493,6 +493,36 @@ poste en premier (il est « là » dès le départ). Avec le chargeur au quai (p
 Pas encore fait : les robots qui ralentissent près du spécialiste, un spécialiste pour plusieurs postes, le contrôle
 après assemblage (retouche, rebut), un colis qui part vers un autre poste plutôt qu'au camion.
 
+## La nuit de référence du 30/10
+
+Sami (30/10) : la mesure de nuit à refaire après deux changements, les commandes tirées chaque journée (29/10) et les
+cinq défauts corrigés (30/10, [recherche/feuille-de-route.md](recherche/feuille-de-route.md)). Les 24 jobs de
+`night.json` (`base-2026-10-30`), 100 journées par plan, ont tous fini. **Aucune commande non livrée**, sous aucune
+règle ni sous la recherche. L'écart se compte par paires sur la meilleure règle du plan, mêmes journées ; aux trois
+quais, en tours à quai des camions (ailleurs, le tour de fin) :
+
+| Plan | la meilleure règle | recherche | gain sur elle (IC 95 %) | journées gagnées / perdues | le 26-27/10 |
+|---|---|---|---|---|---|
+| petit entrepôt | la plus proche, 119,0 | 118,8 | 0,1 (0,0 à 0,2) | 7 / 0 | 0 |
+| plan de Sami | la plus lointaine, 235,1 | 230,8 | **4,4 (3,0 à 5,8)** | 96 / 2 | 5,7 |
+| deux couloirs | la plus proche, 153,3 | 151,1 | **2,2 (1,8 à 2,6)** | 55 / 0 | 4,0 |
+| flux | la plus lointaine, 236,8 | 232,7 | **4,1 (2,2 à 5,9)** | 61 / 12 | 0,4 |
+| assemblage | la plus proche, 250,1 | 246,9 | 3,2 (−2,6 à 9,0) | 47 / 46 | 9,7 |
+| trois quais, 1 chargeur | la liste, 480,8 | 430,2 | **50,7 (42,9 à 58,5)** ; fin 251,3 → 247,7 | 95 / 5 | 48,9 |
+
+- **La recherche bat toujours la meilleure règle**, sauf à l'assemblage, où son gain n'est plus sûr, et au petit
+  entrepôt, où elle joue la plus proche.
+- **Elle gagne maintenant au flux** (4,1 tours, contre 0,4) : ses robots ne se cèdent plus le passage en boucle.
+- **À l'assemblage, son gain n'est plus net** (3,2, contre 9,7 sur la liste fixe) : 47 journées gagnées, 46 perdues.
+- **La meilleure règle change** : la plus lointaine sur le plan de Sami et le flux, la plus proche aux couloirs. Les
+  règles ne s'écartent que de quelques tours ; aux trois quais, la liste et le camion d'abord finissent ensemble.
+- **Le chargeur** est occupé 93 % du temps sous la recherche au plan de Sami (91,5 % sous la meilleure règle), 87 %
+  aux quais (86 %).
+- **Les jobs vont plus vite** : 6 min par tranche de 50 journées au plan de Sami et à l'assemblage, 10 à 12 min aux
+  quais, pour 15 à 24 min estimées.
+
+Le tableau de la page (onglet Stats) reprend ces mesures.
+
 ## La suite
 
 Les étapes communes aux trois dépôts sont dans la [feuille de route](https://github.com/samiyc/lopin/blob/main/docs/ismcts-ailleurs/feuille-de-route.md) § 6 (Sami, 23/10 au soir) : l'ordonnanceur en commun pour les mesures de nuit, les replays avec un humain pour analyser les écarts, la vitrine. Le journal des versions est dans la page (`web/changelog.html`).
@@ -502,13 +532,15 @@ Les étapes communes aux trois dépôts sont dans la [feuille de route](https://
 2. **Le transfert de colis entre deux robots bloqués** — fait le 23/10 au soir (« Les relais », plus haut) ; reste
    à placer les robots hors du seul couloir d'un plan.
 3. **Un personnage au clavier** (Z Q S D et E, Sami) qui prend et pose des colis, comme le chef de la
-   cuisine ; puis les replays de ses journées, comparées à la recherche.
+   cuisine : **fait le 26/10 sur la ligne cadencée**, le cariste ([`docs/modele-ligne.md`](modele-ligne.md)), avec ses
+   replays et leur analyse. Reste le cariste dans l'entrepôt.
 4. **Une zone d'assemblage** (Sami, 26/10, précisée le soir) : un humain, un spécialiste, assemble au poste des
    composants que les robots vont chercher et lui apportent : plusieurs petits éléments dans un plus grand colis, ou un
    assemblage long (du câblage). Fini, l'assemblage devient un colis que les robots portent au camion ou au poste
    suivant. **Première version faite le 26/10** (« Le poste d'assemblage », plus haut).
 5. **Des commandes qui arrivent pendant la journée** — fait le 26/10 (« Les commandes au fil de la journée », plus
-   haut) ; reste à relier l'entrepôt au supermarché de la ligne.
+   haut) ; l'entrepôt relié au supermarché de la ligne : **fait le 26/10**, l'usine
+   ([`docs/modele-ligne.md`](modele-ligne.md)).
 6. **Une variante de production** (Sami, 26/10) : la ligne cadencée d'abord, faite le 26/10, à côté de l'entrepôt
    ([`docs/modele-ligne.md`](modele-ligne.md)) ; l'atelier d'usinage, avec ses rejets et ses pannes, plus tard. Les
    recherches, le glossaire des termes réels et la feuille de route sont dans [`docs/recherche/`](recherche/README.md). L'outillage du dépôt

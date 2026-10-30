@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Journal des versions</title>
+    <link rel="stylesheet" href="../node_modules/mcts-commun/web/theme.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="changelog.css" />
   </head>
@@ -16,21 +17,32 @@
     <main class="changelog">
       <section>
         <h2>Ce que gagne la recherche (ISMCTS)</h2>
-        <p class="hint">Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut), un chargeur au quai. Moins, c'est mieux. Les mesures de la nuit du 26 au 27/10, jouées par l'ordonnanceur commun (mcts-backlog), quand chaque plan avait encore une liste de commandes fixe.</p>
+        <p class="hint">Tours jusqu'à la dernière livraison, 100 journées par plan, mêmes journées pour tous ; l'allée bloquée 80 % du temps, 8 tours à chaque fois (les réglages par défaut), un chargeur au quai. Moins, c'est mieux. Les mesures de la nuit du 30/10, jouées par l'ordonnanceur commun (mcts-backlog), chaque journée tirant ses commandes.</p>
         <div class="scroll"><table>
           <thead><tr><th>Plan</th><th class="num">la plus proche</th><th class="num">la liste</th><th class="num">la plus lointaine</th><th class="num">le camion d'abord</th><th class="num">recherche</th><th class="num">écart sur la meilleure règle</th></tr></thead>
           <tbody>
-          <tr><td>Petit entrepôt</td><td class="num">118,8</td><td class="num">120,5</td><td class="num">121,9</td><td class="num">118,8</td><td class="num"><strong>118,8</strong></td><td class="num">0,0</td></tr>
-          <tr><td>Plan de Sami</td><td class="num">251,4</td><td class="num">234,9</td><td class="num">240,8</td><td class="num">251,4</td><td class="num"><strong>229,2</strong></td><td class="num">−5,7</td></tr>
-          <tr><td>Trois quais, un chargeur</td><td class="num">265,0</td><td class="num">253,8</td><td class="num">272,5</td><td class="num">252,2</td><td class="num"><strong>244,0</strong></td><td class="num">−8,2</td></tr>
-          <tr><td>Deux couloirs étroits</td><td class="num">155,0</td><td class="num">155,0</td><td class="num">157,0</td><td class="num">155,0</td><td class="num"><strong>151,0</strong></td><td class="num">−4,0</td></tr>
-          <tr><td>Flux (commandes au fil de la journée)</td><td class="num">243,9</td><td class="num">239,4</td><td class="num">256,4</td><td class="num">243,9</td><td class="num"><strong>239,0</strong></td><td class="num">−0,4</td></tr>
-          <tr><td>Poste d'assemblage</td><td class="num">259,4</td><td class="num">261,0</td><td class="num">259,7</td><td class="num">259,4</td><td class="num"><strong>249,7</strong></td><td class="num">−9,7</td></tr>
+          <tr><td>Petit entrepôt</td><td class="num">119,0</td><td class="num">121,0</td><td class="num">123,0</td><td class="num">119,0</td><td class="num"><strong>118,8</strong></td><td class="num">−0,2</td></tr>
+          <tr><td>Plan de Sami</td><td class="num">242,2</td><td class="num">237,7</td><td class="num">235,1</td><td class="num">242,2</td><td class="num"><strong>230,8</strong></td><td class="num">−4,3</td></tr>
+          <tr><td>Trois quais, un chargeur</td><td class="num">260,3</td><td class="num">251,3</td><td class="num">263,5</td><td class="num">251,3</td><td class="num"><strong>247,7</strong></td><td class="num">−3,6</td></tr>
+          <tr><td>Deux couloirs étroits</td><td class="num">153,3</td><td class="num">153,8</td><td class="num">155,1</td><td class="num">153,3</td><td class="num"><strong>151,1</strong></td><td class="num">−2,2</td></tr>
+          <tr><td>Flux (commandes au fil de la journée)</td><td class="num">237,3</td><td class="num">238,7</td><td class="num">236,8</td><td class="num">237,3</td><td class="num"><strong>232,7</strong></td><td class="num">−4,1</td></tr>
+          <tr><td>Poste d'assemblage</td><td class="num">250,1</td><td class="num">264,7</td><td class="num">270,3</td><td class="num">250,1</td><td class="num"><strong>246,9</strong></td><td class="num">−3,2</td></tr>
           </tbody>
         </table></div>
       </section>
       <section>
         <h2>Les versions</h2>
+
+      <article class="version">
+        <h3><span class="tag">0.40</span> La nuit de référence, les docs relues, la page revue <span class="date">30/10</span></h3>
+        <ul>
+          <li>La mesure de nuit refaite avec les commandes tirées chaque journée et les défauts corrigés (24 jobs, 100 journées ou 100 heures par plan) : aucune commande non livrée. La recherche bat la meilleure règle sur le plan de Sami (4,4 tours), le flux (4,1, contre 0,4 avant), les couloirs (2,2) et aux trois quais (50,7 tours à quai des camions de moins). À l'assemblage, son gain (3,2) n'est plus sûr. Le tableau de cette page reprend ces mesures.</li>
+          <li>Sur la ligne cadencée, les règles arrêtent moins la ligne là où le robot manque, et la recherche gagne maintenant nettement sur la ligne à un robot (15,3 tours d'arrêt de moins par heure). Aux tournées de 4 bacs, elle en gagne 47,6.</li>
+          <li>Les docs relues contre le code et les tests : les gains du README, les six empreintes, les commandes de l'usine et de la nuit, les étapes déjà faites. Un test de plus : la règle « la couverture de la ligne » de l'usine envoie d'abord la commande pour laquelle la ligne s'arrêtera la première.</li>
+          <li>La page revue onglet par onglet, chaque plan sous chaque règle joué jusqu'au bout : aucune erreur. Trois corrections : le journal des versions retrouve sa mise en forme (perdue le 23/10, quand le style commun est passé dans mcts-commun) ; dans l'Usine, le quai de l'entrepôt est celui de la navette, et ne dit plus « parti » au tour 0 ; le bouton qui replie le panneau ne cache plus le dernier bouton d'un panneau long.</li>
+        </ul>
+        <p class="commits"></p>
+      </article>
 
       <article class="version">
         <h3><span class="tag">0.39</span> Plus aucune commande oubliée <span class="date">30/10</span></h3>

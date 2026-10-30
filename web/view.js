@@ -21,7 +21,10 @@ export function loadersOf(state) {
   });
 }
 
-/** The trucks: `{ id, x, y, at, there, left, loader }`, `left` the orders not yet loaded, `loader` the loader there or on its way. */
+/**
+ * The trucks: `{ id, x, y, at, there, left, loader, shuttle }`, `left` the orders not yet loaded, `loader` the loader there
+ * or on its way; `shuttle` in the plant (plant.js), where the dock is the shuttle's and never leaves.
+ */
 export function trucksOf(state) {
   const loaders = loadersOf(state);
   // The assembly stations are docks for the robots, not trucks (day-kits.js).
@@ -33,6 +36,7 @@ export function trucksOf(state) {
     there: state.t >= truck.at,
     left: state.orders.filter((order) => order.truck === truck.id - 1 && order.status !== "delivered").length,
     loader: loaders.find((loader) => loader.truck === truck.id) ?? null,
+    shuttle: Boolean(state.plantLine),
   }));
 }
 

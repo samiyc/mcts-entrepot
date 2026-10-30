@@ -14,6 +14,8 @@ dans son ordre. Tout passe par une commande, `npm run check`, que le hook relanc
 | `npm test` (`test:coverage`) | les tests de `node --test`, dont les empreintes et la longueur des `.md` |
 | `npm run compare` | les règles (et `--search`, la recherche) sur les mêmes journées |
 | `npm run line` | les règles de la ligne cadencée (et `--search`) sur les mêmes heures |
+| `npm run plant` | l'usine (la ligne et l'entrepôt ensemble) sous les règles de l'entrepôt (et `--search`) |
+| `npm run night` | écrit les jobs des mesures longues pour la file (`night.json` et les autres) |
 | `npm run bench` | `scripts/search-bench.js` : la recherche contre les règles, par paires |
 | `npm run changelog` | refait `web/changelog.html` à partir de `docs/changelog.json` |
 | `npm run page` | la page, sur le port 4802 (le serveur de mcts-commun) |
@@ -52,7 +54,7 @@ Ce qui l'a vérifié, en plus des empreintes :
 
 ## Les empreintes
 
-`tests/fingerprint.test.js` résume en trois hachages ce que fait l'entrepôt :
+`tests/fingerprint.test.js` résume en six hachages ce que font les simulations. Les trois premiers tiennent l'entrepôt :
 - **les règles** : chaque plan, sous chaque règle, sur 3 journées. On hache tout ce que la journée a noté
   (affectations, chargements, chargeurs, relais, blocages vus, livraisons), ses mesures, et la case et les compteurs
   de chaque robot ;
@@ -60,10 +62,16 @@ Ce qui l'a vérifié, en plus des empreintes :
   automatique et d'autres taux de blocage ;
 - **la recherche** : une journée du petit entrepôt à 16 itérations.
 
-Un quatrième, **la ligne** (26/10), tient la ligne cadencée : chaque plan sous chaque règle sur deux heures, et une
-heure courte de sa recherche. Il a été posé avec la ligne ; les trois de l'entrepôt n'ont pas bougé.
+Les trois autres sont venus ensuite, le 26/10 :
+- **la ligne** : chaque plan de la ligne cadencée sous chaque règle sur deux heures, et une heure courte de sa
+  recherche ;
+- **l'usine** : ses plans `usine` et `vite`, un robot à l'entrepôt, une demi-heure sous chaque règle de l'entrepôt,
+  et un supermarché d'un seul bac ;
+- **l'assemblage** (`kits`) : son plan sous chaque règle, trois journées.
 
-Elles ont été prises avant de toucher au code (commit `e5e3dcd`), et aucune n'a changé depuis.
+Les trois premières ont été prises avant de toucher au code (commit `e5e3dcd`). Aucune refonte ne les a changées
+depuis ; chaque changement voulu du modèle les a mises à jour dans son commit, le dernier le 30/10 (`970acb1`, les
+cinq défauts : les règles, les variantes, la ligne et l'assemblage).
 
 Une refonte ne doit changer **aucune** empreinte. Un changement fait exprès pour modifier le modèle met à jour son
 hachage. Son commit le dit, avec les mesures avant et après. Une empreinte qui change sans qu'on l'ait voulu est un
